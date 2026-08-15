@@ -18,10 +18,23 @@
     <string name="summary_menu">Nazad na meni</string>
     <string name="summary_xp">Osvojeno</string>
     <string name="summary_rank_up">Novi rang: %1$s</string>
+    <string name="summary_achievement">Dostignuće: %1$s</string>
 
     <string name="menu_xp">%1$d XP</string>
     <string name="menu_rank_next">Još %1$d XP do ranga %2$s</string>
     <string name="menu_rank_top">Vrh lestvice — nema višeg ranga.</string>
+    <string name="menu_achievements">Dostignuća: %1$d/%2$d</string>
+
+    <string name="achievement_first_session">Prvi trening</string>
+    <string name="achievement_first_perfect">Bez ijedne greške</string>
+    <string name="achievement_ten_perfect">Deset besprekornih</string>
+    <string name="achievement_perfect_streak_five">Pet zaredom</string>
+    <string name="achievement_perfect_on_hard">Teško, a bez greške</string>
+    <string name="achievement_solved_hundred">Sto zadataka</string>
+    <string name="achievement_solved_five_hundred">Petsto zadataka</string>
+    <string name="achievement_three_modules">Tri modula</string>
+    <string name="achievement_hour_of_training">Sat treninga</string>
+    <string name="achievement_rank_master">Majstorski rang</string>
 
     <string name="rank_beginner">Početnik</string>
     <string name="rank_student">Đak</string>

@@ -25,7 +25,7 @@ te izmene svejedno vredi komitovati da se ne izgube.
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima tri modula za trening. Poslednji build je
-prošao čisto, bez upozorenja. **60 testova, nijedan ne pada.**
+prošao čisto, bez upozorenja. **69 testova, nijedan ne pada.**
 
 **Sva tri modula su prošla na uređaju** — Geometrija table, Interaktivni parovi
 i Dokrajči protivnika (poslednji tek pošto je ispravljen bag opisan niže).
@@ -48,7 +48,7 @@ adb install -r C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer\app\build\o
 | `:core:designsystem` | tema, `ChessBoard`, `PieceVisibility`, sličice figura | — |
 | `:core:audio` | `Speaker` (TTS), `VoiceInput` (Vosk) | **5** |
 | `:core:engine` | `ChessEngine` interfejs, `LocalEngine` | — |
-| `:core:progress` | `Xp`, `Rank`, `ProgressSnapshot`, `ProgressRepository` | **18** |
+| `:core:progress` | `Xp`, `Rank`, `Achievement`, `ProgressSnapshot`, `ProgressRepository` | **27** |
 | `:core:data` | Room istorija sesija, `RoomProgressRepository` | — |
 | `:feature:geometry` | Geometrija table | — |
 | `:feature:pairs` | Interaktivni parovi | — |
@@ -174,6 +174,7 @@ interfejs se nije menjao — `:feature:endgame` nije ni znao za zamenu.
 - `Xp.forSession` — 10/20/35 poena po rešenom zadatku (lako/srednje/teško),
   minus 2 po promašaju, plus 50% za sesiju bez ijedne greške. Nikad ispod nule.
 - `Rank` — šest rangova na pragovima 0 / 1.000 / 3.000 / 7.000 / 15.000 / 30.000.
+- `Achievement` — deset dostignuća, od prvog treninga do pet besprekornih zaredom.
 - `ProgressSnapshot` — zbir cele istorije, sa razdvojenim napretkom po modulu.
 
 `:core:data` čuva **sirovu istoriju sesija u Room-u, bez poena**. Snimak se
@@ -181,25 +182,49 @@ računa iz nje pri svakom čitanju, pa promena pravila prepravi i dosadašnju
 istoriju umesto da ostavi zamrznute poene iz starije verzije. Sabiranje je u
 Kotlinu, a ne SQL-om, da bi pravilo ostalo na jednom mestu i pokriveno testovima.
 
-U meniju je kartica sa rangom, poenima i trakom do sledećeg ranga; sažetak
-sesije pokazuje osvojene poene i javlja prelazak u viši rang.
+**Dostignuća su takođe izvedena, ne upisana.** Nema stanja koje može da se
+razmimoiđe sa stvarnošću, a novo dostignuće odmah priznaje i onome ko ga je
+odavno zaslužio. U `BrainTrainer`-u su se upisivala u trenutku osvajanja, pa je
+novo dostignuće važilo samo za nove igrače.
+
+U meniju je kartica sa rangom, poenima, trakom do sledećeg ranga i brojem
+osvojenih dostignuća; sažetak sesije pokazuje osvojene poene, javlja prelazak u
+viši rang i nabraja dostignuća osvojena baš tom sesijom.
 
 **Otvorene odluke:**
 
-- Brojevi su prvi predlog, ne dogovor. Pragovi i cena promašaja se menjaju na
-  jednom mestu i istorija se sama preračuna.
+- Brojevi su prvi predlog, ne dogovor. Pragovi, cena promašaja i uslovi
+  dostignuća se menjaju na jednom mestu i istorija se sama preračuna.
 - **Rang ništa ne otključava.** U `BrainTrainer`-u je rang držao spisak dostupnih
   modula i težina; ovde je namerno izostavljeno dok se ne dogovori.
-- Dostignuća (`AchievementManager` iz `BrainTrainer`-a) još ne postoje.
+- Nema ekrana sa spiskom dostignuća — samo brojač u meniju. Ako treba ekran,
+  podaci su već tu (`ProgressSnapshot.achievements`).
 
 ---
 
 ## Šta ne radi i šta nedostaje
 
-### Glasovni unos ne postoji
-Vosk jezički model (70 MB) nije u repou. `VoiceInput` to uredno prijavljuje kao
-`VoiceState.Unavailable`, ali nijedan modul mikrofon ni ne prikazuje. Treba
-rešiti preuzimanje modela pri prvom pokretanju.
+### Glasovni unos — čeka odluku, ne kod
+`VoskVoiceInput` je gotov: raspakivanje jednom po pokretanju, uzak rečnik od 64
+polja (uz njega Vosk gotovo ne greši), stanje kroz `VoiceState`. Fali **samo
+model**. `isModelBundled()` ga traži u `assets` kao `model-en-us`; kad ga nema,
+stanje je `Unavailable` i nijedan modul ne prikazuje mikrofon.
+
+Model stoji u starom projektu: `BlindfoldChessCouch\app\src\main\assets\model-en-us`,
+**67,6 MB u 15 fajlova**. Tri puta:
+
+1. **U `assets`, van gita.** `.gitignore` već ima `/app/src/main/assets/model-*/`,
+   pa lokalni build radi odmah, a repo ostaje mali. Ali APK skače na ~127 MB i
+   svako ko klonira repo mora sam da nabavi model.
+2. **Preuzimanje pri prvom pokretanju** sa `alphacephei.com`. APK ostaje mali,
+   ali traži ekran za preuzimanje, rukovanje prekidom veze i `Model(putanja)`
+   umesto `StorageService.unpack` iz `assets`.
+3. **Android-ov `SpeechRecognizer`** umesto Vosk-a. Nula megabajta i nula
+   preuzimanja, ali traži internet u toku vežbe i nema uzak rečnik, pa je
+   prepoznavanje polja osetno lošije.
+
+Dok se ne odluči, `:core:audio` nosi Vosk native biblioteke za pet ABI-ja (vidi
+sledeću stavku) iako se ne koriste.
 
 ### APK je 59,5 MB
 Skoro sve su Vosk native biblioteke za pet ABI-ja — uključujući `mips`, koji ne
@@ -213,7 +238,6 @@ odnos polja (ista dijagonala, šta leži između). Odloženo dogovorom.
 
 ### Nenapisani moduli
 - podešavanja (DataStore) — `:core:data` zasad drži samo istoriju sesija
-- dostignuća — `:core:progress` ima poene i rangove, dostignuća ne
 - `:feature:recall` — Zapamti poziciju
 - `:feature:knightpath` — Putanja skakača
 - `:feature:followgame` — Prati partiju
@@ -237,16 +261,17 @@ generisati:
 Iz `BrainTrainer`-a (`C:\Users\Admin\AndroidStudioProjects\BrainTrainer`,
 objavljen na Google Play) preuzete su ideje, ne kod: nepromenljiva tabla,
 `PuzzleRules` apstrakcija i gamifikacija. Lestvica rangova je preneta iz
-`RankManager`-a (bez zaključavanja sadržaja), bodovanje je napisano iznova jer
-je `ScoreManager` čuvao izračunate poene u `SharedPreferences`. Dostignuća iz
-`AchievementManager`-a tek treba preneti.
+`RankManager`-a (bez zaključavanja sadržaja), a bodovanje i dostignuća su
+napisani iznova: `ScoreManager` je čuvao izračunate poene u `SharedPreferences`,
+a `AchievementManager` je upisivao dostignuće u trenutku osvajanja — ovde se i
+jedno i drugo računa iz istorije.
 
 ---
 
 ## Predlog redosleda za nastavak
 
-1. Proveriti napredak na uređaju — odigrati sesiju i videti da poeni i rang rastu
-2. Dogovoriti brojeve bodovanja i da li rang išta otključava
-3. Preuzimanje Vosk modela, pa mikrofon u Parovima i Završnici
-4. Dostignuća u `:core:progress`
-5. Preostala tri modula
+1. Odlučiti odakle Vosk model (vidi „Glasovni unos"), pa mikrofon u Parovima i
+   Završnici — to je jedina stavka koja čeka odluku
+2. Preostala tri modula
+3. Dogovoriti brojeve bodovanja i da li rang išta otključava
+4. Podešavanja (DataStore) i ekran sa spiskom dostignuća

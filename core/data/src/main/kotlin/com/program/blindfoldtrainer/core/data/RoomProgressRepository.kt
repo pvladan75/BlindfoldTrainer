@@ -36,7 +36,8 @@ class RoomProgressRepository @Inject constructor(
         return SessionReward(
             xp = Xp.forSession(result),
             rankBefore = before.rank,
-            rankAfter = after.rank
+            rankAfter = after.rank,
+            newAchievements = after.achievements - before.achievements
         )
     }
 }

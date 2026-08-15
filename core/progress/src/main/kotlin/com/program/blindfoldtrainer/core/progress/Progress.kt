@@ -48,7 +48,13 @@ data class ProgressSnapshot(
     val solved: Int = 0,
     val perfectSessions: Int = 0,
     val timeMillis: Long = 0,
-    val byModule: Map<ModuleId, ModuleProgress> = emptyMap()
+    val byModule: Map<ModuleId, ModuleProgress> = emptyMap(),
+    /** Besprekorne sesije po težini — dostignuća razlikuju lako od teškog. */
+    val perfectByDifficulty: Map<Difficulty, Int> = emptyMap(),
+    /** Koliko besprekornih sesija traje u nizu upravo sada. */
+    val perfectStreak: Int = 0,
+    /** Najduži takav niz do sada. */
+    val bestPerfectStreak: Int = 0
 ) {
     val rank: Rank get() = Rank.forXp(totalXp)
     val rankProgress: RankProgress get() = RankProgress.forXp(totalXp)
@@ -56,8 +62,12 @@ data class ProgressSnapshot(
     /** Moduli koje je korisnik bar jednom probao. */
     val startedModules: Set<ModuleId> get() = byModule.keys
 
+    /** Osvojena dostignuća. Izvedena su iz stanja, pa se nigde ne pamte. */
+    val achievements: Set<Achievement> get() = Achievement.earnedIn(this)
+
     operator fun plus(result: SessionResult): ProgressSnapshot {
         val module = byModule[result.moduleId] ?: ModuleProgress()
+        val streak = if (result.isPerfect) perfectStreak + 1 else 0
         return ProgressSnapshot(
             totalXp = totalXp + Xp.forSession(result),
             sessions = sessions + 1,
@@ -65,7 +75,14 @@ data class ProgressSnapshot(
             solved = solved + result.solved,
             perfectSessions = perfectSessions + if (result.isPerfect) 1 else 0,
             timeMillis = timeMillis + result.elapsedMillis,
-            byModule = byModule + (result.moduleId to (module + result))
+            byModule = byModule + (result.moduleId to (module + result)),
+            perfectByDifficulty = if (result.isPerfect) {
+                perfectByDifficulty + (result.difficulty to (perfectByDifficulty[result.difficulty] ?: 0) + 1)
+            } else {
+                perfectByDifficulty
+            },
+            perfectStreak = streak,
+            bestPerfectStreak = maxOf(bestPerfectStreak, streak)
         )
     }
 
@@ -74,6 +91,9 @@ data class ProgressSnapshot(
     }
 }
 
-/** Sabira istoriju u snimak. Redosled ne utiče na rezultat osim na najbolje rezultate. */
+/**
+ * Sabira istoriju u snimak. **Redosled je bitan** — niz besprekornih sesija se
+ * prekida prvom u kojoj ima greške, pa istorija mora stizati hronološki.
+ */
 fun Iterable<SessionResult>.toProgressSnapshot(): ProgressSnapshot =
     fold(ProgressSnapshot.EMPTY) { snapshot, result -> snapshot + result }

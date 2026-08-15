@@ -11,7 +11,9 @@ import kotlinx.coroutines.flow.Flow
 data class SessionReward(
     val xp: Int,
     val rankBefore: Rank,
-    val rankAfter: Rank
+    val rankAfter: Rank,
+    /** Dostignuća osvojena baš ovom sesijom. */
+    val newAchievements: Set<Achievement> = emptySet()
 ) {
     val isRankUp: Boolean get() = rankAfter.ordinal > rankBefore.ordinal
 }

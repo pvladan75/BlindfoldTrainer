@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.program.blindfoldtrainer.R
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.moduleapi.TrainingModule
+import com.program.blindfoldtrainer.core.progress.Achievement
 import com.program.blindfoldtrainer.core.progress.ProgressSnapshot
 import com.program.blindfoldtrainer.core.progress.Rank
 
@@ -125,19 +126,33 @@ private fun RankCard(progress: ProgressSnapshot) {
             Spacer(Modifier.height(8.dp))
 
             val next = rankProgress.next
-            Text(
-                text = if (next == null) {
-                    stringResource(R.string.menu_rank_top)
-                } else {
-                    stringResource(
-                        R.string.menu_rank_next,
-                        rankProgress.xpNeededForNext - rankProgress.xpIntoRank,
-                        stringResource(next.labelRes())
-                    )
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = if (next == null) {
+                        stringResource(R.string.menu_rank_top)
+                    } else {
+                        stringResource(
+                            R.string.menu_rank_next,
+                            rankProgress.xpNeededForNext - rankProgress.xpIntoRank,
+                            stringResource(next.labelRes())
+                        )
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(
+                        R.string.menu_achievements,
+                        progress.achievements.size,
+                        Achievement.entries.size
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
@@ -210,4 +225,17 @@ internal fun Rank.labelRes(): Int = when (this) {
     Rank.EXPERIENCED -> R.string.rank_experienced
     Rank.MASTER -> R.string.rank_master
     Rank.GRANDMASTER -> R.string.rank_grandmaster
+}
+
+internal fun Achievement.labelRes(): Int = when (this) {
+    Achievement.FIRST_SESSION -> R.string.achievement_first_session
+    Achievement.FIRST_PERFECT -> R.string.achievement_first_perfect
+    Achievement.TEN_PERFECT -> R.string.achievement_ten_perfect
+    Achievement.PERFECT_STREAK_FIVE -> R.string.achievement_perfect_streak_five
+    Achievement.PERFECT_ON_HARD -> R.string.achievement_perfect_on_hard
+    Achievement.SOLVED_HUNDRED -> R.string.achievement_solved_hundred
+    Achievement.SOLVED_FIVE_HUNDRED -> R.string.achievement_solved_five_hundred
+    Achievement.THREE_MODULES -> R.string.achievement_three_modules
+    Achievement.HOUR_OF_TRAINING -> R.string.achievement_hour_of_training
+    Achievement.RANK_MASTER -> R.string.achievement_rank_master
 }

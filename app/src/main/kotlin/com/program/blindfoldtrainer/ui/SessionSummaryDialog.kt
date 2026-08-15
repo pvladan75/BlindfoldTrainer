@@ -81,6 +81,17 @@ fun SessionSummaryDialog(
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
+                    it.newAchievements.forEach { achievement ->
+                        Text(
+                            text = stringResource(
+                                R.string.summary_achievement,
+                                stringResource(achievement.labelRes())
+                            ),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         },
