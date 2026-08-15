@@ -1,7 +1,6 @@
 package com.program.blindfoldtrainer.feature.pairs.data
 
 import android.content.Context
-import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
@@ -61,14 +60,14 @@ class PuzzleCatalog @Inject constructor(
     private fun puzzleFiles(): List<String> =
         puzzleDir().listFiles()?.map { it.name }?.filter { it.endsWith(".json") } ?: emptyList()
 
+    /**
+     * Baca ako se fajl ne može pročitati ili razumeti. Greška se namerno ne
+     * guta u prazan spisak: modul bi tada prijavio da zagonetki nema, a pravi
+     * razlog bi ostao samo u logu.
+     */
     private fun load(fileName: String): List<PairsPuzzle> = cache.getOrPut(fileName) {
-        runCatching {
-            val text = File(puzzleDir(), fileName).readText()
-            json.decodeFromString<List<PairsPuzzle>>(text)
-        }.getOrElse { error ->
-            Log.e(TAG, "Zagonetke iz $fileName nisu učitane", error)
-            emptyList()
-        }
+        val text = File(puzzleDir(), fileName).readText()
+        json.decodeFromString<List<PairsPuzzle>>(text)
     }
 
     private fun puzzleDir() = File(context.filesDir, PUZZLE_DIR)
@@ -80,7 +79,7 @@ class PuzzleCatalog @Inject constructor(
         if (dir.isDirectory && (dir.listFiles()?.isNotEmpty() == true)) return
 
         dir.mkdirs()
-        runCatching {
+        try {
             context.assets.open(ASSET_NAME).use { assetStream ->
                 ZipInputStream(assetStream).use { zip ->
                     var entry = zip.nextEntry
@@ -95,13 +94,15 @@ class PuzzleCatalog @Inject constructor(
                     }
                 }
             }
-        }.onFailure { error ->
-            Log.e(TAG, "Raspakivanje $ASSET_NAME nije uspelo", error)
+        } catch (error: Throwable) {
+            // Pola raspakovanog sadržaja je gore od nijednog: folder tada nije
+            // prazan, pa gornja provera nikad ne bi dala novi pokušaj.
+            dir.deleteRecursively()
+            throw error
         }
     }
 
     private companion object {
-        const val TAG = "PuzzleCatalog"
         const val ASSET_NAME = "puzzles.zip"
         const val PUZZLE_DIR = "pairs-puzzles"
         val PIECE_COUNT_PATTERN = Regex("([BNQR])(\\d)")

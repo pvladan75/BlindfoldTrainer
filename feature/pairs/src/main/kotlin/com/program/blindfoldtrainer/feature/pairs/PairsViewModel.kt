@@ -1,5 +1,6 @@
 package com.program.blindfoldtrainer.feature.pairs
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.program.blindfoldtrainer.core.audio.Speaker
@@ -14,6 +15,7 @@ import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.feature.pairs.data.PairsPuzzle
 import com.program.blindfoldtrainer.feature.pairs.data.PuzzleCatalog
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -69,6 +71,7 @@ private fun setupFor(difficulty: Difficulty) = when (difficulty) {
 private const val PIECE_FLASH_MILLIS = 550L
 private const val FEEDBACK_MILLIS = 400L
 private const val SOLVED_PAUSE_MILLIS = 1_400L
+private const val TAG = "PairsViewModel"
 
 @HiltViewModel
 class PairsViewModel @Inject constructor(
@@ -98,23 +101,37 @@ class PairsViewModel @Inject constructor(
         speaker.setRate(0.85f)
 
         viewModelScope.launch {
-            val loaded = buildList {
-                repeat(setup.puzzleCount) {
-                    catalog.randomPuzzle(setup.pieceCount, setup.stepsPerPuzzle)?.let(::add)
-                }
-            }.distinctBy { it.id }
+            val loaded = runCatching {
+                buildList {
+                    repeat(setup.puzzleCount) {
+                        catalog.randomPuzzle(setup.pieceCount, setup.stepsPerPuzzle)?.let(::add)
+                    }
+                }.distinctBy { it.id }
+            }
+            val failure = loaded.exceptionOrNull()
+            // runCatching hvata i otkazivanje, a ono nije greška u učitavanju.
+            if (failure is CancellationException) throw failure
+            if (failure != null) {
+                Log.e(TAG, "Zagonetke za $difficulty nisu učitane", failure)
+            }
 
-            if (loaded.isEmpty()) {
+            val available = loaded.getOrDefault(emptyList())
+            if (available.isEmpty()) {
+                // Razlog ide i na ekran, ne samo u log: bez uređaja na kablu je
+                // poruka jedini trag zašto modul nema nijednu zagonetku.
+                val reason = failure
+                    ?.let { "\n\n${it::class.java.simpleName}: ${it.message}" }
+                    .orEmpty()
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        infoMessage = "Nema zagonetki za ovu težinu."
+                        infoMessage = "Nema zagonetki za ovu težinu.$reason"
                     )
                 }
                 return@launch
             }
 
-            puzzles = loaded
+            puzzles = available
             startedAtMillis = System.currentTimeMillis()
             startTimer()
             loadPuzzle(0)

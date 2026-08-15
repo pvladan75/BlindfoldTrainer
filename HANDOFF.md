@@ -5,17 +5,15 @@ sesiji bez ponovnog objašnjavanja.
 
 ---
 
-## ⚠ Prvo i najvažnije: projekat nije pod verzionisanjem
+## Verzionisanje
 
-`C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer` **nije git repo**. Sav
-dosadašnji rad postoji samo kao fajlovi na disku. Pre nego što se nastavi:
+Projekat je pod gitom od **15. avgusta 2026**: grana `master`, prvi komit
+`d66a9a6` — 122 fajla, oko 1 MB.
 
-```bash
-cd C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer && git init && git add -A && git commit -m "Skelet: jezgro, registar modula, tri modula za trening"
-```
-
-`.gitignore` je već postavljen kako treba — drži napolju `_stockfish-odlozeno/`,
-NNUE mreže, `local.properties` i ključeve za potpisivanje.
+`.gitignore` drži napolju `_stockfish-odlozeno/` (76 MB), NNUE mreže, `build/`,
+`.gradle/`, `local.properties` i ključeve za potpisivanje. Pre komita je
+provereno da ništa od toga nije ušlo u indeks; najveći fajl u repou je
+`feature/pairs/src/main/assets/puzzles.zip` sa 270 KB.
 
 Uz to, u **starom** projektu (`BlindfoldChessCouch`, grana `masterSunfish`) stoje
 nekomitovane ispravke Modula 3 iz iste sesije: vraćanje modula u navigaciju,
@@ -109,6 +107,37 @@ pozicija. Bilo kakva greška u pravilima ga obori.
 
 ---
 
+## Bag koji se video tek na uređaju
+
+Dokrajči protivnika je javljao „Nema pozicija za ovu težinu" iako su JSON fajlovi
+bili na mestu, ispravni i spakovani u APK. Uzrok: `EndgamePuzzle` je imao
+`private companion object`, i to samo zbog jedne regex konstante. Plugin za
+serijalizaciju svoj `serializer()` smešta baš u companion i poziv emituje kroz
+IR, bez provere vidljivosti — prevođenje je zato prolazilo čisto, a ART je na
+uređaju odbio pristup privatnom polju:
+
+```
+IllegalAccessError: Field '…EndgamePuzzle.Companion' is inaccessible
+to class '…EndgameCatalog$puzzles$2'
+```
+
+Pouka je dvostruka:
+
+- **`@Serializable` klasa ne sme imati privatan companion.** Konstante idu van
+  klase, kao privatne vrednosti na nivou fajla.
+- **Nemo gutanje greške je koštalo više od samog baga.** Oba kataloga su hvatala
+  sve u `runCatching` i vraćala prazan spisak, pa je razlog ostajao samo u logu,
+  a modul je izgledao kao da sadržaja naprosto nema. Sada katalozi puštaju grešku
+  dalje, a ViewModel-i je loguju **i ispisuju klasu i poruku izuzetka na ekran**,
+  ispod poruke da sadržaja nema. Bez toga se uzrok ne bi našao bez telefona na
+  kablu.
+
+Uz to, `PuzzleCatalog` sada obriše folder ako raspakivanje `puzzles.zip` pukne na
+pola. Ranije bi poluprazan folder zauvek preskakao novi pokušaj, jer se
+proveravalo samo da li je prazan.
+
+---
+
 ## Stockfish je izbačen
 
 Stockfish 17 ne radi bez NNUE mreže (klasična evaluacija je izbačena u verziji
@@ -134,10 +163,10 @@ interfejs se nije menjao — `:feature:endgame` nije ni znao za zamenu.
 
 ## Šta ne radi i šta nedostaje
 
-### Nije provereno na uređaju
-Na telefonu je pokrenuta **samo Geometrija table**. `:feature:pairs` i
-`:feature:endgame` su prošli build ali **nikad nisu izvršeni**. Prvo što treba
-uraditi u novoj sesiji je instalirati i proći kroz oba.
+### Parovi nisu provereni na uređaju
+Na telefonu rade **Geometrija table** i **Dokrajči protivnika** — drugi tek
+pošto je ispravljen bag opisan gore. `:feature:pairs` prolazi build, ali
+**nikad nije izvršen**; to je prvo što treba uraditi.
 
 ### Glasovni unos ne postoji
 Vosk jezički model (70 MB) nije u repou. `VoiceInput` to uredno prijavljuje kao
@@ -186,9 +215,7 @@ objavljen na Google Play) preuzete su ideje, ne kod: nepromenljiva tabla,
 
 ## Predlog redosleda za nastavak
 
-1. `git init` i prvi komit — pre svega ostalog
-2. Instalirati i proći kroz Parove i Dokrajči protivnika; to su dva modula koja
-   nikad nisu izvršena
-3. `:core:data` + `:core:progress` — priključiti `SessionResult` na bodovanje
-4. Preuzimanje Vosk modela, pa mikrofon u Parovima i Završnici
-5. Preostala tri modula
+1. Proći kroz Parove na uređaju — jedini modul koji još nije izvršen
+2. `:core:data` + `:core:progress` — priključiti `SessionResult` na bodovanje
+3. Preuzimanje Vosk modela, pa mikrofon u Parovima i Završnici
+4. Preostala tri modula
