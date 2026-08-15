@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tema se u potpunosti postavlja iz Compose-a; ovo je samo da sistem
+         ima šta da prikaže dok se aktivnost ne podigne. -->
+    <style name="Theme.BlindfoldTrainer" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>

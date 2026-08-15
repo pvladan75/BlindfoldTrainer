@@ -1,0 +1,36 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+/.idea/deploymentTargetSelector.xml
+/.idea/misc.xml
+/.idea/appInsightsSettings.xml
+.DS_Store
+build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+.kotlin
+
+# Potpisivanje — nikad u repo.
+keystore.properties
+*.jks
+*.keystore
+
+# Veliki binarni modeli se preuzimaju pri prvom pokretanju, ne drže se u gitu.
+# Stari repo je zbog njih narastao na 157 MB.
+*.nnue
+/app/src/main/assets/model-*/
+
+# Stockfish je izbačen iz build-a u korist ugrađene pretrage (:core:chess/Search.kt).
+# Izvor i NNUE mreže stoje odloženi za slučaj povratka, ali ne idu u repo.
+/_stockfish-odlozeno/
+
+# Dnevnici sa uređaja
+logcat*.txt

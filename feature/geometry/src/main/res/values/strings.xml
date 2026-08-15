@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="geometry_title">Geometrija table</string>
+    <string name="geometry_description">Boja polja bez gledanja u tablu. Zagrevanje koje ide brzo i gradi osnovu za sve ostalo.</string>
+</resources>

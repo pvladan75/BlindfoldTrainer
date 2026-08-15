@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="endgame_title">Dokrajči protivnika</string>
+    <string name="endgame_description">Dobijena pozicija, tabla ugašena, Stockfish se brani najbolje što ume. Tvoje je da matiraš pre nego što istekne pedeset poteza.</string>
+</resources>

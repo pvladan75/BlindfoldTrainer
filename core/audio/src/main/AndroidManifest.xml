@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Traži je modul koji koristi glasovni unos; deklariše se ovde da
+         aplikacija ne bi morala da zna koji sve moduli glas koriste. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+</manifest>

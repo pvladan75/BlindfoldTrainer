@@ -1,0 +1,131 @@
+# Arhitektura
+
+Aplikacija za trening igre na slepo. Nasleđuje ideje iz `BlindfoldChessCouch`
+(moduli, Stockfish, Vosk, TTS) i `BrainTrainer` (nepromenljiva tabla, pravila
+modula, gamifikacija) — uz ispravke problema koje su oba imala.
+
+## Načelo
+
+Školjka se piše jednom, moduli se na nju kače. Školjka nosi navigaciju, temu,
+tablu, glas, zvuk, podešavanja i napredak; modul nosi samo svoju vežbu.
+
+## Gradle moduli
+
+Postojeći moduli:
+
+```
+:core:model         ModuleId, Difficulty, SessionResult, Capability
+:core:chess         čist Kotlin — Board, Position, MoveGenerator, Attacks, Fen, Search
+:core:moduleapi     ugovor TrainingModule
+:core:engine        ChessEngine interfejs + LocalEngine (ugrađena pretraga)
+:core:audio         Speaker (TTS) i VoiceInput (Vosk) iza interfejsa
+:core:designsystem  tema i ChessBoard komponenta
+:feature:geometry   Geometrija table
+:feature:pairs      Interaktivni parovi
+:feature:endgame    Dokrajči protivnika
+:app                navigacija iz registra, DI, glavni meni
+```
+
+Planirani:
+
+```
+:core:data          DataStore podešavanja, Room napredak
+:core:progress      XP, rangovi, dostignuća
+:feature:recall     Zapamti poziciju
+:feature:knightpath Putanja skakača
+:feature:followgame Prati partiju
+```
+
+`:core:model` i `:core:chess` su **čist Kotlin, bez Androida**. Testovi šahovske
+logike se zato vrte u sekundama, bez emulatora — a upravo je tu bilo najviše
+grešaka u staroj aplikaciji.
+
+## Tri odluke koje nose ceo dizajn
+
+### 1. Registar modula umesto ručne navigacije
+
+U staroj aplikaciji je modul 3 nestao zato što je iz `when` bloka u
+`AppNavigation.kt` ispala jedna linija. Modul je i dalje postojao, ViewModel je
+radio, ali do njega se nije moglo doći — i ništa to nije prijavilo.
+
+Ovde se navigacija i glavni meni **generišu iz registra**. Modul se prijavljuje
+preko Hilt `@IntoSet`, pa modul koji postoji a nije dostupan prestaje da bude
+moguć.
+
+```kotlin
+interface TrainingModule {
+    val id: ModuleId
+    val titleRes: Int
+    val descriptionRes: Int
+    val iconRes: Int
+    val difficulties: List<Difficulty>
+    val needs: Set<Capability>
+
+    @Composable
+    fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit)
+}
+```
+
+`needs` postoji da bi školjka tražila dozvolu za mikrofon i podigla Stockfish
+**pre** ulaska u modul, umesto da svaki modul to petlja sam.
+
+### 2. `SessionResult` kao jedini kanal za rezultat
+
+Svi moduli prijavljuju ishod istim tipom. Zahvaljujući tome se bodovanje,
+rangovi, dostignuća i statistika pišu jednom, u `:core:progress`.
+
+U `BrainTrainer`-u se `ScoreManager` zvao ručno sa desetak mesta u
+`ChessScreen.kt` — zato je dodavanje novog modula tamo skupo.
+
+### 3. Nepromenljiva pozicija
+
+`Board` i `Position` su nepromenljivi; `applyMove` vraća **novu** poziciju.
+Istorija partije je obična lista, „vrati potez" je uzimanje prethodnog elementa,
+a blindfold animacija može slobodno da drži staro stanje dok prikazuje novo.
+
+Stara aplikacija je imala `MutableMap` koji se menjao u mestu, pa je svaki
+ViewModel morao da radi `board.copy()` na pravim mestima — i ponegde nije.
+
+## Ispravljeni bagovi iz stare aplikacije
+
+**Napad pešaka.** Napad se računao tako što bi se generisali potezi i gledalo da
+li neki vodi na polje. Pešak dijagonalu generiše kao potez samo ako tamo već
+stoji protivnička figura, pa prazno polje koje pešak brani nije izgledalo
+napadnuto i kralj je smeo da stane na njega. Sada je `Attacks.kt` odvojen od
+generisanja poteza i računa napad direktno.
+
+**Rokada.** Nije se proveravalo ni da top postoji, ni da kralj nije u šahu, ni
+da ne prelazi preko napadnutog polja. `Board.makeMove` je čak *stvarao* novog
+topa ako ga nije bilo. Sada su svi uslovi u `MoveGenerator.generateCastlingMoves`.
+
+**Brojač poluhodova.** Uzimanje se proveravalo *posle* primene poteza, pa je
+uvek izgledalo kao da se dogodilo i brojač je zauvek bio 0. Sada se računa iz
+table pre poteza.
+
+Sve troje pokriva `PerftTest` — prebrojavanje nizova legalnih poteza do zadate
+dubine, upoređeno sa objavljenim vrednostima. Odstupanje bilo gde u pravilima
+obara test.
+
+## Motor
+
+Umesto Stockfish-a stoji `Search.kt` u `:core:chess` — negamax sa alfa-beta.
+Stockfish 17 ne radi bez NNUE mreže (klasična evaluacija je izbačena u verziji
+16), pa bi za jedini modul koji motor koristi nosio 78 MB, native prevođenje i
+ograničenje na jedan ABI.
+
+U oceni je bitno to što se, kad je materijalna razlika odlučujuća, dodaje član
+koji jaču stranu gura da protivničkog kralja tera ka ivici i da mu prilazi
+kraljem — bez toga su u dobijenoj završnici svi potezi jednako ocenjeni.
+
+`ChessEngine` interfejs je ostao, pa povratak na spoljni motor ne dira nijedan
+modul. Odloženi izvor stoji u `_stockfish-odlozeno/`.
+
+## Sadržaj i veliki fajlovi
+
+Stari repo je narastao na 157 MB jer su NNUE mreža (75 MB) i Vosk model (70 MB)
+bili u gitu. Ovde NNUE više ne postoji, a Vosk model se preuzima pri prvom
+pokretanju; `.gitignore` ih drži napolju.
+
+Zagonetke idu u `assets` kao JSON po konvenciji `{modul}_{tezina}_puzzles.json`,
+kao u `BrainTrainer`-u. `UniversalPuzzleSolver` (BFS nad pravilima modula) služi
+da se **pre pakovanja** proveri da je svaka zagonetka rešiva.

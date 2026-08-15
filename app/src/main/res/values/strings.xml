@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Blindfold Trainer</string>
+
+    <string name="no_modules">Nijedan modul nije ugrađen u ovu verziju.</string>
+
+    <string name="difficulty_easy">Lako</string>
+    <string name="difficulty_medium">Srednje</string>
+    <string name="difficulty_hard">Teško</string>
+
+    <string name="summary_title">Kraj sesije</string>
+    <string name="summary_perfect">Bez ijedne greške!</string>
+    <string name="summary_solved">Rešeno</string>
+    <string name="summary_mistakes">Greške</string>
+    <string name="summary_accuracy">Tačnost</string>
+    <string name="summary_time">Vreme</string>
+    <string name="summary_repeat">Još jednom</string>
+    <string name="summary_menu">Nazad na meni</string>
+</resources>

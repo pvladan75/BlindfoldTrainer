@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pairs_title">Interaktivni parovi</string>
+    <string name="pairs_description">Potezi stižu glasom dok je tabla prazna. Pokaži polje na kojem se figure sreću i drži poziciju u glavi.</string>
+</resources>

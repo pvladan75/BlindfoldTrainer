@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="testRunner" value="CHOOSE_PER_TEST" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/core" />
+            <option value="$PROJECT_DIR$/core/audio" />
+            <option value="$PROJECT_DIR$/core/chess" />
+            <option value="$PROJECT_DIR$/core/designsystem" />
+            <option value="$PROJECT_DIR$/core/engine" />
+            <option value="$PROJECT_DIR$/core/model" />
+            <option value="$PROJECT_DIR$/core/moduleapi" />
+            <option value="$PROJECT_DIR$/feature" />
+            <option value="$PROJECT_DIR$/feature/endgame" />
+            <option value="$PROJECT_DIR$/feature/geometry" />
+            <option value="$PROJECT_DIR$/feature/pairs" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>
