@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="recall_title">Zapamti poziciju</string>
+    <string name="recall_description">Pozicija se vidi nekoliko sekundi, pa nestaje. Vrati figure na njihova polja po sećanju.</string>
+</resources>

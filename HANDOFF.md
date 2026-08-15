@@ -24,12 +24,13 @@ te izmene svejedno vredi komitovati da se ne izgube.
 
 ## Šta radi
 
-Aplikacija se gradi, pokreće, i ima **četiri** modula za trening. Poslednji build
-je prošao čisto, bez upozorenja. **77 testova, nijedan ne pada.**
+Aplikacija se gradi, pokreće, i ima **pet** modula za trening. Poslednji build je
+prošao čisto, bez upozorenja. **83 testa, nijedan ne pada.**
 
-Na uređaju su prošli Geometrija table, Interaktivni parovi i Dokrajči protivnika
-(poslednji tek pošto je ispravljen bag opisan niže), kao i napredak sa poenima i
-rangovima. **Putanja skakača još nije pokrenuta na telefonu.**
+Na uređaju su prošli Geometrija table, Interaktivni parovi, Dokrajči protivnika
+(poslednji tek pošto je ispravljen bag opisan niže) i Putanja skakača, kao i
+napredak sa poenima i rangovima. **Zapamti poziciju još nije pokrenut na
+telefonu.**
 
 ```bash
 cd C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer && ./gradlew :app:assembleDebug test
@@ -55,6 +56,7 @@ adb install -r C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer\app\build\o
 | `:feature:pairs` | Interaktivni parovi | — |
 | `:feature:endgame` | Dokrajči protivnika | — |
 | `:feature:knightpath` | Putanja skakača | — |
+| `:feature:recall` | Zapamti poziciju | **6** |
 | `:app` | registar, navigacija, meni, sažetak sesije | — |
 
 `:core:model`, `:core:chess` i `:core:progress` su **čist Kotlin, bez Androida** —
@@ -240,9 +242,8 @@ odnos polja (ista dijagonala, šta leži između). Odloženo dogovorom.
 
 ### Nenapisani moduli
 - podešavanja (DataStore) — `:core:data` zasad drži samo istoriju sesija
-- `:feature:recall` — Zapamti poziciju
-- `:feature:followgame` — Prati partiju; jedini koji traži nov sadržaj
-  (majstorske partije), pa ga vredi ostaviti za kraj
+- `:feature:followgame` — Prati partiju; jedini preostali, i jedini koji traži
+  nov sadržaj (majstorske partije), pa je ostavljen za kraj
 
 ### Kvalitet odbrane u teškim pozicijama
 Jedina rezerva oko zamene motora. U K+2L protiv K (mat u 19) je Stockfish bio
@@ -260,6 +261,9 @@ generisati:
 - `:feature:endgame` → `{easy,medium,hard}_puzzles.json`
 - `:core:designsystem` → vektorske sličice figura
 
+`:feature:knightpath` i `:feature:recall` **nemaju sadržaj** — zadaci se
+izračunavaju, pa nema šta da se pakuje ni proverava pre pakovanja.
+
 Iz `BrainTrainer`-a (`C:\Users\Admin\AndroidStudioProjects\BrainTrainer`,
 objavljen na Google Play) preuzete su ideje, ne kod: nepromenljiva tabla,
 `PuzzleRules` apstrakcija i gamifikacija. Lestvica rangova je preneta iz
@@ -272,9 +276,8 @@ jedno i drugo računa iz istorije.
 
 ## Predlog redosleda za nastavak
 
-1. Proći kroz Putanju skakača na uređaju — modul nije nikad pokrenut
-2. `:feature:recall` — Zapamti poziciju
-3. `:feature:followgame` — Prati partiju (traži majstorske partije kao sadržaj)
+1. Proći kroz Zapamti poziciju na uređaju — modul nije nikad pokrenut
+2. `:feature:followgame` — Prati partiju (traži majstorske partije kao sadržaj)
 4. Odlučiti odakle Vosk model (vidi „Glasovni unos"), pa mikrofon u Parovima i
    Završnici — odloženo dogovorom
 5. Dogovoriti brojeve bodovanja i da li rang išta otključava

@@ -41,5 +41,6 @@ include(":feature:geometry")
 include(":feature:pairs")
 include(":feature:endgame")
 include(":feature:knightpath")
+include(":feature:recall")
 
 include(":app")

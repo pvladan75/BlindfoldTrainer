@@ -26,13 +26,13 @@ Postojeći moduli:
 :feature:pairs      Interaktivni parovi
 :feature:endgame    Dokrajči protivnika
 :feature:knightpath Putanja skakača
+:feature:recall     Zapamti poziciju
 :app                navigacija iz registra, DI, glavni meni
 ```
 
 Planirani:
 
 ```
-:feature:recall     Zapamti poziciju
 :feature:followgame Prati partiju
 ```
 
