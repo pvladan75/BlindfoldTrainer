@@ -40,5 +40,6 @@ include(":core:data")
 include(":feature:geometry")
 include(":feature:pairs")
 include(":feature:endgame")
+include(":feature:knightpath")
 
 include(":app")

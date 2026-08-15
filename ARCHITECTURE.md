@@ -15,7 +15,7 @@ Postojeći moduli:
 
 ```
 :core:model         ModuleId, Difficulty, SessionResult, Capability
-:core:chess         čist Kotlin — Board, Position, MoveGenerator, Attacks, Fen, Search
+:core:chess         čist Kotlin — Board, Position, MoveGenerator, Attacks, Fen, Search, KnightPath
 :core:moduleapi     ugovor TrainingModule
 :core:engine        ChessEngine interfejs + LocalEngine (ugrađena pretraga)
 :core:audio         Speaker (TTS) i VoiceInput (Vosk) iza interfejsa
@@ -25,6 +25,7 @@ Postojeći moduli:
 :feature:geometry   Geometrija table
 :feature:pairs      Interaktivni parovi
 :feature:endgame    Dokrajči protivnika
+:feature:knightpath Putanja skakača
 :app                navigacija iz registra, DI, glavni meni
 ```
 
@@ -32,7 +33,6 @@ Planirani:
 
 ```
 :feature:recall     Zapamti poziciju
-:feature:knightpath Putanja skakača
 :feature:followgame Prati partiju
 ```
 

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="knight_path_title">Putanja skakača</string>
+    <string name="knight_path_description">Odvedi skakača do zadatog polja, i to najkraćim putem. Tabla je prazna — putanju držiš u glavi.</string>
+</resources>

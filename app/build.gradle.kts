@@ -58,6 +58,7 @@ dependencies {
     implementation(project(":feature:geometry"))
     implementation(project(":feature:pairs"))
     implementation(project(":feature:endgame"))
+    implementation(project(":feature:knightpath"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
