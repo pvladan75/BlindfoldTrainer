@@ -15,7 +15,7 @@ Postojeći moduli:
 
 ```
 :core:model         ModuleId, Difficulty, SessionResult, Capability
-:core:chess         čist Kotlin — Board, Position, MoveGenerator, Attacks, Fen, Search, KnightPath
+:core:chess         čist Kotlin — Board, Position, MoveGenerator, Attacks, Fen, Search, KnightPath, San, Pgn
 :core:moduleapi     ugovor TrainingModule
 :core:engine        ChessEngine interfejs + LocalEngine (ugrađena pretraga)
 :core:audio         Speaker (TTS) i VoiceInput (Vosk) iza interfejsa

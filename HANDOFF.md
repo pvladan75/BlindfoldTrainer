@@ -24,13 +24,13 @@ te izmene svejedno vredi komitovati da se ne izgube.
 
 ## Šta radi
 
-Aplikacija se gradi, pokreće, i ima **pet** modula za trening. Poslednji build je
-prošao čisto, bez upozorenja. **83 testa, nijedan ne pada.**
+Aplikacija se gradi, pokreće, i ima **svih šest** modula za trening. Poslednji
+build je prošao čisto, bez upozorenja. **107 testova, nijedan ne pada.**
 
 Na uređaju su prošli Geometrija table, Interaktivni parovi, Dokrajči protivnika
 (poslednji tek pošto je ispravljen bag opisan niže) i Putanja skakača, kao i
-napredak sa poenima i rangovima. **Zapamti poziciju još nije pokrenut na
-telefonu.**
+napredak sa poenima i rangovima. **Zapamti poziciju i Prati partiju još nisu
+pokrenuti na telefonu.**
 
 ```bash
 cd C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer && ./gradlew :app:assembleDebug test
@@ -45,7 +45,7 @@ adb install -r C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer\app\build\o
 | Modul | Sadržaj | Testovi |
 |---|---|---|
 | `:core:model` | `ModuleId`, `Difficulty`, `Capability`, `SessionResult` | — |
-| `:core:chess` | `Board`, `Position`, `MoveGenerator`, `Attacks`, `Fen`, `Search`, `KnightPath` | **45** |
+| `:core:chess` | `Board`, `Position`, `MoveGenerator`, `Attacks`, `Fen`, `Search`, `KnightPath`, `San`, `Pgn` | **64** |
 | `:core:moduleapi` | ugovor `TrainingModule` | — |
 | `:core:designsystem` | tema, `ChessBoard`, `PieceVisibility`, sličice figura | — |
 | `:core:audio` | `Speaker` (TTS), `VoiceInput` (Vosk) | **5** |
@@ -57,6 +57,7 @@ adb install -r C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer\app\build\o
 | `:feature:endgame` | Dokrajči protivnika | — |
 | `:feature:knightpath` | Putanja skakača | — |
 | `:feature:recall` | Zapamti poziciju | **6** |
+| `:feature:followgame` | Prati partiju | **5** |
 | `:app` | registar, navigacija, meni, sažetak sesije | — |
 
 `:core:model`, `:core:chess` i `:core:progress` su **čist Kotlin, bez Androida** —
@@ -240,10 +241,9 @@ broju pitanja i satu, a **pitanje je isto** — „koje je boje polje". Predlog 
 težina menja *vrstu* zadatka: srednje = „jesu li dva polja iste boje", teško =
 odnos polja (ista dijagonala, šta leži između). Odloženo dogovorom.
 
-### Nenapisani moduli
+### Nenapisano
 - podešavanja (DataStore) — `:core:data` zasad drži samo istoriju sesija
-- `:feature:followgame` — Prati partiju; jedini preostali, i jedini koji traži
-  nov sadržaj (majstorske partije), pa je ostavljen za kraj
+- ekran sa spiskom dostignuća; podaci postoje, prikaza nema osim brojača
 
 ### Kvalitet odbrane u teškim pozicijama
 Jedina rezerva oko zamene motora. U K+2L protiv K (mat u 19) je Stockfish bio
@@ -261,8 +261,19 @@ generisati:
 - `:feature:endgame` → `{easy,medium,hard}_puzzles.json`
 - `:core:designsystem` → vektorske sličice figura
 
+`:feature:followgame` → `games.pgn`, **60 partija, 38 KB**. Izvučene su iz
+`C:\Users\Admin\Documents\chessdata\bundesliga2000.pgn` (12.247 partija, 9,1 MB)
+uslovima: oba igrača preko 2450, odlučen ishod, između 50 i 90 poluhodova, bez
+komentara i varijanti. Uzeta je svaka k-ta koja odgovara, da izbor ne bude samo
+prvo kolo. Skript stoji u istoriji ove sesije; ako zatreba drugi izbor, lakše ga
+je napisati ponovo nego čuvati.
+
+`GameContentTest` čita **isti fajl koji ide u assets** i pada ako ijedna partija
+ne prođe kroz pravila ili ako ijedna pozicija ne ume da ponudi pitanje. To je ona
+provera sadržaja pre pakovanja koju arhitektura traži.
+
 `:feature:knightpath` i `:feature:recall` **nemaju sadržaj** — zadaci se
-izračunavaju, pa nema šta da se pakuje ni proverava pre pakovanja.
+izračunavaju.
 
 Iz `BrainTrainer`-a (`C:\Users\Admin\AndroidStudioProjects\BrainTrainer`,
 objavljen na Google Play) preuzete su ideje, ne kod: nepromenljiva tabla,
@@ -276,9 +287,11 @@ jedno i drugo računa iz istorije.
 
 ## Predlog redosleda za nastavak
 
-1. Proći kroz Zapamti poziciju na uređaju — modul nije nikad pokrenut
-2. `:feature:followgame` — Prati partiju (traži majstorske partije kao sadržaj)
-4. Odlučiti odakle Vosk model (vidi „Glasovni unos"), pa mikrofon u Parovima i
-   Završnici — odloženo dogovorom
-5. Dogovoriti brojeve bodovanja i da li rang išta otključava
-6. Podešavanja (DataStore) i ekran sa spiskom dostignuća
+Svih šest modula postoji. Ostalo je:
+
+1. Proći kroz Zapamti poziciju i Prati partiju na uređaju — nisu nikad pokrenuti
+2. Odlučiti odakle Vosk model (vidi „Glasovni unos"), pa mikrofon u Parovima,
+   Završnici i Prati partiju — odloženo dogovorom
+3. Dogovoriti brojeve bodovanja i da li rang išta otključava
+4. Podešavanja (DataStore) i ekran sa spiskom dostignuća
+5. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"

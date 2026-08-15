@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="follow_game_title">Prati partiju</string>
+    <string name="follow_game_description">Potezi majstorske partije stižu jedan po jedan, bez table. S vremena na vreme stigne pitanje gde koja figura stoji.</string>
+</resources>
