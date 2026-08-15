@@ -16,4 +16,17 @@
     <string name="summary_time">Vreme</string>
     <string name="summary_repeat">Još jednom</string>
     <string name="summary_menu">Nazad na meni</string>
+    <string name="summary_xp">Osvojeno</string>
+    <string name="summary_rank_up">Novi rang: %1$s</string>
+
+    <string name="menu_xp">%1$d XP</string>
+    <string name="menu_rank_next">Još %1$d XP do ranga %2$s</string>
+    <string name="menu_rank_top">Vrh lestvice — nema višeg ranga.</string>
+
+    <string name="rank_beginner">Početnik</string>
+    <string name="rank_student">Đak</string>
+    <string name="rank_amateur">Amater</string>
+    <string name="rank_experienced">Iskusan</string>
+    <string name="rank_master">Majstor</string>
+    <string name="rank_grandmaster">Velemajstor</string>
 </resources>

@@ -1,10 +1,12 @@
 package com.program.blindfoldtrainer.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,6 +17,7 @@ import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.moduleapi.ModuleArgs
 import com.program.blindfoldtrainer.ui.MainMenuScreen
+import com.program.blindfoldtrainer.ui.ProgressViewModel
 import com.program.blindfoldtrainer.ui.SessionSummaryDialog
 
 private const val ROUTE_MENU = "menu"
@@ -35,11 +38,17 @@ private fun moduleRoute(moduleKey: String, difficulty: Difficulty) =
 fun AppNavigation(registry: ModuleRegistry) {
     val navController = rememberNavController()
 
+    // Traži se izvan NavHost-a, pa je vezan za aktivnost a ne za rutu —
+    // napredak preživljava prelaz iz modula nazad u meni.
+    val progressViewModel: ProgressViewModel = hiltViewModel()
+    val progress by progressViewModel.snapshot.collectAsState()
+
     NavHost(navController = navController, startDestination = ROUTE_MENU) {
 
         composable(ROUTE_MENU) {
             MainMenuScreen(
                 modules = registry.all,
+                progress = progress,
                 onStart = { module, difficulty ->
                     navController.navigate(moduleRoute(module.id.key, difficulty))
                 }
@@ -72,20 +81,28 @@ fun AppNavigation(registry: ModuleRegistry) {
 
             module.Screen(
                 args = ModuleArgs(difficulty = difficulty),
-                onFinish = { sessionResult -> result = sessionResult }
+                onFinish = { sessionResult ->
+                    result = sessionResult
+                    progressViewModel.record(sessionResult)
+                }
             )
 
             result?.let { finished ->
+                val reward by progressViewModel.lastReward.collectAsState()
+
                 SessionSummaryDialog(
                     result = finished,
+                    reward = reward,
                     onRepeat = {
                         result = null
+                        progressViewModel.onSummaryClosed()
                         navController.navigate(moduleRoute(module.id.key, difficulty)) {
                             popUpTo(ROUTE_MENU) { inclusive = false }
                         }
                     },
                     onBackToMenu = {
                         result = null
+                        progressViewModel.onSummaryClosed()
                         navController.popBackStack(ROUTE_MENU, inclusive = false)
                     }
                 )

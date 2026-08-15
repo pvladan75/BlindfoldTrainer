@@ -20,6 +20,8 @@ Postojeći moduli:
 :core:engine        ChessEngine interfejs + LocalEngine (ugrađena pretraga)
 :core:audio         Speaker (TTS) i VoiceInput (Vosk) iza interfejsa
 :core:designsystem  tema i ChessBoard komponenta
+:core:progress      čist Kotlin — bodovanje, rangovi, sabiranje napretka
+:core:data          Room istorija sesija iza ProgressRepository interfejsa
 :feature:geometry   Geometrija table
 :feature:pairs      Interaktivni parovi
 :feature:endgame    Dokrajči protivnika
@@ -29,14 +31,15 @@ Postojeći moduli:
 Planirani:
 
 ```
-:core:data          DataStore podešavanja, Room napredak
-:core:progress      XP, rangovi, dostignuća
 :feature:recall     Zapamti poziciju
 :feature:knightpath Putanja skakača
 :feature:followgame Prati partiju
 ```
 
-`:core:model` i `:core:chess` su **čist Kotlin, bez Androida**. Testovi šahovske
+Podešavanja (DataStore) i dostignuća još ne postoje; `:core:data` zasad drži
+samo istoriju sesija.
+
+`:core:model`, `:core:chess` i `:core:progress` su **čist Kotlin, bez Androida**. Testovi šahovske
 logike se zato vrte u sekundama, bez emulatora — a upravo je tu bilo najviše
 grešaka u staroj aplikaciji.
 
@@ -76,6 +79,15 @@ rangovi, dostignuća i statistika pišu jednom, u `:core:progress`.
 
 U `BrainTrainer`-u se `ScoreManager` zvao ručno sa desetak mesta u
 `ChessScreen.kt` — zato je dodavanje novog modula tamo skupo.
+
+Šav je sada priključen: `onFinish` u `AppNavigation` upisuje rezultat i to je
+**jedino** mesto u aplikaciji koje dodiruje napredak. Nijedan modul ne zna da
+bodovanje postoji.
+
+**Čuva se sirova istorija, ne poeni.** Bodovanje i rangovi se računaju iz nje
+pri svakom čitanju, pa promena pravila prepravi i celu dosadašnju istoriju
+umesto da ostavi zamrznute poene iz starije verzije. Pravilo je čista funkcija
+`Xp.forSession` i testira se bez baze i bez Androida.
 
 ### 3. Nepromenljiva pozicija
 

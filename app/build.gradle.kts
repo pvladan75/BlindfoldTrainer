@@ -48,6 +48,10 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:moduleapi"))
     implementation(project(":core:designsystem"))
+    implementation(project(":core:progress"))
+    // Samo zbog Hilt vezivanja ProgressRepository -> Room implementacija;
+    // :app ne dodiruje nijedan tip iz :core:data.
+    implementation(project(":core:data"))
 
     // Feature moduli. Dodavanje modula ovde je jedini korak — meni i
     // navigacija se dalje generišu iz registra.

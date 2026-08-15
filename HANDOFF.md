@@ -25,7 +25,7 @@ te izmene svejedno vredi komitovati da se ne izgube.
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima tri modula za trening. Poslednji build je
-prošao čisto, bez upozorenja. **42 testa, nijedan ne pada.**
+prošao čisto, bez upozorenja. **60 testova, nijedan ne pada.**
 
 **Sva tri modula su prošla na uređaju** — Geometrija table, Interaktivni parovi
 i Dokrajči protivnika (poslednji tek pošto je ispravljen bag opisan niže).
@@ -48,13 +48,15 @@ adb install -r C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer\app\build\o
 | `:core:designsystem` | tema, `ChessBoard`, `PieceVisibility`, sličice figura | — |
 | `:core:audio` | `Speaker` (TTS), `VoiceInput` (Vosk) | **5** |
 | `:core:engine` | `ChessEngine` interfejs, `LocalEngine` | — |
+| `:core:progress` | `Xp`, `Rank`, `ProgressSnapshot`, `ProgressRepository` | **18** |
+| `:core:data` | Room istorija sesija, `RoomProgressRepository` | — |
 | `:feature:geometry` | Geometrija table | — |
 | `:feature:pairs` | Interaktivni parovi | — |
 | `:feature:endgame` | Dokrajči protivnika | — |
 | `:app` | registar, navigacija, meni, sažetak sesije | — |
 
-`:core:model` i `:core:chess` su **čist Kotlin, bez Androida** — zato se ti
-testovi vrte u sekundi, bez emulatora.
+`:core:model`, `:core:chess` i `:core:progress` su **čist Kotlin, bez Androida** —
+zato se ti testovi vrte u sekundi, bez emulatora.
 
 ---
 
@@ -78,11 +80,12 @@ Meni i navigacija se dalje popune sami.
 
 ### 2. `SessionResult` kao jedini kanal za ishod
 
-Svi moduli prijavljuju rezultat istim tipom, kroz `onFinish`. Zahvaljujući tome
-će se bodovanje i napredak pisati **jednom**, u `:core:progress`.
+Svi moduli prijavljuju rezultat istim tipom, kroz `onFinish`. Bodovanje i
+napredak se zato pišu **jednom**, u `:core:progress`.
 
-Šav postoji i radi — ali ga zasad **niko ne sluša**: rezultat stigne do
-`SessionSummaryDialog` i tu stane. To je bilo dogovoreno.
+Šav je priključen: `onFinish` u `AppNavigation` upisuje rezultat i to je jedino
+mesto u aplikaciji koje dodiruje napredak. Nijedan modul ne zna da bodovanje
+postoji — dodavanje modula i dalje ne dira ništa oko poena.
 
 ### 3. Nepromenljiva pozicija
 
@@ -164,6 +167,33 @@ interfejs se nije menjao — `:feature:endgame` nije ni znao za zamenu.
 
 ---
 
+## Napredak: poeni i rangovi
+
+`:core:progress` je čist Kotlin i drži celo pravilo:
+
+- `Xp.forSession` — 10/20/35 poena po rešenom zadatku (lako/srednje/teško),
+  minus 2 po promašaju, plus 50% za sesiju bez ijedne greške. Nikad ispod nule.
+- `Rank` — šest rangova na pragovima 0 / 1.000 / 3.000 / 7.000 / 15.000 / 30.000.
+- `ProgressSnapshot` — zbir cele istorije, sa razdvojenim napretkom po modulu.
+
+`:core:data` čuva **sirovu istoriju sesija u Room-u, bez poena**. Snimak se
+računa iz nje pri svakom čitanju, pa promena pravila prepravi i dosadašnju
+istoriju umesto da ostavi zamrznute poene iz starije verzije. Sabiranje je u
+Kotlinu, a ne SQL-om, da bi pravilo ostalo na jednom mestu i pokriveno testovima.
+
+U meniju je kartica sa rangom, poenima i trakom do sledećeg ranga; sažetak
+sesije pokazuje osvojene poene i javlja prelazak u viši rang.
+
+**Otvorene odluke:**
+
+- Brojevi su prvi predlog, ne dogovor. Pragovi i cena promašaja se menjaju na
+  jednom mestu i istorija se sama preračuna.
+- **Rang ništa ne otključava.** U `BrainTrainer`-u je rang držao spisak dostupnih
+  modula i težina; ovde je namerno izostavljeno dok se ne dogovori.
+- Dostignuća (`AchievementManager` iz `BrainTrainer`-a) još ne postoje.
+
+---
+
 ## Šta ne radi i šta nedostaje
 
 ### Glasovni unos ne postoji
@@ -182,8 +212,8 @@ težina menja *vrstu* zadatka: srednje = „jesu li dva polja iste boje", teško
 odnos polja (ista dijagonala, šta leži između). Odloženo dogovorom.
 
 ### Nenapisani moduli
-- `:core:data` — DataStore podešavanja, Room napredak
-- `:core:progress` — XP, rangovi, dostignuća (šav postoji, funkcija ne)
+- podešavanja (DataStore) — `:core:data` zasad drži samo istoriju sesija
+- dostignuća — `:core:progress` ima poene i rangove, dostignuća ne
 - `:feature:recall` — Zapamti poziciju
 - `:feature:knightpath` — Putanja skakača
 - `:feature:followgame` — Prati partiju
@@ -206,13 +236,17 @@ generisati:
 
 Iz `BrainTrainer`-a (`C:\Users\Admin\AndroidStudioProjects\BrainTrainer`,
 objavljen na Google Play) preuzete su ideje, ne kod: nepromenljiva tabla,
-`PuzzleRules` apstrakcija, i gamifikacija (`RankManager`, `AchievementManager`,
-`ScoreManager`) koja tek treba da se prenese u `:core:progress`.
+`PuzzleRules` apstrakcija i gamifikacija. Lestvica rangova je preneta iz
+`RankManager`-a (bez zaključavanja sadržaja), bodovanje je napisano iznova jer
+je `ScoreManager` čuvao izračunate poene u `SharedPreferences`. Dostignuća iz
+`AchievementManager`-a tek treba preneti.
 
 ---
 
 ## Predlog redosleda za nastavak
 
-1. `:core:data` + `:core:progress` — priključiti `SessionResult` na bodovanje
-2. Preuzimanje Vosk modela, pa mikrofon u Parovima i Završnici
-3. Preostala tri modula
+1. Proveriti napredak na uređaju — odigrati sesiju i videti da poeni i rang rastu
+2. Dogovoriti brojeve bodovanja i da li rang išta otključava
+3. Preuzimanje Vosk modela, pa mikrofon u Parovima i Završnici
+4. Dostignuća u `:core:progress`
+5. Preostala tri modula

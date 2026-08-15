@@ -31,6 +31,8 @@ include(":core:moduleapi")
 include(":core:designsystem")
 include(":core:audio")
 include(":core:engine")
+include(":core:progress")
+include(":core:data")
 
 // --- Moduli za trening ----------------------------------------------------
 // Dovoljno je dodati modul ovde i na spisak zavisnosti :app-a; meni i

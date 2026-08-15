@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.program.blindfoldtrainer.R
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.progress.SessionReward
 import java.util.concurrent.TimeUnit
 
 /**
@@ -26,6 +27,7 @@ import java.util.concurrent.TimeUnit
 @Composable
 fun SessionSummaryDialog(
     result: SessionResult,
+    reward: SessionReward?,
     onRepeat: () -> Unit,
     onBackToMenu: () -> Unit
 ) {
@@ -59,6 +61,27 @@ fun SessionSummaryDialog(
                     value = formatDuration(result.elapsedMillis),
                     emphasised = true
                 )
+
+                // Poeni stižu tek pošto se sesija upiše, pa ih nema u prvom
+                // kadru — red se zato pojavljuje kad nagrada stigne.
+                reward?.let {
+                    SummaryRow(
+                        label = stringResource(R.string.summary_xp),
+                        value = "+${it.xp}",
+                        emphasised = true
+                    )
+                    if (it.isRankUp) {
+                        Text(
+                            text = stringResource(
+                                R.string.summary_rank_up,
+                                stringResource(it.rankAfter.labelRes())
+                            ),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
             }
         },
         confirmButton = {
