@@ -27,6 +27,9 @@ te izmene svejedno vredi komitovati da se ne izgube.
 Aplikacija se gradi, pokreće, i ima tri modula za trening. Poslednji build je
 prošao čisto, bez upozorenja. **42 testa, nijedan ne pada.**
 
+**Sva tri modula su prošla na uređaju** — Geometrija table, Interaktivni parovi
+i Dokrajči protivnika (poslednji tek pošto je ispravljen bag opisan niže).
+
 ```bash
 cd C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer && ./gradlew :app:assembleDebug test
 ```
@@ -163,11 +166,6 @@ interfejs se nije menjao — `:feature:endgame` nije ni znao za zamenu.
 
 ## Šta ne radi i šta nedostaje
 
-### Parovi nisu provereni na uređaju
-Na telefonu rade **Geometrija table** i **Dokrajči protivnika** — drugi tek
-pošto je ispravljen bag opisan gore. `:feature:pairs` prolazi build, ali
-**nikad nije izvršen**; to je prvo što treba uraditi.
-
 ### Glasovni unos ne postoji
 Vosk jezički model (70 MB) nije u repou. `VoiceInput` to uredno prijavljuje kao
 `VoiceState.Unavailable`, ali nijedan modul mikrofon ni ne prikazuje. Treba
@@ -215,7 +213,6 @@ objavljen na Google Play) preuzete su ideje, ne kod: nepromenljiva tabla,
 
 ## Predlog redosleda za nastavak
 
-1. Proći kroz Parove na uređaju — jedini modul koji još nije izvršen
-2. `:core:data` + `:core:progress` — priključiti `SessionResult` na bodovanje
-3. Preuzimanje Vosk modela, pa mikrofon u Parovima i Završnici
-4. Preostala tri modula
+1. `:core:data` + `:core:progress` — priključiti `SessionResult` na bodovanje
+2. Preuzimanje Vosk modela, pa mikrofon u Parovima i Završnici
+3. Preostala tri modula
