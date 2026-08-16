@@ -6,6 +6,25 @@ import kotlinx.coroutines.flow.Flow
 enum class ThemeChoice { SYSTEM, LIGHT, DARK }
 
 /**
+ * Jezik glasovnog unosa.
+ *
+ * Vosk ima model po jeziku, pa jezik određuje i šta se preuzima i koje se reči
+ * slušaju. **Srpskog nema** — Vosk nema nijedan južnoslovenski model, pa se ovaj
+ * spisak završava tamo gde se završava njihova ponuda.
+ */
+enum class VoiceLanguage(val code: String) {
+    ENGLISH("en-us"),
+    GERMAN("de"),
+    RUSSIAN("ru"),
+    FRENCH("fr"),
+    SPANISH("es"),
+    ITALIAN("it"),
+    POLISH("pl"),
+    CZECH("cs"),
+    TURKISH("tr")
+}
+
+/**
  * Korisnikova podešavanja.
  *
  * Ovde stoji **samo ono što zavisi od korisnika, a ne od toga šta je objektivno
@@ -19,6 +38,9 @@ data class Settings(
 
     /** Brzina izgovaranja poteza. 0.1 sporo, 2.0 brzo, 1.0 normalno. */
     val speechRate: Float = DEFAULT_SPEECH_RATE,
+
+    /** Jezik na kom se izgovaraju polja. Menja i model koji se preuzima. */
+    val voiceLanguage: VoiceLanguage = VoiceLanguage.ENGLISH,
 
     /**
      * Slova se izgovaraju NATO abecedom ("bravo" umesto "b"). Pomaže kad model

@@ -14,10 +14,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -28,6 +33,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -35,8 +43,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.program.blindfoldtrainer.R
+import com.program.blindfoldtrainer.core.audio.VoiceLanguages
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.ThemeChoice
+import com.program.blindfoldtrainer.core.model.VoiceLanguage
 
 /**
  * Podešavanja.
@@ -154,6 +164,13 @@ private fun VoiceSection(settings: Settings, viewModel: SettingsViewModel) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
+        Spacer(Modifier.height(10.dp))
+
+        LanguagePicker(
+            selected = settings.voiceLanguage,
+            onSelect = viewModel::onVoiceLanguage
+        )
+
         Spacer(Modifier.height(4.dp))
 
         SwitchRow(
@@ -176,6 +193,56 @@ private fun VoiceSection(settings: Settings, viewModel: SettingsViewModel) {
             checked = settings.separateLetterAndNumber,
             onCheckedChange = viewModel::onSeparateLetterAndNumber
         )
+    }
+}
+
+/**
+ * Jezik glasovnog unosa.
+ *
+ * Uz jezik stoji i veličina preuzimanja, jer promena jezika znači nov model —
+ * to je podatak koji treba da se vidi **pre** dodira, a ne posle.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LanguagePicker(selected: VoiceLanguage, onSelect: (VoiceLanguage) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    val spec = VoiceLanguages.specFor(selected)
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it }
+    ) {
+        OutlinedTextField(
+            value = stringResource(selected.labelRes()),
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(stringResource(R.string.settings_language)) },
+            supportingText = {
+                Text(stringResource(R.string.settings_language_size, spec.downloadMegabytes))
+            },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth()
+        )
+
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            VoiceLanguage.entries.forEach { language ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(
+                                R.string.settings_language_item,
+                                stringResource(language.labelRes()),
+                                VoiceLanguages.specFor(language).downloadMegabytes
+                            )
+                        )
+                    },
+                    onClick = {
+                        expanded = false
+                        onSelect(language)
+                    }
+                )
+            }
+        }
     }
 }
 
@@ -206,4 +273,16 @@ private fun ThemeChoice.labelRes(): Int = when (this) {
     ThemeChoice.SYSTEM -> R.string.settings_theme_system
     ThemeChoice.LIGHT -> R.string.settings_theme_light
     ThemeChoice.DARK -> R.string.settings_theme_dark
+}
+
+private fun VoiceLanguage.labelRes(): Int = when (this) {
+    VoiceLanguage.ENGLISH -> R.string.language_english
+    VoiceLanguage.GERMAN -> R.string.language_german
+    VoiceLanguage.RUSSIAN -> R.string.language_russian
+    VoiceLanguage.FRENCH -> R.string.language_french
+    VoiceLanguage.SPANISH -> R.string.language_spanish
+    VoiceLanguage.ITALIAN -> R.string.language_italian
+    VoiceLanguage.POLISH -> R.string.language_polish
+    VoiceLanguage.CZECH -> R.string.language_czech
+    VoiceLanguage.TURKISH -> R.string.language_turkish
 }

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
 import com.program.blindfoldtrainer.core.model.ThemeChoice
+import com.program.blindfoldtrainer.core.model.VoiceLanguage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +27,8 @@ class SettingsViewModel @Inject constructor(
         // Klizač ume da vrati vrednost tik izvan opsega; Settings to inače odbija.
         it.copy(speechRate = rate.coerceIn(Settings.MIN_SPEECH_RATE, Settings.MAX_SPEECH_RATE))
     }
+
+    fun onVoiceLanguage(language: VoiceLanguage) = update { it.copy(voiceLanguage = language) }
 
     fun onNatoAlphabet(enabled: Boolean) = update { it.copy(natoAlphabet = enabled) }
 

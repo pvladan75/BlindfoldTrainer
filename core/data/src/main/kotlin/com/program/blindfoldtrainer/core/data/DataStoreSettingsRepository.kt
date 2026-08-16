@@ -11,6 +11,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
 import com.program.blindfoldtrainer.core.model.ThemeChoice
+import com.program.blindfoldtrainer.core.model.VoiceLanguage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -39,6 +40,7 @@ class DataStoreSettingsRepository @Inject constructor(
             val updated = transform(preferences.toSettings())
             preferences[THEME] = updated.theme.name
             preferences[SPEECH_RATE] = updated.speechRate
+            preferences[VOICE_LANGUAGE] = updated.voiceLanguage.name
             preferences[NATO_ALPHABET] = updated.natoAlphabet
             preferences[LISTEN_WHOLE_MOVE] = updated.listenWholeMove
             preferences[SEPARATE_LETTER_AND_NUMBER] = updated.separateLetterAndNumber
@@ -52,6 +54,9 @@ class DataStoreSettingsRepository @Inject constructor(
         speechRate = this[SPEECH_RATE]
             ?.coerceIn(Settings.MIN_SPEECH_RATE, Settings.MAX_SPEECH_RATE)
             ?: Settings.DEFAULT.speechRate,
+        voiceLanguage = this[VOICE_LANGUAGE]
+            ?.let { name -> VoiceLanguage.entries.find { it.name == name } }
+            ?: Settings.DEFAULT.voiceLanguage,
         natoAlphabet = this[NATO_ALPHABET] ?: Settings.DEFAULT.natoAlphabet,
         listenWholeMove = this[LISTEN_WHOLE_MOVE] ?: Settings.DEFAULT.listenWholeMove,
         separateLetterAndNumber = this[SEPARATE_LETTER_AND_NUMBER]
@@ -61,6 +66,7 @@ class DataStoreSettingsRepository @Inject constructor(
     private companion object {
         val THEME = stringPreferencesKey("theme")
         val SPEECH_RATE = floatPreferencesKey("speech_rate")
+        val VOICE_LANGUAGE = stringPreferencesKey("voice_language")
         val NATO_ALPHABET = booleanPreferencesKey("nato_alphabet")
         val LISTEN_WHOLE_MOVE = booleanPreferencesKey("listen_whole_move")
         val SEPARATE_LETTER_AND_NUMBER = booleanPreferencesKey("separate_letter_and_number")

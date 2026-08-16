@@ -51,7 +51,14 @@ class VoskVoiceInput @Inject constructor(
 
     init {
         scope.launch {
-            settingsRepository.settings.collect { settings = it }
+            settingsRepository.settings.collect { updated ->
+                val languageChanged = updated.voiceLanguage != settings.voiceLanguage
+                settings = updated
+
+                // Model je vezan za jezik: kad se jezik promeni, stari se pušta
+                // i čeka se da store javi da je novi spreman.
+                if (languageChanged) releaseModel()
+            }
         }
     }
 
@@ -173,7 +180,7 @@ class VoskVoiceInput @Inject constructor(
             ?.takeIf { it.isNotBlank() }
             ?: return
 
-        when (val spoken = parseSpokenInput(text)) {
+        when (val spoken = parseSpokenInput(text, currentWords())) {
             is SpokenInput.Full -> deliver(spoken.square)
 
             is SpokenInput.File -> if (settings.separateLetterAndNumber) {
@@ -205,8 +212,7 @@ class VoskVoiceInput @Inject constructor(
      */
     private fun chessGrammar(): String {
         val words = buildList {
-            for (file in 'a'..'h') add(file.toString())
-            addAll(listOf("one", "two", "three", "four", "five", "six", "seven", "eight"))
+            addAll(currentWords().allWords)
 
             // NATO reči ulaze samo kad su izabrane: širi rečnik znači i više
             // prilika da se pogreši, a njih traži samo onaj kome slova ne prolaze.
@@ -216,6 +222,9 @@ class VoskVoiceInput @Inject constructor(
         }
         return words.joinToString(prefix = "[", postfix = "]") { "\"$it\"" }
     }
+
+    private fun currentWords(): VoiceWords =
+        VoiceLanguages.specFor(settings.voiceLanguage).words
 
     private companion object {
         const val TAG = "VoskVoiceInput"

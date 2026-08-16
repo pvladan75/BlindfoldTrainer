@@ -2,6 +2,8 @@ package com.program.blindfoldtrainer.core.audio
 
 import android.content.Context
 import android.util.Log
+import com.program.blindfoldtrainer.core.model.SettingsRepository
+import com.program.blindfoldtrainer.core.model.VoiceLanguage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -48,7 +50,8 @@ sealed interface ModelState {
  */
 @Singleton
 class VoskModelStore @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    settingsRepository: SettingsRepository
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -57,11 +60,37 @@ class VoskModelStore @Inject constructor(
 
     private var downloadJob: Job? = null
 
+    @Volatile
+    private var language: VoiceLanguage = VoiceLanguage.ENGLISH
+
     /** Folder sa modelom; put koji se prosleđuje Vosk-u kad je [ModelState.Ready]. */
-    val directory: File get() = File(context.filesDir, DIRECTORY)
+    val directory: File get() = directoryFor(language)
+
+    /**
+     * Svaki jezik ima svoj folder, pa povratak na jezik koji je već preuzet ne
+     * traži novo preuzimanje.
+     */
+    private fun directoryFor(language: VoiceLanguage) =
+        File(File(context.filesDir, DIRECTORY), language.code)
 
     init {
-        _state.value = if (ModelArchive.isComplete(directory)) ModelState.Ready else ModelState.Absent
+        scope.launch {
+            settingsRepository.settings.collect { settings ->
+                if (settings.voiceLanguage == language) return@collect
+
+                // Promena jezika prekida preuzimanje koje je u toku: ono što se
+                // preuzima više nije ono što je traženo.
+                downloadJob?.cancel()
+                language = settings.voiceLanguage
+                refreshState()
+            }
+        }
+        refreshState()
+    }
+
+    private fun refreshState() {
+        _state.value =
+            if (ModelArchive.isComplete(directory)) ModelState.Ready else ModelState.Absent
     }
 
     /** Bezbedno je zvati više puta — drugo pozivanje dok traje preuzimanje ne radi ništa. */
@@ -113,7 +142,7 @@ class VoskModelStore @Inject constructor(
         val archive = File(context.cacheDir, ARCHIVE_NAME)
         archive.delete()
 
-        val connection = (URL(MODEL_URL).openConnection() as HttpURLConnection).apply {
+        val connection = (URL(VoiceLanguages.urlFor(language)).openConnection() as HttpURLConnection).apply {
             connectTimeout = TIMEOUT_MILLIS
             readTimeout = TIMEOUT_MILLIS
             instanceFollowRedirects = true
@@ -161,8 +190,6 @@ class VoskModelStore @Inject constructor(
         const val TAG = "VoskModelStore"
         const val DIRECTORY = "vosk-model"
         const val ARCHIVE_NAME = "vosk-model.zip"
-        const val MODEL_URL =
-            "https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip"
         const val TIMEOUT_MILLIS = 30_000
         const val BUFFER_BYTES = 64 * 1024
     }

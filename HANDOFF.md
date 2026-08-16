@@ -25,7 +25,7 @@ te izmene svejedno vredi komitovati da se ne izgube.
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **svih šest** modula za trening. Poslednji
-build je prošao čisto, bez upozorenja. **120 testova, nijedan ne pada.**
+build je prošao čisto, bez upozorenja. **126 testova, nijedan ne pada.**
 
 **Svih šest modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -275,6 +275,7 @@ koja je bolja zavisi od izgovora, a to aplikacija ne može da zna.
 |---|---|
 | Tema: automatski / svetla / tamna | automatski |
 | Brzina izgovaranja (0,5–1,5) | 0,85 — kao pre |
+| Jezik izgovora (9 jezika) | engleski |
 | NATO abeceda za slova („bravo" umesto „b") | isključeno |
 | Slušaj ceo potez (Završnica, jedan pritisak) | isključeno |
 | Slovo i broj odvojeno („e", pa „four") | isključeno |
@@ -286,6 +287,32 @@ Dve stvari koje su usput ispravljene: brzinu govora su ranije zakucavala tri
 ViewModel-a svaki za sebe, a sada je čita `AndroidSpeaker` iz podešavanja; i
 NATO reči ulaze u Vosk rečnik samo kad su izabrane, jer širi rečnik znači i više
 prilika da se pogreši.
+
+### Jezici glasovnog unosa
+
+**Srpskog nema i neće ga biti dok ga Vosk ne objavi.** Provereno na spisku od 76
+modela: nema nijedan južnoslovenski jezik — ni srpski, ni hrvatski, bosanski,
+slovenački ni makedonski. Jedini put do srpskog bi bio Android-ov
+`SpeechRecognizer` iza istog `VoiceInput` interfejsa, uz internet u toku vežbe i
+bez uskog rečnika. Odloženo dogovorom.
+
+Podržano je devet jezika: engleski, nemački, ruski, francuski, španski,
+italijanski, poljski, češki, turski. Svaki ima svoj folder pod
+`filesDir/vosk-model/<kod>`, pa povratak na već preuzet jezik ne traži novo
+preuzimanje.
+
+**Dodavanje jezika je jedan unos u `VoiceLanguages`**: ime arhive sa
+`alphacephei.com/vosk/models`, veličina, i šesnaest reči — osam za kolone a–h i
+osam za redove 1–8. Ništa drugo u aplikaciji ne zna za jezike.
+
+⚠ **Samo je engleski proveren na uređaju.** Reči za ostale jezike su upisane po
+pravopisu, a ne po sluhu, i model ih možda uopšte nema u svom rečniku — Vosk
+gramatika prima samo reči koje postoje u leksikonu modela. Oznaka `isVerified`
+to prati, a test pada ako se lista proverenih promeni a da niko ne primeti.
+Kad neko ko jezik govori potvrdi da radi, menja se jedno polje u tabeli.
+
+Ukrajinski je namerno izostavljen: njihov „mali" model je 137 MB, što je van reda
+veličine ostalih (35–51 MB).
 
 ### APK je 57,7 MB
 Skoro sve su Vosk native biblioteke za pet ABI-ja — uključujući `mips`, koji ne
@@ -345,7 +372,8 @@ jedno i drugo računa iz istorije.
 
 Svih šest modula postoji i radi na uređaju. Ostalo je:
 
-1. Probati glasovni unos na uređaju i videti koje od tri opcije zaista pomažu
+1. Probati glasovni unos na uređaju i videti koje od tri opcije zaista pomažu;
+   ako se proba neki jezik osim engleskog, upisati `isVerified` u `VoiceLanguages`
 2. Dogovoriti brojeve bodovanja i da li rang išta otključava
 3. Ekran sa spiskom dostignuća
 4. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"

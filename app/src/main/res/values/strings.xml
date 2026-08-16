@@ -26,7 +26,7 @@
     <string name="menu_achievements">Dostignuća: %1$d/%2$d</string>
 
     <string name="voice_title">Glasovni unos</string>
-    <string name="voice_absent">Jezički model nije preuzet. Bez njega vežbaš dodirom; sa njim možeš da izgovaraš polja. Preuzimanje je 39 MB, a na telefonu zauzima oko 67 MB.</string>
+    <string name="voice_absent">Jezički model nije preuzet. Bez njega vežbaš dodirom; sa njim možeš da izgovaraš polja. Jezik se bira u Podešavanjima.</string>
     <string name="voice_downloading">Preuzimanje u toku…</string>
     <string name="voice_unpacking">Raspakivanje…</string>
     <string name="voice_ready">Model je spreman — mikrofon radi u modulima koji ga nude.</string>
@@ -50,6 +50,20 @@
 
     <string name="settings_voice">Glasovni unos</string>
     <string name="settings_voice_hint">Koje podešavanje je bolje zavisi od tvog izgovora, pa je izbor ostavljen tebi. Podrazumevano je sve isključeno — polje se kaže u jednom dahu, na primer „e four".</string>
+    <string name="settings_language">Jezik izgovora</string>
+    <string name="settings_language_size">Promena jezika traži nov model, oko %1$d MB.</string>
+    <string name="settings_language_item">%1$s (%2$d MB)</string>
+
+    <string name="language_english">Engleski</string>
+    <string name="language_german">Nemački</string>
+    <string name="language_russian">Ruski</string>
+    <string name="language_french">Francuski</string>
+    <string name="language_spanish">Španski</string>
+    <string name="language_italian">Italijanski</string>
+    <string name="language_polish">Poljski</string>
+    <string name="language_czech">Češki</string>
+    <string name="language_turkish">Turski</string>
+
     <string name="settings_nato">NATO abeceda za slova</string>
     <string name="settings_nato_hint">Kolona se kaže rečju: „bravo" umesto „b". Pomaže kad model meša slična slova.</string>
     <string name="settings_whole_move">Slušaj ceo potez</string>
