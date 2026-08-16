@@ -4,10 +4,10 @@ Stanje na dan **16. avgust 2026.** Ovaj fajl služi da se rad nastavi u novoj
 sesiji bez ponovnog objašnjavanja.
 
 **Gde smo stali:** svih šest modula radi na uređaju; napredak, podešavanja i
-glasovni unos rade; poslednje na čemu se radilo je **režim bez ekrana** u modulu
-Dokrajči protivnika — vežbanje zatvorenih očiju, sa čitanjem pozicije naglas,
-zonama umesto dugmadi i poništavanjem poteza. Nije još probano na uređaju u
-poslednjem obliku (poništavanje i ispravke zona).
+glasovni unos rade. Poslednje na čemu se radilo je **režim bez ekrana**, koji je
+sa Završnice proširen na **pet od šest modula**. Ništa od toga još nije viđeno na
+uređaju — ni raniji dodaci Završnici (poništavanje dugim pritiskom, novi raspored
+zona, pauza od 50 ms), ni novi moduli.
 
 ---
 
@@ -21,10 +21,9 @@ Projekat je pod gitom od **15. avgusta 2026**: grana `master`, prvi komit
 provereno da ništa od toga nije ušlo u indeks; najveći fajl u repou je
 `feature/pairs/src/main/assets/puzzles.zip` sa 270 KB.
 
-Uz to, u **starom** projektu (`BlindfoldChessCouch`, grana `masterSunfish`) stoje
-nekomitovane ispravke Modula 3 iz iste sesije: vraćanje modula u navigaciju,
-blindfold animacija i raspakivanje ViewModel-a. Ako se stari projekat napušta,
-te izmene svejedno vredi komitovati da se ne izgube.
+Ispravke Modula 3 u **starom** projektu (`BlindfoldChessCouch`, grana
+`masterSunfish`) su komitovane — `796508f`, vraćanje modula u navigaciju,
+blindfold animacija i raspakivanje ViewModel-a. Stari projekat se odatle napušta.
 
 ---
 
@@ -432,8 +431,8 @@ Završnica sada pozicija **i pročita**, ne samo prikaže, i ima dva dugmeta:
 
 ### Režim bez ekrana
 
-Uključuje se u Podešavanjima („Bez ekrana → Vežbaj zatvorenih očiju"), zasad radi
-u **Dokrajči protivnika**. Tabla se ne crta; ekran je samo površina za dodir:
+Uključuje se u Podešavanjima („Bez ekrana → Vežbaj zatvorenih očiju") i radi u
+**pet od šest modula**. Tabla se ne crta; ekran je samo površina za dodir:
 
 ```
 ┌───────────────────────────────┐
@@ -462,6 +461,90 @@ vibracije, a bez znaka se ne zna da je živ.
 Odustajanje traži dva dodira, jer je jedino nepovratno; prvi dodir kaže „Dodirni
 ponovo da odustaneš". **Dug pritisak na istu zonu poništava potez** — ista meta,
 drugačiji dodir, pa raspored ostaje isti.
+
+#### Raspored je isti u svakom modulu
+
+Tri pojasa, uvek istim redom, jer se meta pamti rukom a ne čitanjem:
+
+| pojas | šta stoji | zašto tu |
+|---|---|---|
+| **gore, 55%** | ono što se traži **sad** | najveća meta za radnju koja se najviše koristi |
+| **sredina, 25%** | pomoć: ponavljanje i čitanje stanja | ispod glavne zone, van sata i otvora za kameru |
+| **dole, 20%** | izlaz (dva dodira) | jedino nepovratno, pa najdalje od palca u pokretu |
+
+Šta je „ono što se traži sad" zavisi od modula:
+
+| Modul | Gornja zona | Sredina | Dole |
+|---|---|---|---|
+| **Dokrajči protivnika** | mikrofon | PONOVI · POZICIJA | ODUSTANI, dugo: PONIŠTI |
+| **Interaktivni parovi** | mikrofon | PONOVI · POZICIJA | ODUSTANI |
+| **Putanja skakača** | mikrofon | PONOVI · STANJE | ODUSTANI |
+| **Prati partiju** | SLEDEĆI POTEZ **ili** mikrofon | PONOVI | PREKINI |
+| **Geometrija table** | SVETLO · TAMNO | PONOVI | PREKINI |
+
+Dve stvari koje odatle slede:
+
+- **Geometrija nema mikrofon** i ne treba joj: odgovor je jedan od dva, pa su
+  sami odgovori i glavne zone. Uvoditi glas da bi se reklo „svetlo" bilo bi
+  sporije od dodira, a tražilo bi preuzet paket od 40 MB ni za šta.
+- **U Prati partiju gornja zona menja značenje po fazi** — dok partija teče to je
+  sledeći potez, a čim stigne pitanje postaje mikrofon. Prst se ne premešta;
+  vibracija i izgovor kažu šta je pogođeno. Zone koja bi u toj fazi bila mrtva
+  nema, jer bi mrtva meta na najboljem mestu bila gora od promašaja.
+
+#### Šta je moralo da se doda modulima
+
+Režim se nije mogao samo „upaliti" — dva modula nisu imala čime da rade:
+
+- **Putanja skakača nije imala mikrofon.** Odgovor je niz polja, a sa četiri zone
+  se polje ne unosi. Modul sada prijavljuje `VOICE_INPUT` i `SPEECH_OUTPUT`, a
+  mikrofon je dobio i običan režim — isti `VoiceInputButton` kao svuda.
+- **Prati partiju nije imala govor uopšte**, iako je `SPEECH_OUTPUT` odavno
+  prijavljivala. Potezi su se samo ispisivali. Sada se izgovaraju **poljima, ne
+  skraćenim zapisom**: „Nf3" nijedan TTS ne pročita kao potez, „g1, f3" se čita
+  svuda i isto.
+
+Uz to, u Geometriji se **sat produžava za 1,5 s kad se pitanje izgovara**. Na
+teškom je rok 3,5 s, a izgovor polja pojede skoro sekundu — bez dodatka bi se
+merilo slušanje umesto računanja.
+
+#### Zone su postale podaci
+
+`EyesFreeControls` više ne zna ni za jedan modul. Prima spisak redova
+(`EyesFreeRow` / `EyesFreeZone`) i, po želji, `MicrophoneZone`; modul sastavlja
+svoj raspored. Dozvola za mikrofon, poruka zašto glas ne radi, vibracije i
+potvrda u dva dodira ostaju **na jednom mestu** — da se pet kopija ne bi razišlo.
+
+Mikrofon je posebna vrsta zone, a ne obična, baš zbog toga: uz njega ide dozvola
+i objašnjenje otkaza, i to je isto u svakom modulu.
+
+#### Dve rupe koje su se videle tek pri širenju
+
+- **Odustajanje bez ekrana je ostavljalo vežbu da stoji.** U Završnici je
+  odustajanje otkrivalo figure i čekalo dugme „sledeća pozicija" — kog u zonama
+  nema, a otkrivene figure se ionako ne vide. Sada odustajanje bez ekrana samo
+  najavi i pređe dalje. Isto važi i u Parovima.
+- **Podešavanja su se čitala prekasno.** Svi moduli su `eyesFree` čitali iz
+  kolektora koji tek treba da emituje, a prvi zadatak je kretao odmah — pa je
+  prva pozicija umela da uđe u fazu pamćenja koju bez ekrana **nije čime
+  završiti**. Sada se prvo podešavanje sačeka (`settings.first()`) pre nego što
+  sesija krene. Isto je ispravljeno i u Završnici, gde je greška i nastala.
+
+#### Zapamti poziciju ostaje na ekranu
+
+Jedini modul bez ovog režima, i to namerno. Vežba se rešava **vraćanjem figura iz
+palete na tablu**, a glasovni unos prepoznaje samo polja — figuru nema čime da
+izgovori. Zone tu ne pomažu: „beli top" nije meta koja se spusti prstom.
+
+Razmatrano je da se umesto rekonstrukcije pita figuru po figuru („Gde je beli
+top?"), što bi radilo — ali menja šta modul meri: umesto cele pozicije odjednom,
+merilo bi postalo traženje po jednoj figuri. **Odloženo dogovorom.**
+
+Da modul režim nema piše **u meniju, na njegovoj kartici**, i to samo kad je
+režim uključen. Ugovor modula je dobio `supportsEyesFree`, po istoj logici po
+kojoj postoji i `needs`: modul sam prijavljuje šta ume, a školjka to prikaže. Bez
+toga bi se saznalo tek unutra, pred tablom u koju se ne gleda — a nemi otkaz je
+u ovom projektu već dvaput skupo koštao.
 
 ### Poništavanje poteza
 
@@ -495,10 +578,16 @@ postoji:
 
 Jedna posledica koju build ne hvata: **faze pamćenja u ovom režimu nema.** Ona se
 inače završava dugmetom „zapamtio sam", kog ovde nema — pa bi se u njoj zaglavilo.
-Čitanje pozicije *jeste* pamćenje, pa se kreće odmah na potez.
+Čitanje pozicije *jeste* pamćenje, pa se kreće odmah na potez. Isto važi i u
+Parovima, gde se pozicija sad pročita pa se odmah pušta prvi potez.
 
-Ostaje za dalje: režim u ostalim modulima, i odluka oko potvrde prepoznatog
-poteza (sada se potez odigra pa objavi; alternativa je pitati pre poteza).
+Ostaje za dalje:
+
+- **Sažetak sesije je i dalje samo vizuelni dijalog.** Kraj se izgovara sa
+  rezultatom, ali se iz dijaloga izlazi dugmetom koje se bez ekrana ne vidi. To
+  je jedino mesto gde režim još „propada" nazad na gledanje.
+- Odluka oko potvrde prepoznatog poteza (sada se potez odigra pa objavi;
+  alternativa je pitati pre poteza).
 
 ### Jezici prepoznavanja
 
@@ -584,18 +673,20 @@ jedno i drugo računa iz istorije.
 
 Svih šest modula postoji i radi na uređaju. Ostalo je:
 
-1. **Probati poslednje izmene režima bez ekrana** — poništavanje dugim pritiskom,
-   novi raspored zona, pauza od 50 ms. Nisu još viđene na uređaju.
-2. **Režim bez ekrana u ostalim modulima.** Zasad radi samo u Završnici, a svih
-   šest ga podnosi: Geometrija i Putanja skakača su ionako pitanje-odgovor,
-   Parovi i Prati partiju već izgovaraju poteze, a Zapamti poziciju bi umesto
-   gledanja dobio čitanje — što je čak čistija vežba.
+1. **Probati režim bez ekrana na uređaju — ništa od toga još nije viđeno.**
+   Ni raniji dodaci Završnici (poništavanje dugim pritiskom, novi raspored zona,
+   pauza od 50 ms), ni četiri modula koja su ga upravo dobila. Prvo Geometrija
+   (najjednostavnija, bez mikrofona), pa Putanja skakača (prvi put uopšte
+   prima glas), pa Parovi i Prati partiju.
+2. **Izlaz iz sažetka sesije bez ekrana** — vidi gore; kraj se čuje, ali se
+   dijalog zatvara dugmetom koje se ne vidi.
 3. Dogovoriti brojeve bodovanja i da li rang išta otključava
 4. Ekran sa spiskom dostignuća
 5. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
 6. Težine u Geometriji (vidi gore) — odloženo dogovorom
 7. Ako se proba neki jezik osim engleskog, upisati `isVerified` u
    `VoiceLanguages` odnosno `SpeechLanguages`
+8. Oblik pitanja za Zapamti poziciju bez ekrana — odloženo dogovorom
 
 **Otvoreno pitanje koje se nije zatvorilo:** da li potvrđivati prepoznat potez
 pre nego što se odigra. Sada se odigra pa objavi, uz poništavanje — zaključeno

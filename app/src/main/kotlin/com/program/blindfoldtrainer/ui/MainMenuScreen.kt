@@ -46,6 +46,8 @@ import com.program.blindfoldtrainer.core.progress.Rank
 fun MainMenuScreen(
     modules: List<TrainingModule>,
     progress: ProgressSnapshot,
+    /** Da li je u Podešavanjima uključen režim bez ekrana. */
+    eyesFree: Boolean,
     onStart: (TrainingModule, Difficulty) -> Unit,
     onOpenSettings: () -> Unit
 ) {
@@ -93,7 +95,11 @@ fun MainMenuScreen(
             item(key = "progress") { RankCard(progress = progress) }
 
             items(modules, key = { it.id.key }) { module ->
-                ModuleCard(module = module, onStart = { onStart(module, it) })
+                ModuleCard(
+                    module = module,
+                    eyesFree = eyesFree,
+                    onStart = { onStart(module, it) }
+                )
             }
 
             item(key = "voice") { VoiceNotice(onOpenSettings = onOpenSettings) }
@@ -216,7 +222,11 @@ private fun VoiceNotice(onOpenSettings: () -> Unit) {
 }
 
 @Composable
-private fun ModuleCard(module: TrainingModule, onStart: (Difficulty) -> Unit) {
+private fun ModuleCard(
+    module: TrainingModule,
+    eyesFree: Boolean,
+    onStart: (Difficulty) -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -254,6 +264,17 @@ private fun ModuleCard(module: TrainingModule, onStart: (Difficulty) -> Unit) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            // Da modul nema režim bez ekrana treba znati **pre** ulaska, a ne
+            // tek kad se unutra otvori tabla u koju se ne gleda.
+            if (eyesFree && !module.supportsEyesFree) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = stringResource(R.string.menu_module_no_eyes_free),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
 
             Spacer(Modifier.height(14.dp))
 

@@ -2,16 +2,20 @@ package com.program.blindfoldtrainer.feature.geometry
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.program.blindfoldtrainer.core.audio.Speaker
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Settings
+import com.program.blindfoldtrainer.core.model.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -52,11 +56,28 @@ private fun setupFor(difficulty: Difficulty) = when (difficulty) {
 private const val FEEDBACK_PAUSE_MILLIS = 600L
 private const val TICK_MILLIS = 100L
 
+/**
+ * Koliko se sat produžava kad se pitanje i izgovara.
+ *
+ * Bez ekrana polje ne stigne odjednom nego se izgovori, a na teškom je rok
+ * 3,5 s — pola bi otišlo na slušanje. Dodatak plaća čitanje, ne razmišljanje.
+ */
+private const val EYES_FREE_GRACE_MILLIS = 1_500L
+private const val EYES_FREE_FEEDBACK_PAUSE_MILLIS = 1_600L
+
 @HiltViewModel
-class GeometryViewModel @Inject constructor() : ViewModel() {
+class GeometryViewModel @Inject constructor(
+    private val speaker: Speaker,
+    private val settingsRepository: SettingsRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GeometryUiState())
     val uiState: StateFlow<GeometryUiState> = _uiState.asStateFlow()
+
+    private val _isEyesFree = MutableStateFlow(Settings.DEFAULT.eyesFree)
+
+    /** Da li se vežba bez gledanja u ekran; bira se u Podešavanjima. */
+    val isEyesFree: StateFlow<Boolean> = _isEyesFree.asStateFlow()
 
     private lateinit var setup: Setup
     private var difficulty: Difficulty = Difficulty.EASY
@@ -64,18 +85,47 @@ class GeometryViewModel @Inject constructor() : ViewModel() {
     private var questionJob: Job? = null
     private var isStarted = false
 
+    /** Sesija je prekinuta pre kraja — ne sme da se prijavi kao završena. */
+    private var wasQuit = false
+
     /** Bezbedno je zvati više puta — pokreće sesiju samo prvi put. */
     fun startOnce(difficulty: Difficulty) {
         if (isStarted) return
         isStarted = true
         this.difficulty = difficulty
         setup = setupFor(difficulty)
-        startedAtMillis = System.currentTimeMillis()
-        _uiState.value = GeometryUiState(
-            questionCount = setup.questionCount,
-            questionLimitMillis = setup.perQuestionMillis
-        )
-        nextQuestion()
+
+        viewModelScope.launch {
+            // Prvo podešavanje se sačeka: bez toga bi prvo pitanje prošlo pre
+            // nego što se sazna da se vežba bez ekrana, pa ne bi bilo izgovoreno.
+            _isEyesFree.value = settingsRepository.settings.first().eyesFree
+
+            startedAtMillis = System.currentTimeMillis()
+            _uiState.value = GeometryUiState(
+                questionCount = setup.questionCount,
+                questionLimitMillis = questionLimit()
+            )
+            nextQuestion()
+        }
+    }
+
+    /** Ponavlja poslednje izgovoreno — nisi dočuo, a ne da ne znaš odgovor. */
+    fun onRepeat() = speaker.repeat()
+
+    /** Prvi dodir na zonu za prekid — traži potvrdu, jer je nepovratno. */
+    fun onQuitArmed() = speaker.say("Dodirni ponovo da prekineš.")
+
+    /** Prekid sesije bez ekrana — broji se dokle se stiglo, ali ne kao završeno. */
+    fun onQuit() {
+        if (_uiState.value.isFinished) return
+        wasQuit = true
+        questionJob?.cancel()
+        finish()
+    }
+
+    /** Rok po pitanju; bez ekrana se produžava za izgovor. */
+    private fun questionLimit(): Long? = setup.perQuestionMillis?.let { limit ->
+        if (_isEyesFree.value) limit + EYES_FREE_GRACE_MILLIS else limit
     }
 
     fun onAnswer(answer: Answer) {
@@ -93,6 +143,7 @@ class GeometryViewModel @Inject constructor() : ViewModel() {
 
     private fun resolve(feedback: Feedback) {
         questionJob?.cancel()
+        val square = _uiState.value.square
         _uiState.update {
             it.copy(
                 feedback = feedback,
@@ -101,28 +152,68 @@ class GeometryViewModel @Inject constructor() : ViewModel() {
                 remainingMillis = null
             )
         }
+
+        // Bez ekrana se ispisana ispravka ne vidi, pa mora da se čuje — inače se
+        // pogrešan obrazac samo ponavlja.
+        if (_isEyesFree.value) speaker.say(spokenFeedback(feedback, square))
+
         viewModelScope.launch {
-            delay(FEEDBACK_PAUSE_MILLIS)
+            delay(feedbackPause())
             if (_uiState.value.questionNumber >= setup.questionCount) {
-                _uiState.update { it.copy(isFinished = true, feedback = null) }
+                finish()
             } else {
                 nextQuestion()
             }
         }
     }
 
+    private fun spokenFeedback(feedback: Feedback, square: Square?): String {
+        val color = if (square?.isLight == true) "svetlo" else "tamno"
+        return when (feedback) {
+            Feedback.CORRECT -> "Tačno."
+            Feedback.WRONG -> "Nije, polje je $color."
+            Feedback.TIMEOUT -> "Isteklo je vreme, polje je $color."
+        }
+    }
+
+    /**
+     * Bez ekrana je pauza duža: ispravka se izgovara, a sledeće pitanje sme da
+     * krene tek kad se dočuje — inače bi ga preseklo ili gurnulo u red pa bi sat
+     * kretao pre nego što se pitanje uopšte čuje.
+     */
+    private fun feedbackPause(): Long =
+        if (_isEyesFree.value) EYES_FREE_FEEDBACK_PAUSE_MILLIS else FEEDBACK_PAUSE_MILLIS
+
+    private fun finish() {
+        questionJob?.cancel()
+        val state = _uiState.value
+        if (_isEyesFree.value) {
+            // Bez ekrana se sažetak ne vidi, pa bi sesija prosto utihnula.
+            speaker.say(
+                "Kraj sesije. Tačno ${state.solved} od ${state.questionNumber}.",
+                interrupt = false
+            )
+        }
+        _uiState.update { it.copy(isFinished = true, feedback = null) }
+    }
+
     private fun nextQuestion() {
         val square = Square(Random.nextInt(64))
+        val limit = questionLimit()
+
         _uiState.update {
             it.copy(
                 square = square,
                 questionNumber = it.questionNumber + 1,
                 feedback = null,
-                remainingMillis = setup.perQuestionMillis
+                remainingMillis = limit
             )
         }
 
-        val limit = setup.perQuestionMillis ?: return
+        // Bez ekrana je izgovoreno polje celo pitanje.
+        if (_isEyesFree.value) speaker.say(square, interrupt = false)
+
+        if (limit == null) return
         questionJob?.cancel()
         questionJob = viewModelScope.launch {
             var remaining = limit
@@ -147,12 +238,13 @@ class GeometryViewModel @Inject constructor() : ViewModel() {
             solved = state.solved,
             mistakes = state.mistakes,
             elapsedMillis = System.currentTimeMillis() - startedAtMillis,
-            completed = state.isFinished
+            completed = state.isFinished && !wasQuit
         )
     }
 
     override fun onCleared() {
         super.onCleared()
         questionJob?.cancel()
+        speaker.stop()
     }
 }

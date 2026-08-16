@@ -44,6 +44,17 @@ interface TrainingModule {
         get() = emptySet()
 
     /**
+     * Da li modul ume da se odradi bez gledanja u ekran.
+     *
+     * Nije svaka vežba prevodiva na zone i glas: „Zapamti poziciju" se rešava
+     * vraćanjem figura iz palete na tablu, a glasovni unos prepoznaje samo
+     * polja — ne i figure. Meni na osnovu ovoga kaže korisniku koji modul mu
+     * uz uključen režim **neće** raditi, umesto da to sazna tek unutra.
+     */
+    val supportsEyesFree: Boolean
+        get() = true
+
+    /**
      * Ekran modula.
      *
      * Modul **mora** pozvati [onFinish] kad sesija dođe do kraja — to je jedini

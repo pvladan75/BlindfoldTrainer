@@ -26,7 +26,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.program.blindfoldtrainer.core.audio.EyesFreeControls
+import com.program.blindfoldtrainer.core.audio.EyesFreeRow
+import com.program.blindfoldtrainer.core.audio.EyesFreeZone
+import com.program.blindfoldtrainer.core.audio.MicrophoneZone
 import com.program.blindfoldtrainer.core.audio.VoiceInputButton
+import com.program.blindfoldtrainer.core.audio.VoiceState
+import com.program.blindfoldtrainer.core.audio.ZoneTone
 import com.program.blindfoldtrainer.core.chess.Board
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.designsystem.board.ChessBoard
@@ -43,6 +49,7 @@ fun FollowGameScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val voiceState by viewModel.voiceState.collectAsState()
+    val isEyesFree by viewModel.isEyesFree.collectAsState()
 
     LaunchedEffect(difficulty) { viewModel.startOnce(difficulty) }
 
@@ -61,6 +68,60 @@ fun FollowGameScreen(
         Box(Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
             Text(message, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
         }
+        return
+    }
+
+    if (isEyesFree) {
+        EyesFreeControls(
+            // Gornja zona je uvek ono što se traži sad: dok partija teče to je
+            // sledeći potez, a čim stigne pitanje — mikrofon. Meta je ista, pa
+            // se prst ne premešta.
+            microphone = MicrophoneZone(
+                isListening = voiceState == VoiceState.Listening,
+                voiceState = voiceState,
+                onToggle = {
+                    if (voiceState == VoiceState.Listening) viewModel.onVoiceStop()
+                    else viewModel.onVoiceInput()
+                }
+            ).takeIf { uiState.phase == FollowPhase.QUESTION },
+            rows = buildList {
+                if (uiState.phase != FollowPhase.QUESTION) {
+                    add(
+                        EyesFreeRow(
+                            weight = 0.55f,
+                            zone = EyesFreeZone(
+                                label = "SLEDEĆI POTEZ",
+                                tone = ZoneTone.PRIMARY,
+                                fontSize = 26.sp,
+                                onClick = viewModel::onNextMove
+                            )
+                        )
+                    )
+                }
+                add(
+                    EyesFreeRow(
+                        weight = 0.25f,
+                        zone = EyesFreeZone(
+                            label = "PONOVI",
+                            tone = ZoneTone.SECONDARY,
+                            onClick = viewModel::onRepeat
+                        )
+                    )
+                )
+                add(
+                    EyesFreeRow(
+                        weight = 0.20f,
+                        zone = EyesFreeZone(
+                            label = "PREKINI  (dva dodira)",
+                            fontSize = 16.sp,
+                            onClick = viewModel::onQuit,
+                            onArmed = viewModel::onQuitArmed
+                        )
+                    )
+                )
+            },
+            modifier = Modifier.padding(8.dp)
+        )
         return
     }
 

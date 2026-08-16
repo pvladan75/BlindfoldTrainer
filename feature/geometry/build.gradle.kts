@@ -31,8 +31,11 @@ android {
 dependencies {
     implementation(project(":core:moduleapi"))
     implementation(project(":core:designsystem"))
+    // Bez ekrana se pitanje izgovara, a odgovara se zonama iz :core:audio.
+    implementation(project(":core:audio"))
 
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
     ksp(libs.hilt.compiler)

@@ -1,6 +1,7 @@
 package com.program.blindfoldtrainer.feature.knightpath
 
 import androidx.compose.runtime.Composable
+import com.program.blindfoldtrainer.core.model.Capability
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
@@ -20,6 +21,7 @@ class KnightPathTrainingModule @Inject constructor() : TrainingModule {
     override val descriptionRes = R.string.knight_path_description
     override val iconRes = R.drawable.ic_knight_path
     override val difficulties = listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD)
+    override val needs = setOf(Capability.SPEECH_OUTPUT, Capability.VOICE_INPUT)
 
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {

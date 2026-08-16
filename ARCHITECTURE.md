@@ -11,14 +11,12 @@ tablu, glas, zvuk, podešavanja i napredak; modul nosi samo svoju vežbu.
 
 ## Gradle moduli
 
-Postojeći moduli:
-
 ```
 :core:model         ModuleId, Difficulty, SessionResult, Capability
 :core:chess         čist Kotlin — Board, Position, MoveGenerator, Attacks, Fen, Search, KnightPath, San, Pgn
 :core:moduleapi     ugovor TrainingModule
 :core:engine        ChessEngine interfejs + LocalEngine (ugrađena pretraga)
-:core:audio         Speaker (TTS) i VoiceInput (Vosk) iza interfejsa
+:core:audio         Speaker (TTS), VoiceInput (Vosk) i zone za režim bez ekrana
 :core:designsystem  tema i ChessBoard komponenta
 :core:progress      čist Kotlin — bodovanje, rangovi, sabiranje napretka
 :core:data          Room istorija sesija i DataStore podešavanja, iza interfejsa
@@ -27,16 +25,17 @@ Postojeći moduli:
 :feature:endgame    Dokrajči protivnika
 :feature:knightpath Putanja skakača
 :feature:recall     Zapamti poziciju
+:feature:followgame Prati partiju
 :app                navigacija iz registra, DI, glavni meni
 ```
 
-Planirani:
-
-```
-:feature:followgame Prati partiju
-```
-
 Dostignuća postoje u `:core:progress`, ali još nemaju svoj ekran.
+
+Režim bez ekrana stoji u `:core:audio`: `EyesFreeControls` prima spisak zona
+(`EyesFreeRow`, `EyesFreeZone`, `MicrophoneZone`) i ne zna ni za jedan modul.
+Modul sastavlja svoj raspored, a dozvola za mikrofon, poruka zašto glas ne radi,
+vibracije i potvrda u dva dodira ostaju na jednom mestu — pet kopija toga bi se
+pre ili kasnije razišlo.
 
 Podešavanja imaju pravilo: **u njih ide samo ono što zavisi od korisnika, a ne
 od toga šta je objektivno bolje.** Glasovne opcije su takve — koja je bolja
@@ -67,6 +66,7 @@ interface TrainingModule {
     val iconRes: Int
     val difficulties: List<Difficulty>
     val needs: Set<Capability>
+    val supportsEyesFree: Boolean
 
     @Composable
     fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit)
@@ -75,6 +75,12 @@ interface TrainingModule {
 
 `needs` postoji da bi školjka tražila dozvolu za mikrofon i podigla Stockfish
 **pre** ulaska u modul, umesto da svaki modul to petlja sam.
+
+`supportsEyesFree` radi isto za režim bez ekrana: modul prijavljuje da li se
+njegova vežba uopšte da odraditi zonama i glasom, a meni to kaže **pre** ulaska.
+Bez toga bi se saznalo tek unutra, pred tablom u koju se ne gleda. Zasad ga
+nema samo „Zapamti poziciju" — rekonstrukcija ide vraćanjem figura iz palete, a
+glasovni unos prepoznaje samo polja.
 
 ### 2. `SessionResult` kao jedini kanal za rezultat
 

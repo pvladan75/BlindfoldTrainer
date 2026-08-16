@@ -31,8 +31,11 @@ android {
 dependencies {
     implementation(project(":core:moduleapi"))
     implementation(project(":core:designsystem"))
+    // Bez ekrana polja stižu glasom, a zadatak se izgovara.
+    implementation(project(":core:audio"))
 
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
     ksp(libs.hilt.compiler)

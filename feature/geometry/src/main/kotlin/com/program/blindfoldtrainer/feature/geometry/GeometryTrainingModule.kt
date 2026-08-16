@@ -1,6 +1,7 @@
 package com.program.blindfoldtrainer.feature.geometry
 
 import androidx.compose.runtime.Composable
+import com.program.blindfoldtrainer.core.model.Capability
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
@@ -20,6 +21,7 @@ class GeometryTrainingModule @Inject constructor() : TrainingModule {
     override val descriptionRes = R.string.geometry_description
     override val iconRes = R.drawable.ic_geometry
     override val difficulties = listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD)
+    override val needs = setOf(Capability.SPEECH_OUTPUT)
 
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {

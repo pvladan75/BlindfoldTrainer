@@ -21,6 +21,14 @@ class RecallTrainingModule @Inject constructor() : TrainingModule {
     override val iconRes = R.drawable.ic_recall
     override val difficulties = listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD)
 
+    /**
+     * Jedini modul bez režima za zatvorene oči. Rekonstrukcija ide vraćanjem
+     * figura iz palete na tablu, a glasovni unos prepoznaje samo polja — figuru
+     * nema čime da izgovori. Zone tu ne pomažu; odloženo dok se ne dogovori
+     * drugačiji oblik pitanja.
+     */
+    override val supportsEyesFree = false
+
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {
         RecallScreen(difficulty = args.difficulty, onFinish = onFinish)

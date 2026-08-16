@@ -32,6 +32,7 @@
     <string name="voice_delete">Obriši paket</string>
 
     <string name="menu_module_voice">Ovaj modul prihvata glasovni unos</string>
+    <string name="menu_module_no_eyes_free">Bez ekrana ne radi — rekonstrukcija traži tablu.</string>
 
     <string name="settings_title">Podešavanja</string>
     <string name="settings_back">Nazad</string>
@@ -44,7 +45,7 @@
 
     <string name="settings_eyes_free">Bez ekrana</string>
     <string name="settings_eyes_free_switch">Vežbaj zatvorenih očiju</string>
-    <string name="settings_eyes_free_hint">Umesto table i dugmadi — četiri velike zone koje se pogađaju bez gledanja, svaka sa svojom vibracijom. Pozicija se pročita, potezi se izgovaraju. Zasad u modulu Dokrajči protivnika.</string>
+    <string name="settings_eyes_free_hint">Umesto table i dugmadi — velike zone koje se pogađaju bez gledanja, svaka sa svojom vibracijom. Pozicija se pročita, potezi se izgovaraju. Radi u pet modula; Zapamti poziciju traži tablu i ostaje na ekranu.</string>
 
     <string name="settings_speech">Izgovor — aplikacija govori tebi</string>
     <string name="settings_speech_hint">Odnosi se na sve što aplikacija izgovara: poteze, pozicije i ishode.</string>

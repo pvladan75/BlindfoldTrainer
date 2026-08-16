@@ -27,6 +27,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.program.blindfoldtrainer.core.audio.Buzz
+import com.program.blindfoldtrainer.core.audio.EyesFreeControls
+import com.program.blindfoldtrainer.core.audio.EyesFreeRow
+import com.program.blindfoldtrainer.core.audio.EyesFreeZone
+import com.program.blindfoldtrainer.core.audio.ZoneTone
 import com.program.blindfoldtrainer.core.designsystem.theme.BoardDark
 import com.program.blindfoldtrainer.core.designsystem.theme.BoardLight
 import com.program.blindfoldtrainer.core.designsystem.theme.SquareError
@@ -41,11 +46,58 @@ fun GeometryScreen(
     viewModel: GeometryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val isEyesFree by viewModel.isEyesFree.collectAsState()
 
     LaunchedEffect(difficulty) { viewModel.startOnce(difficulty) }
 
     LaunchedEffect(uiState.isFinished) {
         if (uiState.isFinished) onFinish(viewModel.buildResult())
+    }
+
+    if (isEyesFree) {
+        // Odgovor je jedan od dva, pa su odgovori i glavne zone — mikrofona nema
+        // jer se „svetlo" i „tamno" ne moraju izgovarati da bi se pogodili.
+        EyesFreeControls(
+            rows = listOf(
+                EyesFreeRow(
+                    weight = 0.55f,
+                    zones = listOf(
+                        EyesFreeZone(
+                            label = "SVETLO",
+                            tone = ZoneTone.PRIMARY,
+                            fontSize = 26.sp,
+                            onClick = { viewModel.onAnswer(Answer.LIGHT) }
+                        ),
+                        EyesFreeZone(
+                            label = "TAMNO",
+                            tone = ZoneTone.TERTIARY,
+                            buzz = Buzz.MEDIUM,
+                            fontSize = 26.sp,
+                            onClick = { viewModel.onAnswer(Answer.DARK) }
+                        )
+                    )
+                ),
+                EyesFreeRow(
+                    weight = 0.25f,
+                    zone = EyesFreeZone(
+                        label = "PONOVI",
+                        tone = ZoneTone.SECONDARY,
+                        onClick = viewModel::onRepeat
+                    )
+                ),
+                EyesFreeRow(
+                    weight = 0.20f,
+                    zone = EyesFreeZone(
+                        label = "PREKINI  (dva dodira)",
+                        fontSize = 16.sp,
+                        onClick = viewModel::onQuit,
+                        onArmed = viewModel::onQuitArmed
+                    )
+                )
+            ),
+            modifier = Modifier.padding(8.dp)
+        )
+        return
     }
 
     Column(

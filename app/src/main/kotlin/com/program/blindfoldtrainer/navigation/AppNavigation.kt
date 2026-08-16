@@ -20,6 +20,7 @@ import com.program.blindfoldtrainer.ui.MainMenuScreen
 import com.program.blindfoldtrainer.ui.ProgressViewModel
 import com.program.blindfoldtrainer.ui.SessionSummaryDialog
 import com.program.blindfoldtrainer.ui.SettingsScreen
+import com.program.blindfoldtrainer.ui.SettingsViewModel
 
 private const val ROUTE_MENU = "menu"
 private const val ROUTE_SETTINGS = "settings"
@@ -48,9 +49,12 @@ fun AppNavigation(registry: ModuleRegistry) {
     NavHost(navController = navController, startDestination = ROUTE_MENU) {
 
         composable(ROUTE_MENU) {
+            val settings by hiltViewModel<SettingsViewModel>().settings.collectAsState()
+
             MainMenuScreen(
                 modules = registry.all,
                 progress = progress,
+                eyesFree = settings.eyesFree,
                 onStart = { module, difficulty ->
                     navController.navigate(moduleRoute(module.id.key, difficulty))
                 },

@@ -13,6 +13,8 @@ import com.program.blindfoldtrainer.core.designsystem.board.PieceVisibility
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Settings
+import com.program.blindfoldtrainer.core.model.SettingsRepository
 import com.program.blindfoldtrainer.core.moduleapi.userReason
 import com.program.blindfoldtrainer.feature.pairs.data.PairsPuzzle
 import com.program.blindfoldtrainer.feature.pairs.data.PuzzleCatalog
@@ -23,6 +25,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -79,10 +82,25 @@ private const val TAG = "PairsViewModel"
 class PairsViewModel @Inject constructor(
     private val catalog: PuzzleCatalog,
     private val speaker: Speaker,
-    private val voiceInput: VoiceInput
+    private val voiceInput: VoiceInput,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     val voiceState: StateFlow<VoiceState> = voiceInput.state
+
+    private val _isEyesFree = MutableStateFlow(Settings.DEFAULT.eyesFree)
+
+    /** Da li se vežba bez gledanja u ekran; bira se u Podešavanjima. */
+    val isEyesFree: StateFlow<Boolean> = _isEyesFree.asStateFlow()
+
+    /**
+     * Čita **trenutnu** poziciju — onu koja je nastala odigranim potezima, ne
+     * početnu. Za kad se slika u glavi raspala; namerno neograničeno.
+     */
+    fun onReadPosition() = speaker.say(_uiState.value.board)
+
+    /** Prvi dodir na zonu za odustajanje — traži potvrdu, jer je nepovratno. */
+    fun onGiveUpArmed() = speaker.say("Dodirni ponovo da odustaneš.")
 
     /**
      * Sluša do prvog prepoznatog polja i prosleđuje ga kao da je dodirnuto.
@@ -106,6 +124,7 @@ class PairsViewModel @Inject constructor(
     private var startedAtMillis = 0L
     private var timerJob: Job? = null
     private var playJob: Job? = null
+    private var revealJob: Job? = null
     private var isStarted = false
     private var currentPuzzleFailed = false
 
@@ -116,6 +135,10 @@ class PairsViewModel @Inject constructor(
         setup = setupFor(difficulty)
 
         viewModelScope.launch {
+            // Prvo podešavanje se sačeka: bez toga bi prva zagonetka krenula pre
+            // nego što se sazna da se vežba bez ekrana, pa se ne bi ni pročitala.
+            _isEyesFree.value = settingsRepository.settings.first().eyesFree
+
             val loaded = runCatching {
                 buildList {
                     repeat(setup.puzzleCount) {
@@ -172,6 +195,8 @@ class PairsViewModel @Inject constructor(
     }
 
     private fun onCorrectSquare(square: Square) {
+        // Bez ekrana se obojeno polje ne vidi, pa ishod mora da se čuje.
+        if (_isEyesFree.value) speaker.say("Tačno.")
         viewModelScope.launch {
             _uiState.update { it.copy(feedbackSquare = square, feedbackIsCorrect = true) }
             delay(FEEDBACK_MILLIS)
@@ -186,6 +211,7 @@ class PairsViewModel @Inject constructor(
     }
 
     private fun onWrongSquare(square: Square) {
+        if (_isEyesFree.value) speaker.say("Nije to.")
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
@@ -224,6 +250,17 @@ class PairsViewModel @Inject constructor(
         _uiState.update {
             it.copy(phase = PairsPhase.REVEALED, visibility = PieceVisibility.All)
         }
+
+        if (!_isEyesFree.value) return
+
+        // Bez ekrana nema zone „sledeća pozicija" — otkrivene figure se ionako
+        // ne vide, pa bi vežba stala zauvek. Sledeća stiže sama.
+        speaker.say("Odustao si. Prelazim na sledeću.")
+        revealJob?.cancel()
+        revealJob = viewModelScope.launch {
+            delay(SOLVED_PAUSE_MILLIS)
+            onNextPuzzle()
+        }
     }
 
     fun onNextPuzzle() {
@@ -244,10 +281,15 @@ class PairsViewModel @Inject constructor(
             return
         }
 
+        val eyesFree = _isEyesFree.value
+
         _uiState.update {
             it.copy(
                 board = board,
-                visibility = PieceVisibility.All,
+                // Bez ekrana se pozicija ne vidi nego čuje, pa faze pamćenja
+                // nema: čitanje **jeste** pamćenje, a dugmeta „krećemo" nema pa
+                // bi se u njoj zaglavilo.
+                visibility = if (eyesFree) PieceVisibility.None else PieceVisibility.All,
                 phase = PairsPhase.MEMORIZE,
                 moveHighlight = null,
                 feedbackSquare = null,
@@ -258,6 +300,12 @@ class PairsViewModel @Inject constructor(
                 isLoading = false,
                 infoMessage = null
             )
+        }
+
+        if (eyesFree) {
+            // Čeka svoj red, da ne preseče izgovor ishoda prethodne zagonetke.
+            speaker.say(board, interrupt = false)
+            playNextMove()
         }
     }
 
@@ -281,7 +329,9 @@ class PairsViewModel @Inject constructor(
             val move = Move(from, to)
             val boardAfter = _uiState.value.board.withPieces(from to null, to to piece)
 
-            speaker.say(move)
+            // Bez ekrana potez čeka svoj red — inače bi presekao čitanje
+            // pozicije ili ispravku koja mu prethodi.
+            speaker.say(move, interrupt = !_isEyesFree.value)
 
             _uiState.update {
                 it.copy(
@@ -305,6 +355,7 @@ class PairsViewModel @Inject constructor(
 
     private fun finishPuzzle() {
         if (!currentPuzzleFailed) solvedPuzzles++
+        if (_isEyesFree.value) speaker.say("Zagonetka rešena.", interrupt = false)
         viewModelScope.launch {
             _uiState.update {
                 it.copy(phase = PairsPhase.SOLVED, visibility = PieceVisibility.All)
@@ -316,8 +367,20 @@ class PairsViewModel @Inject constructor(
 
     private fun finishSession() {
         timerJob?.cancel()
-        speaker.stop()
+        revealJob?.cancel()
         voiceInput.stop()
+
+        val state = _uiState.value
+        if (_isEyesFree.value) {
+            // Bez ekrana se sažetak ne vidi, pa bi sesija prosto utihnula.
+            speaker.say(
+                "Kraj sesije. Rešeno $solvedPuzzles od ${state.puzzleNumber}.",
+                interrupt = false
+            )
+        } else {
+            speaker.stop()
+        }
+
         _uiState.update { it.copy(isFinished = true) }
     }
 
@@ -348,6 +411,7 @@ class PairsViewModel @Inject constructor(
         super.onCleared()
         timerJob?.cancel()
         playJob?.cancel()
+        revealJob?.cancel()
         speaker.stop()
         voiceInput.stop()
     }

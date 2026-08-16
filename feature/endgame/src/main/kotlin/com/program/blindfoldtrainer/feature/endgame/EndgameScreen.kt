@@ -29,9 +29,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.program.blindfoldtrainer.core.audio.Buzz
 import com.program.blindfoldtrainer.core.audio.EyesFreeControls
+import com.program.blindfoldtrainer.core.audio.EyesFreeRow
+import com.program.blindfoldtrainer.core.audio.EyesFreeZone
+import com.program.blindfoldtrainer.core.audio.MicrophoneZone
 import com.program.blindfoldtrainer.core.audio.VoiceInputButton
 import com.program.blindfoldtrainer.core.audio.VoiceState
+import com.program.blindfoldtrainer.core.audio.ZoneTone
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.designsystem.board.ChessBoard
 import com.program.blindfoldtrainer.core.designsystem.board.SquareTint
@@ -71,17 +76,42 @@ fun EndgameScreen(
     if (isEyesFree) {
         // Ekran je samo površina za dodir: tabla se ne crta, jer se i ne gleda.
         EyesFreeControls(
-            isListening = voiceState == VoiceState.Listening,
-            voiceState = voiceState,
-            onMicrophone = {
-                if (voiceState == VoiceState.Listening) viewModel.onVoiceStop()
-                else viewModel.onVoiceInput()
-            },
-            onRepeat = viewModel::onRepeatLast,
-            onReadPosition = viewModel::onReadPosition,
-            onGiveUpArmed = viewModel::onGiveUpArmed,
-            onGiveUp = viewModel::onGiveUp,
-            onUndo = viewModel::onUndo,
+            microphone = MicrophoneZone(
+                isListening = voiceState == VoiceState.Listening,
+                voiceState = voiceState,
+                onToggle = {
+                    if (voiceState == VoiceState.Listening) viewModel.onVoiceStop()
+                    else viewModel.onVoiceInput()
+                }
+            ),
+            rows = listOf(
+                EyesFreeRow(
+                    weight = 0.25f,
+                    zones = listOf(
+                        EyesFreeZone(
+                            label = "PONOVI",
+                            tone = ZoneTone.SECONDARY,
+                            onClick = viewModel::onRepeatLast
+                        ),
+                        EyesFreeZone(
+                            label = "POZICIJA",
+                            tone = ZoneTone.TERTIARY,
+                            buzz = Buzz.MEDIUM,
+                            onClick = viewModel::onReadPosition
+                        )
+                    )
+                ),
+                EyesFreeRow(
+                    weight = 0.20f,
+                    zone = EyesFreeZone(
+                        label = "ODUSTANI  ·  DUGO: PONIŠTI",
+                        fontSize = 16.sp,
+                        onClick = viewModel::onGiveUp,
+                        onArmed = viewModel::onGiveUpArmed,
+                        onLongClick = viewModel::onUndo
+                    )
+                )
+            ),
             modifier = Modifier.padding(8.dp)
         )
         return

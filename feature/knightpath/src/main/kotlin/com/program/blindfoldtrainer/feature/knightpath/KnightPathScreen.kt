@@ -25,6 +25,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.program.blindfoldtrainer.core.audio.Buzz
+import com.program.blindfoldtrainer.core.audio.EyesFreeControls
+import com.program.blindfoldtrainer.core.audio.EyesFreeRow
+import com.program.blindfoldtrainer.core.audio.EyesFreeZone
+import com.program.blindfoldtrainer.core.audio.MicrophoneZone
+import com.program.blindfoldtrainer.core.audio.VoiceInputButton
+import com.program.blindfoldtrainer.core.audio.VoiceState
+import com.program.blindfoldtrainer.core.audio.ZoneTone
 import com.program.blindfoldtrainer.core.chess.Board
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.designsystem.board.ChessBoard
@@ -42,11 +50,57 @@ fun KnightPathScreen(
     viewModel: KnightPathViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val voiceState by viewModel.voiceState.collectAsState()
+    val isEyesFree by viewModel.isEyesFree.collectAsState()
 
     LaunchedEffect(difficulty) { viewModel.startOnce(difficulty) }
 
     LaunchedEffect(uiState.isFinished) {
         if (uiState.isFinished) onFinish(viewModel.buildResult())
+    }
+
+    if (isEyesFree) {
+        // Tabla je i inače prazna — bez ekrana od nje ostaje samo tastatura za
+        // polja, a polja se izgovaraju.
+        EyesFreeControls(
+            microphone = MicrophoneZone(
+                isListening = voiceState == VoiceState.Listening,
+                voiceState = voiceState,
+                onToggle = {
+                    if (voiceState == VoiceState.Listening) viewModel.onVoiceStop()
+                    else viewModel.onVoiceInput()
+                }
+            ),
+            rows = listOf(
+                EyesFreeRow(
+                    weight = 0.25f,
+                    zones = listOf(
+                        EyesFreeZone(
+                            label = "PONOVI",
+                            tone = ZoneTone.SECONDARY,
+                            onClick = viewModel::onRepeat
+                        ),
+                        EyesFreeZone(
+                            label = "STANJE",
+                            tone = ZoneTone.TERTIARY,
+                            buzz = Buzz.MEDIUM,
+                            onClick = viewModel::onReadState
+                        )
+                    )
+                ),
+                EyesFreeRow(
+                    weight = 0.20f,
+                    zone = EyesFreeZone(
+                        label = "ODUSTANI  (dva dodira)",
+                        fontSize = 16.sp,
+                        onClick = viewModel::onGiveUp,
+                        onArmed = viewModel::onGiveUpArmed
+                    )
+                )
+            ),
+            modifier = Modifier.padding(8.dp)
+        )
+        return
     }
 
     Column(
@@ -71,12 +125,26 @@ fun KnightPathScreen(
 
         Spacer(Modifier.weight(1f))
 
-        OutlinedButton(
-            onClick = viewModel::onGiveUp,
-            enabled = uiState.isAcceptingInput,
-            modifier = Modifier.fillMaxWidth().height(52.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("ODUSTANI / POKAŽI PUTANJU")
+            OutlinedButton(
+                onClick = viewModel::onGiveUp,
+                enabled = uiState.isAcceptingInput,
+                modifier = Modifier.weight(1f).height(52.dp)
+            ) {
+                Text("ODUSTANI / POKAŽI PUTANJU")
+            }
+
+            // Polje sme i da se izgovori; ide kroz isti put kao i dodir.
+            VoiceInputButton(
+                state = voiceState,
+                onStartListening = viewModel::onVoiceInput,
+                onStopListening = viewModel::onVoiceStop,
+                enabled = uiState.isAcceptingInput
+            )
         }
     }
 }

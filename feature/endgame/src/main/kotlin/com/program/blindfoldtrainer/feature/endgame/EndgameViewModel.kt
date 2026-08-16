@@ -28,6 +28,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -106,7 +107,7 @@ class EndgameViewModel @Inject constructor(
     private val engine: ChessEngine,
     private val speaker: Speaker,
     private val voiceInput: VoiceInput,
-    settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     val voiceState: StateFlow<VoiceState> = voiceInput.state
@@ -240,6 +241,12 @@ class EndgameViewModel @Inject constructor(
             // Motor se podiže dok korisnik još gleda prvu poziciju, da se
             // učitavanje NNUE mreže ne oseti kao zastoj usred partije.
             launch { engine.start() }
+
+            // Prvo podešavanje se sačeka: bez toga bi prva pozicija mogla da se
+            // učita pre nego što se sazna da se vežba bez ekrana, pa bi umesto
+            // čitanja krenula faza pamćenja koju bez ekrana nije čime završiti.
+            settings = settingsRepository.settings.first()
+            _isEyesFree.value = settings.eyesFree
 
             val loaded = runCatching { catalog.puzzles(difficulty) }
             val failure = loaded.exceptionOrNull()
@@ -507,6 +514,17 @@ class EndgameViewModel @Inject constructor(
                 isEngineThinking = false,
                 statusMessage = messageFor(EndgameOutcome.GAVE_UP)
             )
+        }
+
+        if (!settings.eyesFree) return
+
+        // Bez ekrana nema zone „sledeća pozicija", a otkrivene figure se ionako
+        // ne vide — pa bi vežba posle odustajanja stala zauvek.
+        speaker.say("Prelazim na sledeću poziciju.", interrupt = false)
+        outcomeJob?.cancel()
+        outcomeJob = viewModelScope.launch {
+            delay(OUTCOME_PAUSE_MILLIS)
+            onNextPuzzle()
         }
     }
 

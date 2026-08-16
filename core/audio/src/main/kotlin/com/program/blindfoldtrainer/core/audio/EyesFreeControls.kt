@@ -37,15 +37,71 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 
 /**
+ * Vibracija po zoni. Različite dužine, da se **koja** je zona pogođena razazna
+ * po osećaju — vibracija je jedina povratna informacija koja stiže pre govora.
+ */
+enum class Buzz(internal val millis: Long) {
+    SHORT(20),
+    MEDIUM(45),
+    LONG(75),
+
+    /** Dva kratka — za nepovratno. */
+    DOUBLE(0)
+}
+
+/**
+ * Boja zone. Postoji zbog onoga ko ipak pogleda; za samu vežbu je nebitna, pa
+ * zone nose ton a ne konkretnu boju.
+ */
+enum class ZoneTone { PRIMARY, SECONDARY, TERTIARY, NEUTRAL }
+
+/**
+ * Jedna zona: velika meta koja se pogađa bez gledanja.
+ *
+ * [onArmed] razlikuje nepovratne radnje — kad je zadat, prvi dodir samo
+ * najavljuje a tek drugi izvršava.
+ */
+data class EyesFreeZone(
+    val label: String,
+    val onClick: () -> Unit,
+    val weight: Float = 1f,
+    val tone: ZoneTone = ZoneTone.NEUTRAL,
+    val buzz: Buzz = Buzz.SHORT,
+    val onLongClick: (() -> Unit)? = null,
+    val onArmed: (() -> Unit)? = null,
+    val fontSize: TextUnit = 20.sp
+)
+
+/** Red zona. [weight] je udeo visine ekrana koji red zauzima. */
+data class EyesFreeRow(val weight: Float, val zones: List<EyesFreeZone>) {
+    constructor(weight: Float, zone: EyesFreeZone) : this(weight, listOf(zone))
+}
+
+/**
+ * Mikrofon kao zona — uvek prva i najveća, jer se najviše koristi.
+ *
+ * Stoji odvojeno od ostalih zona zato što uz njega idu dozvola i objašnjenje
+ * zašto glas ne radi; to je isto u svakom modulu i ne sme se prepisivati.
+ */
+data class MicrophoneZone(
+    val isListening: Boolean,
+    val voiceState: VoiceState,
+    val onToggle: () -> Unit,
+    val weight: Float = 0.55f,
+    val idleLabel: String = "MIKROFON"
+)
+
+/**
  * Upravljanje bez gledanja u ekran.
  *
  * Nisu dugmad nego **zone**: prst se ne cilja nego spusti, pa je svaka meta
- * velika i uvek na istom mestu. Mikrofon je najveći jer se koristi najviše.
+ * velika i uvek na istom mestu.
  *
  * ```
  * ┌───────────────────────────────┐
@@ -57,24 +113,20 @@ import androidx.core.content.ContextCompat
  * └───────────────────────────────┘
  * ```
  *
- * Mikrofon je gore i najveći: promašiti ga je teško. Pomoćne zone su **ispod
- * njega, a ne na samom vrhu** — vrh ekrana zauzimaju sat i otvor za kameru, pa
- * se tamo bez gledanja ne pogađa. Iz istog razloga se poštuju sistemske ivice.
+ * Raspored je isti u svim modulima: **gore ono što se traži sad** (mikrofon, ili
+ * jedini odgovor koji modul očekuje), u sredini pomoć — ponavljanje i čitanje
+ * stanja — a dole izlaz. Meta se tako pamti rukom, pa se prelazak iz modula u
+ * modul ne uči ponovo.
  *
- * Svaka zona vibrira drugačije, pa se pogodak prepozna **pre** nego što se išta
- * izgovori. Odustajanje traži dva dodira, jer je jedino nepovratno.
+ * Pomoćne zone su namerno **ispod glavne, a ne na samom vrhu** — vrh ekrana
+ * zauzimaju sat i otvor za kameru, pa se tamo bez gledanja ne pogađa. Iz istog
+ * razloga se poštuju sistemske ivice.
  */
 @Composable
 fun EyesFreeControls(
-    isListening: Boolean,
-    onMicrophone: () -> Unit,
-    onRepeat: () -> Unit,
-    onReadPosition: () -> Unit,
-    onGiveUpArmed: () -> Unit,
-    onGiveUp: () -> Unit,
-    onUndo: () -> Unit,
+    rows: List<EyesFreeRow>,
     modifier: Modifier = Modifier,
-    voiceState: VoiceState = VoiceState.Idle
+    microphone: MicrophoneZone? = null
 ) {
     val context = LocalContext.current
     val buzz = rememberBuzz()
@@ -86,11 +138,13 @@ fun EyesFreeControls(
         )
     }
 
+    // Traži se bezuslovno, i kad modul u ovom trenutku nema mikrofon: sastav
+    // kompozicije ne sme da zavisi od faze vežbe.
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         hasPermission = granted
-        if (granted) onMicrophone()
+        if (granted) microphone?.onToggle?.invoke()
         else Toast.makeText(
             context,
             "Bez dozvole za mikrofon glasovni unos ne radi.",
@@ -98,13 +152,11 @@ fun EyesFreeControls(
         ).show()
     }
 
-    // Naoružano odustajanje traje kratko: ako se drugi dodir ne desi, zaboravi se.
-    var armedAtMillis by remember { mutableLongStateOf(0L) }
-
     // Kad slušanje krene samo od sebe — drugi deo poteza, bez novog dodira —
     // vibracija je jedini znak da je mikrofon opet živ.
+    val isListening = microphone?.isListening == true
     LaunchedEffect(isListening) {
-        if (isListening) buzz(BuzzKind.LONG)
+        if (isListening) buzz(Buzz.LONG)
     }
 
     Column(
@@ -112,111 +164,120 @@ fun EyesFreeControls(
             .fillMaxSize()
             .windowInsetsPadding(WindowInsets.safeDrawing)
     ) {
-        Zone(
-            label = if (isListening) "SLUŠAM — DODIRNI DA STANE" else "MIKROFON",
-            modifier = Modifier.fillMaxWidth().weight(0.55f),
-            color = if (isListening) {
-                MaterialTheme.colorScheme.errorContainer
-            } else {
-                MaterialTheme.colorScheme.primaryContainer
-            },
-            fontSize = 26.sp,
-            onClick = {
-                buzz(BuzzKind.SHORT)
-                when {
-                    isListening -> onMicrophone()
-                    voiceState is VoiceState.Unavailable -> Toast.makeText(
-                        context,
-                        "${voiceState.reason} — jezik i paket biraš u Podešavanjima.",
-                        Toast.LENGTH_LONG
-                    ).show()
-
-                    hasPermission -> onMicrophone()
-                    else -> permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                }
-            }
-        )
-
-        Row(modifier = Modifier.fillMaxWidth().weight(0.25f)) {
+        if (microphone != null) {
+            val unavailable = microphone.voiceState as? VoiceState.Unavailable
             Zone(
-                label = "PONOVI",
-                modifier = Modifier.weight(1f),
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                onClick = {
-                    buzz(BuzzKind.SHORT)
-                    onRepeat()
-                }
-            )
-            Zone(
-                label = "POZICIJA",
-                modifier = Modifier.weight(1f),
-                color = MaterialTheme.colorScheme.tertiaryContainer,
-                onClick = {
-                    buzz(BuzzKind.MEDIUM)
-                    onReadPosition()
-                }
+                zone = EyesFreeZone(
+                    label = if (microphone.isListening) {
+                        "SLUŠAM — DODIRNI DA STANE"
+                    } else {
+                        microphone.idleLabel
+                    },
+                    tone = if (microphone.isListening) ZoneTone.NEUTRAL else ZoneTone.PRIMARY,
+                    fontSize = 26.sp,
+                    onClick = {
+                        when {
+                            microphone.isListening -> microphone.onToggle()
+                            unavailable != null -> Toast.makeText(
+                                context,
+                                "${unavailable.reason} — jezik i paket biraš u Podešavanjima.",
+                                Toast.LENGTH_LONG
+                            ).show()
+
+                            hasPermission -> microphone.onToggle()
+                            else -> permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                        }
+                    }
+                ),
+                color = if (microphone.isListening) {
+                    MaterialTheme.colorScheme.errorContainer
+                } else {
+                    MaterialTheme.colorScheme.primaryContainer
+                },
+                buzz = buzz,
+                modifier = Modifier.fillMaxWidth().weight(microphone.weight)
             )
         }
 
-        Zone(
-            label = "ODUSTANI  ·  DUGO: PONIŠTI",
-            modifier = Modifier.fillMaxWidth().weight(0.20f),
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            fontSize = 16.sp,
-            onLongClick = {
-                armedAtMillis = 0
-                buzz(BuzzKind.MEDIUM)
-                onUndo()
-            },
-            onClick = {
-                val now = System.currentTimeMillis()
-                if (now - armedAtMillis < ARM_WINDOW_MILLIS) {
-                    armedAtMillis = 0
-                    buzz(BuzzKind.DOUBLE)
-                    onGiveUp()
-                } else {
-                    armedAtMillis = now
-                    buzz(BuzzKind.SHORT)
-                    onGiveUpArmed()
+        rows.forEach { row ->
+            Row(modifier = Modifier.fillMaxWidth().weight(row.weight)) {
+                row.zones.forEach { zone ->
+                    Zone(
+                        zone = zone,
+                        color = zone.tone.color(),
+                        buzz = buzz,
+                        modifier = Modifier.weight(zone.weight)
+                    )
                 }
             }
-        )
+        }
     }
+}
+
+@Composable
+private fun ZoneTone.color(): Color = when (this) {
+    ZoneTone.PRIMARY -> MaterialTheme.colorScheme.primaryContainer
+    ZoneTone.SECONDARY -> MaterialTheme.colorScheme.secondaryContainer
+    ZoneTone.TERTIARY -> MaterialTheme.colorScheme.tertiaryContainer
+    ZoneTone.NEUTRAL -> MaterialTheme.colorScheme.surfaceVariant
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Zone(
-    label: String,
+    zone: EyesFreeZone,
     color: Color,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    fontSize: androidx.compose.ui.unit.TextUnit = 20.sp,
-    onLongClick: (() -> Unit)? = null
+    buzz: (Buzz) -> Unit,
+    modifier: Modifier = Modifier
 ) {
+    // Naoružana potvrda traje kratko: ako drugi dodir ne stigne, zaboravi se.
+    var armedAtMillis by remember { mutableLongStateOf(0L) }
+    val onArmed = zone.onArmed
+
     Box(
         modifier = modifier
             .padding(3.dp)
             .background(color, MaterialTheme.shapes.medium)
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
+            .combinedClickable(
+                onClick = {
+                    when {
+                        onArmed == null -> {
+                            buzz(zone.buzz)
+                            zone.onClick()
+                        }
+
+                        System.currentTimeMillis() - armedAtMillis < ARM_WINDOW_MILLIS -> {
+                            armedAtMillis = 0
+                            buzz(Buzz.DOUBLE)
+                            zone.onClick()
+                        }
+
+                        else -> {
+                            armedAtMillis = System.currentTimeMillis()
+                            buzz(zone.buzz)
+                            onArmed()
+                        }
+                    }
+                },
+                onLongClick = zone.onLongClick?.let { longClick ->
+                    {
+                        armedAtMillis = 0
+                        buzz(Buzz.MEDIUM)
+                        longClick()
+                    }
+                }
+            ),
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = label,
-            fontSize = fontSize,
+            text = zone.label,
+            fontSize = zone.fontSize,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(8.dp)
         )
     }
-}
-
-private enum class BuzzKind(val millis: Long) {
-    SHORT(20),
-    MEDIUM(45),
-    LONG(75),
-    DOUBLE(0)
 }
 
 /**
@@ -226,7 +287,7 @@ private enum class BuzzKind(val millis: Long) {
  * ne zna da li je dodir uopšte primljen dok TTS ne progovori.
  */
 @Composable
-private fun rememberBuzz(): (BuzzKind) -> Unit {
+private fun rememberBuzz(): (Buzz) -> Unit {
     val context = LocalContext.current
     val vibrator = remember(context) { context.vibrator() }
 
@@ -234,7 +295,7 @@ private fun rememberBuzz(): (BuzzKind) -> Unit {
         { kind ->
             runCatching {
                 when (kind) {
-                    BuzzKind.DOUBLE -> vibrator?.vibrate(
+                    Buzz.DOUBLE -> vibrator?.vibrate(
                         VibrationEffect.createWaveform(longArrayOf(0, 30, 60, 30), -1)
                     )
 

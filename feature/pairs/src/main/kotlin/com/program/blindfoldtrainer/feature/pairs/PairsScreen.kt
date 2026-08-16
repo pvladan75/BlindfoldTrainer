@@ -37,8 +37,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.designsystem.board.ChessBoard
 import com.program.blindfoldtrainer.core.designsystem.board.SquareTint
+import com.program.blindfoldtrainer.core.audio.Buzz
+import com.program.blindfoldtrainer.core.audio.EyesFreeControls
+import com.program.blindfoldtrainer.core.audio.EyesFreeRow
+import com.program.blindfoldtrainer.core.audio.EyesFreeZone
+import com.program.blindfoldtrainer.core.audio.MicrophoneZone
 import com.program.blindfoldtrainer.core.audio.VoiceInputButton
 import com.program.blindfoldtrainer.core.audio.VoiceState
+import com.program.blindfoldtrainer.core.audio.ZoneTone
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.SessionResult
 import java.util.concurrent.TimeUnit
@@ -51,6 +57,7 @@ fun PairsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val voiceState by viewModel.voiceState.collectAsState()
+    val isEyesFree by viewModel.isEyesFree.collectAsState()
 
     LaunchedEffect(difficulty) { viewModel.startOnce(difficulty) }
     LaunchedEffect(uiState.isFinished) {
@@ -72,6 +79,49 @@ fun PairsScreen(
                 textAlign = TextAlign.Center
             )
         }
+        return
+    }
+
+    if (isEyesFree) {
+        // Ekran je samo površina za dodir: tabla se ne crta, jer se i ne gleda.
+        EyesFreeControls(
+            microphone = MicrophoneZone(
+                isListening = voiceState == VoiceState.Listening,
+                voiceState = voiceState,
+                onToggle = {
+                    if (voiceState == VoiceState.Listening) viewModel.onVoiceStop()
+                    else viewModel.onVoiceInput()
+                }
+            ),
+            rows = listOf(
+                EyesFreeRow(
+                    weight = 0.25f,
+                    zones = listOf(
+                        EyesFreeZone(
+                            label = "PONOVI",
+                            tone = ZoneTone.SECONDARY,
+                            onClick = viewModel::onRepeatMove
+                        ),
+                        EyesFreeZone(
+                            label = "POZICIJA",
+                            tone = ZoneTone.TERTIARY,
+                            buzz = Buzz.MEDIUM,
+                            onClick = viewModel::onReadPosition
+                        )
+                    )
+                ),
+                EyesFreeRow(
+                    weight = 0.20f,
+                    zone = EyesFreeZone(
+                        label = "ODUSTANI  (dva dodira)",
+                        fontSize = 16.sp,
+                        onClick = viewModel::onRevealPieces,
+                        onArmed = viewModel::onGiveUpArmed
+                    )
+                )
+            ),
+            modifier = Modifier.padding(8.dp)
+        )
         return
     }
 
