@@ -27,10 +27,9 @@ te izmene svejedno vredi komitovati da se ne izgube.
 Aplikacija se gradi, pokreće, i ima **svih šest** modula za trening. Poslednji
 build je prošao čisto, bez upozorenja. **107 testova, nijedan ne pada.**
 
-Na uređaju su prošli Geometrija table, Interaktivni parovi, Dokrajči protivnika
-(poslednji tek pošto je ispravljen bag opisan niže) i Putanja skakača, kao i
-napredak sa poenima i rangovima. **Zapamti poziciju i Prati partiju još nisu
-pokrenuti na telefonu.**
+**Svih šest modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
+rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
+iste porodice: prevede se čisto, pukne tek na telefonu.
 
 ```bash
 cd C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer && ./gradlew :app:assembleDebug test
@@ -303,11 +302,11 @@ jedno i drugo računa iz istorije.
 
 ## Predlog redosleda za nastavak
 
-Svih šest modula postoji. Ostalo je:
+Svih šest modula postoji i radi na uređaju. Ostalo je:
 
-1. Proći kroz Zapamti poziciju i Prati partiju na uređaju — nisu nikad pokrenuti
-2. Odlučiti odakle Vosk model (vidi „Glasovni unos"), pa mikrofon u Parovima,
+1. Odlučiti odakle Vosk model (vidi „Glasovni unos"), pa mikrofon u Parovima,
    Završnici i Prati partiju — odloženo dogovorom
-3. Dogovoriti brojeve bodovanja i da li rang išta otključava
-4. Podešavanja (DataStore) i ekran sa spiskom dostignuća
-5. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
+2. Dogovoriti brojeve bodovanja i da li rang išta otključava
+3. Podešavanja (DataStore) i ekran sa spiskom dostignuća
+4. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
+5. Težine u Geometriji (vidi gore) — odloženo dogovorom
