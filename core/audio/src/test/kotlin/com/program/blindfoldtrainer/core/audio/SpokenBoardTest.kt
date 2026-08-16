@@ -42,6 +42,23 @@ class SpokenBoardTest {
     }
 
     @Test
+    fun `figura i polje su odvojeni delovi, zbog pauze`() {
+        assertEquals(
+            listOf(
+                "beli kralj na", "e dva,",
+                "bela dama na", "e pet.",
+                "crni kralj na", "ha šest"
+            ),
+            position.spokenParts(serbian)
+        )
+    }
+
+    @Test
+    fun `spojeno i po delovima daju isti tekst`() {
+        assertEquals(position.spoken(serbian), position.spokenParts(serbian).joinToString(" "))
+    }
+
+    @Test
     fun `prazna tabla se ne izgovara`() {
         assertEquals("", Board.EMPTY.spoken(serbian))
     }

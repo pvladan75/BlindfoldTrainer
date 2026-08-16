@@ -25,7 +25,7 @@ te izmene svejedno vredi komitovati da se ne izgube.
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **svih šest** modula za trening. Poslednji
-build je prošao čisto, bez upozorenja. **138 testova, nijedan ne pada.**
+build je prošao čisto, bez upozorenja. **140 testova, nijedan ne pada.**
 
 **Svih šest modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -393,6 +393,15 @@ Formatiranje je zato prešlo iz proširenja u `Speaker` (`say(move)`, `say(squar
 `Board.spoken(words)` daje „beli kralj na e dva, bela dama na e pet. crni kralj
 na ha šest" — **beli pa crni, a unutar boje kralj pa dama pa ostalo**. Redosled je
 uvek isti da bi se pozicija pamtila kao niz, a ne kao skup; test to i čuva.
+
+**Čita se u delovima, sa pauzom od 200 ms** — „bela dama na" *(pauza)* „e pet"
+*(pauza)*. Primedba sa uređaja, i tačna: naslepo se pamti u dva koraka, šta stoji
+pa gde stoji, a bez pauze se niz stopi u rečenicu koju uho ne stigne da rasklopi.
+
+Pauza ide kao **zasebna tišina u redu izgovaranja** (`playSilentUtterance`), a ne
+kao interpunkcija — tako njena dužina ne zavisi od toga kako je koji TTS motor
+tumači. `Speaker` zato barata spiskom delova, pa i „ponovi" ponavlja sa istim
+pauzama.
 
 Rod se slaže uz figuru: u srpskom je dama ženskog roda, u ruskom i ladja i
 peška, u francuskom dama i top. `SpeechWords.femininePieces` to nosi po jeziku.

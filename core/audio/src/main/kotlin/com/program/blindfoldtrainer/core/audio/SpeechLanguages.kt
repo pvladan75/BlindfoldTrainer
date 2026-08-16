@@ -29,8 +29,14 @@ data class SpeechWords(
     /** Predlog ispred polja („na e5"); prazan kod jezika kojima ne treba. */
     val on: String
 ) {
-    /** „bela dama na e5" — sa slaganjem roda. */
-    fun describe(piece: Piece, squareText: String): String {
+    /**
+     * „bela dama na" pa „e pet" — u **dva dela**, sa slaganjem roda.
+     *
+     * Razdvojeno je zato što između figure i polja ide pauza: uho tako stigne da
+     * odvoji šta stoji od toga gde stoji, a to je ceo posao pri pamćenju
+     * pozicije naslepo.
+     */
+    fun describeParts(piece: Piece, squareText: String): List<String> {
         val isFeminine = piece.type in femininePieces
         val color = when {
             piece.color == Color.WHITE && isFeminine -> whiteFeminine
@@ -39,9 +45,13 @@ data class SpeechWords(
             else -> black
         }
         val name = pieces.getValue(piece.type)
-        val place = if (on.isBlank()) squareText else "$on $squareText"
-        return "$color $name $place"
+        val prefix = if (on.isBlank()) "$color $name" else "$color $name $on"
+        return listOf(prefix, squareText)
     }
+
+    /** Isto, spojeno u jednu rečenicu. */
+    fun describe(piece: Piece, squareText: String): String =
+        describeParts(piece, squareText).joinToString(" ")
 }
 
 /** Šta jedan jezik nosi za govor. */

@@ -36,7 +36,7 @@ class AndroidSpeaker @Inject constructor(
 
     private var isReady = false
     /** Ono što je traženo pre nego što je motor bio spreman. */
-    private var pending: String? = null
+    private var pending: List<String>? = null
 
     private val tts = TextToSpeech(context, this)
 
@@ -56,7 +56,7 @@ class AndroidSpeaker @Inject constructor(
 
     /** Poslednje izgovoreno, za dugme „ponovi". */
     @Volatile
-    private var lastSpoken: String? = null
+    private var lastSpoken: List<String>? = null
 
     init {
         scope.launch {
@@ -86,9 +86,9 @@ class AndroidSpeaker @Inject constructor(
         applyLanguage()
         setRate(settings.speechRate)
 
-        pending?.let { text ->
+        pending?.let { parts ->
             pending = null
-            say(text)
+            speakParts(parts)
         }
     }
 
@@ -119,24 +119,47 @@ class AndroidSpeaker @Inject constructor(
 
     override fun say(move: Move) = say(move.spoken(wordsForSpeech()))
 
-    override fun say(board: Board) = say(board.spoken(wordsForSpeech()))
+    // Pozicija ide u delovima, sa tišinom između — vidi Board.spokenParts.
+    override fun say(board: Board) = sayParts(board.spokenParts(wordsForSpeech()))
 
-    /** Ponavlja doslovno; ako ništa nije rečeno, ćuti umesto da izmišlja. */
+    /** Ponavlja doslovno, sa istim pauzama; ako ništa nije rečeno, ćuti. */
     override fun repeat() {
-        lastSpoken?.let { say(it) }
+        lastSpoken?.let { sayParts(it) }
     }
 
     private fun wordsForSpeech(): SpeechWords = SpeechLanguages.wordsFor(spokenLanguage())
 
-    override fun say(text: String) {
-        lastSpoken = text
+    override fun say(text: String) = sayParts(listOf(text))
+
+    private fun sayParts(parts: List<String>) {
+        val spoken = parts.filter { it.isNotBlank() }
+        if (spoken.isEmpty()) return
+
+        lastSpoken = spoken
         if (!isReady) {
             // Prvi potez ume da stigne pre nego što se motor podigne;
             // pamtimo ga umesto da ga nečujno progutamo.
-            pending = text
+            pending = spoken
             return
         }
-        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, text.hashCode().toString())
+        speakParts(spoken)
+    }
+
+    /**
+     * Izgovara delove sa tišinom između njih.
+     *
+     * Tišina ide kao zasebna izjava u redu, a ne kao interpunkcija: dužina pauze
+     * tako ne zavisi od toga kako je koji TTS motor tumači.
+     */
+    private fun speakParts(parts: List<String>) {
+        parts.forEachIndexed { index, part ->
+            val mode = if (index == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD
+            tts.speak(part, mode, null, "part-$index")
+
+            if (index != parts.lastIndex) {
+                tts.playSilentUtterance(PAUSE_MILLIS, TextToSpeech.QUEUE_ADD, "pause-$index")
+            }
+        }
     }
 
     override fun stop() {
@@ -150,5 +173,8 @@ class AndroidSpeaker @Inject constructor(
 
     private companion object {
         const val TAG = "AndroidSpeaker"
+
+        /** Pauza između „bela dama na" i „e pet". */
+        const val PAUSE_MILLIS = 200L
     }
 }

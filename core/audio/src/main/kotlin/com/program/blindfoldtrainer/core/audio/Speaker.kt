@@ -57,24 +57,42 @@ fun Square.spoken(words: SpeechWords): String =
 fun Move.spoken(words: SpeechWords): String = "${from.spoken(words)}, ${to.spoken(words)}"
 
 /**
- * Cela pozicija, izgovorena.
+ * Cela pozicija, u delovima između kojih ide pauza.
  *
- * Beli pa crni, a unutar boje po vrednosti figure — kralj prvi, jer se oko
- * njega gradi slika. Redosled je uvek isti da bi se pozicija mogla pamtiti kao
- * niz, a ne kao skup.
+ * Deli se na „bela dama na" pa „e pet", pa sledeća figura — jer se naslepo
+ * pamti u dva koraka: šta stoji, pa gde stoji. Bez pauze se niz stopi u jednu
+ * rečenicu koju uho ne stigne da rasklopi.
+ *
+ * Beli pa crni, a unutar boje po vrednosti figure — kralj prvi, jer se oko njega
+ * gradi slika. Redosled je uvek isti da bi se pozicija pamtila kao niz, a ne kao
+ * skup.
  */
-fun Board.spoken(words: SpeechWords): String {
-    fun side(color: Color): String = occupied()
+fun Board.spokenParts(words: SpeechWords): List<String> {
+    fun side(color: Color): List<List<String>> = occupied()
         .filter { (_, piece) -> piece.color == color }
         .sortedWith(compareBy({ NARRATION_ORDER.indexOf(it.second.type) }, { it.first.index }))
-        .joinToString(", ") { (square, piece) ->
-            words.describe(piece, square.spoken(words))
-        }
+        .map { (square, piece) -> words.describeParts(piece, square.spoken(words)) }
 
-    return listOf(side(Color.WHITE), side(Color.BLACK))
-        .filter { it.isNotBlank() }
-        .joinToString(". ")
+    val white = side(Color.WHITE)
+    val black = side(Color.BLACK)
+
+    return buildList {
+        // Zarez razdvaja figure iste boje, tačka razdvaja strane — i u zapisu i
+        // u govoru, jer TTS na njima i sam malo zastane.
+        white.forEachIndexed { index, parts ->
+            add(parts.first())
+            val isLastOfAll = index == white.lastIndex && black.isEmpty()
+            add(parts.last() + if (isLastOfAll) "" else if (index == white.lastIndex) "." else ",")
+        }
+        black.forEachIndexed { index, parts ->
+            add(parts.first())
+            add(parts.last() + if (index == black.lastIndex) "" else ",")
+        }
+    }
 }
+
+/** Ista pozicija, spojena u jednu rečenicu. */
+fun Board.spoken(words: SpeechWords): String = spokenParts(words).joinToString(" ")
 
 private val NARRATION_ORDER = listOf(
     PieceType.KING,
