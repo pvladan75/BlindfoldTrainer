@@ -662,21 +662,60 @@ i objašnjenje otkaza, i to je isto u svakom modulu.
   završiti**. Sada se prvo podešavanje sačeka (`settings.first()`) pre nego što
   sesija krene. Isto je ispravljeno i u Završnici, gde je greška i nastala.
 
-#### Zapamti poziciju ostaje na ekranu
+#### Zapamti poziciju ostaje na ekranu — zasad
 
-Jedini modul bez ovog režima, i to namerno. Vežba se rešava **vraćanjem figura iz
-palete na tablu**, a glasovni unos prepoznaje samo polja — figuru nema čime da
-izgovori. Zone tu ne pomažu: „beli top" nije meta koja se spusti prstom.
-
-Razmatrano je da se umesto rekonstrukcije pita figuru po figuru („Gde je beli
-top?"), što bi radilo — ali menja šta modul meri: umesto cele pozicije odjednom,
-merilo bi postalo traženje po jednoj figuri. **Odloženo dogovorom.**
+Jedini modul bez ovog režima. Vežba se rešava **vraćanjem figura iz palete na
+tablu**, a to je i meta koja se dodiruje i izbor koji se gleda — zone tu ne
+pomažu, jer „beli top" nije meta koja se spusti prstom.
 
 Da modul režim nema piše **u meniju, na njegovoj kartici**, i to samo kad je
 režim uključen. Ugovor modula je dobio `supportsEyesFree`, po istoj logici po
 kojoj postoji i `needs`: modul sam prijavljuje šta ume, a školjka to prikaže. Bez
 toga bi se saznalo tek unutra, pred tablom u koju se ne gleda — a nemi otkaz je
 u ovom projektu već dvaput skupo koštao.
+
+**Odluka je ponovo otvorena** — vidi dve ideje niže.
+
+### Zapamti poziciju: dva čista oblika umesto jednog hibrida
+
+Primedba koja modul postavlja na svoje mesto: vežba ima **ulaz** i **izlaz**, i
+oni ne moraju biti istog roda. Trenutni modul ih meša — pozicija se **vidi**, a
+odgovara se **dodirom**:
+
+| ulaz \ izlaz | dodir po tabli | izgovor |
+|---|---|---|
+| **vidi se** | ovo je današnji modul | — |
+| **čuje se** | **ideja 2** | **ideja 1** |
+
+**Ideja 1 — čuje se, izgovara se.** To je režim bez ekrana: aplikacija pročita
+poziciju, a ti je izdiktiraš nazad, figuru po figuru.
+
+Ovo je izvodljivije nego kad je prvi put odbijeno, iz dva razloga:
+
+- **Imena figura sada postoje u rečniku** (zasad engleski), pa „white rook e two"
+  ima čime da se prepozna. Fale još samo dve reči po jeziku — boje.
+- **Redosled ne mora da se pamti.** Prvi predlog je tražio da se pozicija vrati
+  redom kojim je pročitana, pa bi jedna promašena reč pomerila ceo niz. Ako se
+  govori figura pa polje, odgovor je **skup**, a `gradeRecall` već poredi skupove
+  — pogođena, pogrešna i propuštena polja. Ocena je time gotova bez ijedne izmene.
+
+Ostaje da se reši samo kraj: kad se zna da je korisnik završio. Najčistije je po
+broju figura — zna ga i aplikacija i korisnik, jer je pozicija upravo pročitana.
+
+**Ideja 2 — čuje se, namešta se na tabli.** Aplikacija izdiktira poziciju, a ti
+je složiš od figura iz palete. **Nije režim bez ekrana** — tabla je ovde nužna,
+pa ide kao zaseban modul (ili kao vrsta zadatka u ovom).
+
+Ovo je verovatno **najjeftinije od svega što je ostalo**: faza slaganja već
+postoji i ne dira se, paleta i ocenjivanje takođe, a menja se samo faza pamćenja
+— umesto da se pozicija prikaže, ona se pročita. Glasovni unos nije potreban
+uopšte, pa ne traži ni Vosk paket.
+
+Vredi i sama po sebi: gradnja slike u glavi **iz zapisa** je baš ono što
+blindfold traži, a nijedan modul to zasad ne uvežbava u tom smeru.
+
+Obe su **zabeležene, nisu dogovorene** — ni koja ide prva, ni da li je druga nov
+modul ili nova težina postojećeg.
 
 ### Poništavanje poteza
 
@@ -818,7 +857,11 @@ Svih šest modula postoji i radi na uređaju. Ostalo je:
 7. Ako se proba neki jezik osim engleskog, upisati `isVerified` u
    `VoiceLanguages` odnosno `SpeechLanguages`; imena figura postoje samo na
    engleskom i dopunjuju se istim putem
-8. Oblik pitanja za Zapamti poziciju bez ekrana — odloženo dogovorom
+8. **Zapamti poziciju — dva čista oblika** (vidi gore). Ideja 2 („čuje se,
+   namešta se na tabli") je najjeftinija: faza slaganja i ocenjivanje već
+   postoje, menja se samo faza pamćenja i ne traži glasovni unos. Ideja 1
+   („čuje se, izgovara se") je režim bez ekrana i traži još samo dve reči po
+   jeziku — imena boja
 
 **Otvoreno pitanje koje se nije zatvorilo:** da li potvrđivati prepoznat potez
 pre nego što se odigra. Sada se odigra pa objavi, uz poništavanje — zaključeno
