@@ -29,6 +29,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.program.blindfoldtrainer.core.audio.VoiceInputButton
+import com.program.blindfoldtrainer.core.audio.VoiceState
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.designsystem.board.ChessBoard
 import com.program.blindfoldtrainer.core.designsystem.board.SquareTint
@@ -43,6 +45,7 @@ fun EndgameScreen(
     viewModel: EndgameViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val voiceState by viewModel.voiceState.collectAsState()
 
     LaunchedEffect(difficulty) { viewModel.startOnce(difficulty) }
     LaunchedEffect(uiState.isFinished) {
@@ -83,9 +86,11 @@ fun EndgameScreen(
 
         Controls(
             uiState = uiState,
+            voiceState = voiceState,
             onHidePieces = viewModel::onHidePieces,
             onGiveUp = viewModel::onGiveUp,
-            onNext = viewModel::onNextPuzzle
+            onNext = viewModel::onNextPuzzle,
+            onVoiceInput = viewModel::onVoiceInput
         )
     }
 }
@@ -148,35 +153,51 @@ private fun StatusBanner(uiState: EndgameUiState) {
 @Composable
 private fun Controls(
     uiState: EndgameUiState,
+    voiceState: VoiceState,
     onHidePieces: () -> Unit,
     onGiveUp: () -> Unit,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onVoiceInput: () -> Unit
 ) {
-    val buttonModifier = Modifier.fillMaxWidth().height(56.dp)
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // `weight` postoji samo unutar reda, pa modifikator mora ovde.
+        val buttonModifier = Modifier.weight(1f).height(56.dp)
 
-    when {
-        uiState.outcome == EndgameOutcome.GAVE_UP ->
-            FilledTonalButton(onClick = onNext, modifier = buttonModifier) {
-                Text("SLEDEĆA POZICIJA", fontWeight = FontWeight.Bold)
-            }
+        when {
+            uiState.outcome == EndgameOutcome.GAVE_UP ->
+                FilledTonalButton(onClick = onNext, modifier = buttonModifier) {
+                    Text("SLEDEĆA POZICIJA", fontWeight = FontWeight.Bold)
+                }
 
-        uiState.outcome != EndgameOutcome.IN_PROGRESS ->
-            // Ishod je rešen; sledeća pozicija stiže sama posle kratke pauze.
-            Box(buttonModifier)
+            uiState.outcome != EndgameOutcome.IN_PROGRESS ->
+                // Ishod je rešen; sledeća pozicija stiže sama posle kratke pauze.
+                Box(buttonModifier)
 
-        uiState.isMemorizing ->
-            Button(onClick = onHidePieces, modifier = buttonModifier) {
-                Text("ZAPAMTIO SAM — SAKRIJ", fontSize = 17.sp, fontWeight = FontWeight.Bold)
-            }
+            uiState.isMemorizing ->
+                Button(onClick = onHidePieces, modifier = buttonModifier) {
+                    Text("ZAPAMTIO SAM — SAKRIJ", fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                }
 
-        else ->
-            OutlinedButton(
-                onClick = onGiveUp,
-                modifier = buttonModifier,
-                enabled = !uiState.isEngineThinking
-            ) {
-                Text("ODUSTANI / POKAŽI")
-            }
+            else ->
+                OutlinedButton(
+                    onClick = onGiveUp,
+                    modifier = buttonModifier,
+                    enabled = !uiState.isEngineThinking
+                ) {
+                    Text("ODUSTANI / POKAŽI")
+                }
+        }
+
+        // Potez se izgovara u dva koraka: prvo polazno pa odredišno polje.
+        VoiceInputButton(
+            state = voiceState,
+            onStartListening = onVoiceInput,
+            enabled = uiState.isPlayerTurn
+        )
     }
 }
 

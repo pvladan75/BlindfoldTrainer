@@ -224,7 +224,7 @@ viši rang i nabraja dostignuća osvojena baš tom sesijom.
 
 ## Šta ne radi i šta nedostaje
 
-### Glasovni unos — model se preuzima, mikrofon još nije u modulima
+### Glasovni unos — radi, ali nije proveren na uređaju
 **Odlučeno: model se preuzima na zahtev korisnika**, ne pakuje se u APK. Razlog
 je izbor — kome glas ne treba, taj ne plaća 39 MB preuzimanja ni 67 MB na disku,
 a sme i da obriše model kasnije.
@@ -249,9 +249,17 @@ Tri stvari koje su namerno tako:
 Kartica **Glasovni unos** stoji na dnu menija: stanje, dugme za preuzimanje sa
 trakom, prekid, i brisanje modela.
 
-**Šta ostaje:** nijedan modul još ne prikazuje mikrofon. Parovi, Završnica i
-Prati partiju bi ga dobili kad je `VoiceState.Idle`, uz traženje `RECORD_AUDIO`
-dozvole pri prvom dodiru.
+Mikrofon je u **Parovima, Završnici i Prati partiju**. Dugme je jedno —
+`VoiceInputButton` u `:core:audio`, uz `VoiceState` — jer su dozvola, stanja i
+ponašanje pri odbijanju svuda isti, a tri kopije bi se pre ili kasnije razišle.
+Kad glas nije upotrebljiv (model nije preuzet, ili je dozvola odbijena), dugme se
+**ne prikazuje** umesto da stoji i ne radi ništa.
+
+Izgovoreno polje ide kroz **isti `onSquareClicked`** kao i dodir, pa nema drugog
+puta do odgovora ni druge provere. U Završnici to znači da se potez izgovara u
+dva koraka: polazno pa odredišno polje.
+
+**Nije provereno na uređaju** — ni preuzimanje modela ni prepoznavanje.
 
 ### APK je 57,7 MB
 Skoro sve su Vosk native biblioteke za pet ABI-ja — uključujući `mips`, koji ne
@@ -312,10 +320,9 @@ jedno i drugo računa iz istorije.
 
 Svih šest modula postoji i radi na uređaju. Ostalo je:
 
-1. Preuzeti model na uređaju i videti da kartica dođe do „spreman" — preuzimanje
-   nije nikad izvršeno na telefonu
-2. Mikrofon u Parovima, Završnici i Prati partiju, uz `RECORD_AUDIO` dozvolu
-3. Dogovoriti brojeve bodovanja i da li rang išta otključava
+1. Probati glasovni unos na uređaju — model je preuzet, ali prepoznavanje polja
+   nije nikad izvršeno
+2. Dogovoriti brojeve bodovanja i da li rang išta otključava
 4. Podešavanja (DataStore) i ekran sa spiskom dostignuća
 5. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
 6. Težine u Geometriji (vidi gore) — odloženo dogovorom

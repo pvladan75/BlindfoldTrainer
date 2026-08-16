@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.program.blindfoldtrainer.core.audio.VoiceInputButton
 import com.program.blindfoldtrainer.core.chess.Board
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.designsystem.board.ChessBoard
@@ -41,6 +42,7 @@ fun FollowGameScreen(
     viewModel: FollowGameViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val voiceState by viewModel.voiceState.collectAsState()
 
     LaunchedEffect(difficulty) { viewModel.startOnce(difficulty) }
 
@@ -84,12 +86,25 @@ fun FollowGameScreen(
 
         Spacer(Modifier.weight(1f))
 
-        Button(
-            onClick = viewModel::onNextMove,
-            enabled = uiState.phase == FollowPhase.FOLLOWING && !uiState.isFinished,
-            modifier = Modifier.fillMaxWidth().height(56.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("SLEDEĆI POTEZ", fontWeight = FontWeight.Bold, fontSize = 17.sp)
+            Button(
+                onClick = viewModel::onNextMove,
+                enabled = uiState.phase == FollowPhase.FOLLOWING && !uiState.isFinished,
+                modifier = Modifier.weight(1f).height(56.dp)
+            ) {
+                Text("SLEDEĆI POTEZ", fontWeight = FontWeight.Bold, fontSize = 17.sp)
+            }
+
+            // Odgovor sme i da se izgovori — mikrofon ima smisla samo dok pitanje stoji.
+            VoiceInputButton(
+                state = voiceState,
+                onStartListening = viewModel::onVoiceInput,
+                enabled = uiState.phase == FollowPhase.QUESTION
+            )
         }
     }
 }

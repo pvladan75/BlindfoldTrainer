@@ -3,6 +3,8 @@ package com.program.blindfoldtrainer.feature.followgame
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.program.blindfoldtrainer.core.audio.VoiceInput
+import com.program.blindfoldtrainer.core.audio.VoiceState
 import com.program.blindfoldtrainer.core.chess.PgnGame
 import com.program.blindfoldtrainer.core.chess.Position
 import com.program.blindfoldtrainer.core.chess.Square
@@ -73,8 +75,16 @@ private const val TAG = "FollowGameViewModel"
 
 @HiltViewModel
 class FollowGameViewModel @Inject constructor(
-    private val catalog: GameCatalog
+    private val catalog: GameCatalog,
+    private val voiceInput: VoiceInput
 ) : ViewModel() {
+
+    val voiceState: StateFlow<VoiceState> = voiceInput.state
+
+    /** Odgovor na pitanje sme i da se izgovori; ide kroz isti put kao i dodir. */
+    fun onVoiceInput() {
+        voiceInput.listenForSquare { square -> onSquareClicked(square) }
+    }
 
     private val _uiState = MutableStateFlow(FollowGameUiState())
     val uiState: StateFlow<FollowGameUiState> = _uiState.asStateFlow()
@@ -223,5 +233,6 @@ class FollowGameViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         feedbackJob?.cancel()
+        voiceInput.stop()
     }
 }

@@ -31,6 +31,7 @@ android {
 dependencies {
     implementation(project(":core:moduleapi"))
     implementation(project(":core:designsystem"))
+    implementation(project(":core:audio"))
 
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.kotlinx.coroutines.android)

@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.program.blindfoldtrainer.core.audio.Speaker
+import com.program.blindfoldtrainer.core.audio.VoiceInput
+import com.program.blindfoldtrainer.core.audio.VoiceState
 import com.program.blindfoldtrainer.core.audio.spoken
 import com.program.blindfoldtrainer.core.chess.Color
 import com.program.blindfoldtrainer.core.chess.Move
@@ -93,8 +95,19 @@ private const val TAG = "EndgameViewModel"
 class EndgameViewModel @Inject constructor(
     private val catalog: EndgameCatalog,
     private val engine: ChessEngine,
-    private val speaker: Speaker
+    private val speaker: Speaker,
+    private val voiceInput: VoiceInput
 ) : ViewModel() {
+
+    val voiceState: StateFlow<VoiceState> = voiceInput.state
+
+    /**
+     * Potez se izgovara u dva koraka — polazno pa odredišno polje — jer prolazi
+     * kroz isti [onSquareClicked] kao i dodir.
+     */
+    fun onVoiceInput() {
+        voiceInput.listenForSquare { square -> onSquareClicked(square) }
+    }
 
     private val _uiState = MutableStateFlow(EndgameUiState())
     val uiState: StateFlow<EndgameUiState> = _uiState.asStateFlow()
@@ -399,5 +412,6 @@ class EndgameViewModel @Inject constructor(
         engineJob?.cancel()
         engine.stopSearch()
         speaker.stop()
+        voiceInput.stop()
     }
 }

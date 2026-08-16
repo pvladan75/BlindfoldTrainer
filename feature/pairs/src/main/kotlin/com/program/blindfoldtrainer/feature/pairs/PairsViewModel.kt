@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.program.blindfoldtrainer.core.audio.Speaker
+import com.program.blindfoldtrainer.core.audio.VoiceInput
+import com.program.blindfoldtrainer.core.audio.VoiceState
 import com.program.blindfoldtrainer.core.audio.spoken
 import com.program.blindfoldtrainer.core.chess.Board
 import com.program.blindfoldtrainer.core.chess.Move
@@ -77,8 +79,19 @@ private const val TAG = "PairsViewModel"
 @HiltViewModel
 class PairsViewModel @Inject constructor(
     private val catalog: PuzzleCatalog,
-    private val speaker: Speaker
+    private val speaker: Speaker,
+    private val voiceInput: VoiceInput
 ) : ViewModel() {
+
+    val voiceState: StateFlow<VoiceState> = voiceInput.state
+
+    /**
+     * Sluša do prvog prepoznatog polja i prosleđuje ga kao da je dodirnuto.
+     * Glas i dodir zato prolaze kroz istu proveru — nema drugog puta do odgovora.
+     */
+    fun onVoiceInput() {
+        voiceInput.listenForSquare { square -> onSquareClicked(square) }
+    }
 
     private val _uiState = MutableStateFlow(PairsUiState())
     val uiState: StateFlow<PairsUiState> = _uiState.asStateFlow()
@@ -331,5 +344,6 @@ class PairsViewModel @Inject constructor(
         timerJob?.cancel()
         playJob?.cancel()
         speaker.stop()
+        voiceInput.stop()
     }
 }

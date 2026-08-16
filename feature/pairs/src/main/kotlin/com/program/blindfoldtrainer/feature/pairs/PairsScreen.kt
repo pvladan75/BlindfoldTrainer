@@ -37,6 +37,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.designsystem.board.ChessBoard
 import com.program.blindfoldtrainer.core.designsystem.board.SquareTint
+import com.program.blindfoldtrainer.core.audio.VoiceInputButton
+import com.program.blindfoldtrainer.core.audio.VoiceState
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.SessionResult
 import java.util.concurrent.TimeUnit
@@ -48,6 +50,7 @@ fun PairsScreen(
     viewModel: PairsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val voiceState by viewModel.voiceState.collectAsState()
 
     LaunchedEffect(difficulty) { viewModel.startOnce(difficulty) }
     LaunchedEffect(uiState.isFinished) {
@@ -93,10 +96,12 @@ fun PairsScreen(
 
             Controls(
                 uiState = uiState,
+                voiceState = voiceState,
                 onBegin = viewModel::onBeginPuzzle,
                 onRepeat = viewModel::onRepeatMove,
                 onReveal = viewModel::onRevealPieces,
-                onNext = viewModel::onNextPuzzle
+                onNext = viewModel::onNextPuzzle,
+                onVoiceInput = viewModel::onVoiceInput
             )
         }
 
@@ -179,10 +184,12 @@ private fun MoveBanner(uiState: PairsUiState) {
 @Composable
 private fun Controls(
     uiState: PairsUiState,
+    voiceState: VoiceState,
     onBegin: () -> Unit,
     onRepeat: () -> Unit,
     onReveal: () -> Unit,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onVoiceInput: () -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -217,6 +224,14 @@ private fun Controls(
         ) {
             Icon(Icons.Default.Refresh, contentDescription = "Ponovi potez")
         }
+
+        // Polje sme i da se izgovori — u modulu u kom potezi stižu glasom, to je
+        // najprirodniji način da se odgovori.
+        VoiceInputButton(
+            state = voiceState,
+            onStartListening = onVoiceInput,
+            enabled = uiState.phase == PairsPhase.AWAITING_INPUT
+        )
     }
 }
 

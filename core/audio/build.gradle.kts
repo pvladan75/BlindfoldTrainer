@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
 }
@@ -21,6 +22,10 @@ android {
     kotlin {
         jvmToolchain(17)
     }
+
+    buildFeatures {
+        compose = true
+    }
 }
 
 dependencies {
@@ -28,6 +33,15 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
+
+    // Dugme za mikrofon stoji uz VoiceState, u modulu koji glas i drži —
+    // inače bi ista dozvola i isto rukovanje stanjem bili prepisani u svakom
+    // modulu koji glas nudi.
+    api(platform(libs.androidx.compose.bom))
+    api(libs.androidx.ui)
+    api(libs.androidx.material3)
+    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.activity.compose)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
