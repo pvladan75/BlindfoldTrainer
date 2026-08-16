@@ -188,6 +188,7 @@ class EndgameViewModel @Inject constructor(
     }
 
     private fun loadPuzzle(index: Int) {
+        voiceInput.stop()
         val puzzle = puzzles[index]
         val position = Position.fromFen(puzzle.fen)
 
@@ -388,6 +389,8 @@ class EndgameViewModel @Inject constructor(
     fun onGiveUp() {
         engineJob?.cancel()
         speaker.stop()
+        // Mikrofon ne sme da ostane upaljen kad se od korisnika više ništa ne traži.
+        voiceInput.stop()
         _uiState.update {
             it.copy(
                 outcome = EndgameOutcome.GAVE_UP,
@@ -407,6 +410,7 @@ class EndgameViewModel @Inject constructor(
         timerJob?.cancel()
         engineJob?.cancel()
         speaker.stop()
+        voiceInput.stop()
         _uiState.update { it.copy(isFinished = true) }
     }
 

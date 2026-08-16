@@ -220,6 +220,8 @@ class PairsViewModel @Inject constructor(
         if (!currentPuzzleFailed) currentPuzzleFailed = true
         playJob?.cancel()
         speaker.stop()
+        // Mikrofon ne sme da ostane upaljen kad se od korisnika više ništa ne traži.
+        voiceInput.stop()
         _uiState.update {
             it.copy(phase = PairsPhase.REVEALED, visibility = PieceVisibility.All)
         }
@@ -231,6 +233,7 @@ class PairsViewModel @Inject constructor(
     }
 
     private fun loadPuzzle(index: Int) {
+        voiceInput.stop()
         currentPuzzleFailed = false
         val puzzle = puzzles[index]
         currentPuzzle = puzzle
@@ -315,6 +318,7 @@ class PairsViewModel @Inject constructor(
     private fun finishSession() {
         timerJob?.cancel()
         speaker.stop()
+        voiceInput.stop()
         _uiState.update { it.copy(isFinished = true) }
     }
 

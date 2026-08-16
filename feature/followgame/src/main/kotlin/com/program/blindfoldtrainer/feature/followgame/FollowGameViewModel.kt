@@ -216,6 +216,7 @@ class FollowGameViewModel @Inject constructor(
 
     private fun finish() {
         feedbackJob?.cancel()
+        voiceInput.stop()
         _uiState.update { it.copy(isFinished = true, phase = FollowPhase.FOLLOWING) }
     }
 

@@ -270,11 +270,26 @@ nemi otkaz koji je u ovom projektu već dvaput skupo koštao. Sada dodir kaže �
 nedostaje: da paket nije preuzet, da dozvola nije data, ili da se paket još
 priprema.
 
-**Mikrofon se gasi na dodir i sam od sebe.** Sa uređaja je stigla i prijava da
-je ostao upaljen posle „echo eight": ako izgovoreno nije polje — a „eight" lako
-ode u „ate" — Vosk je slušao **bez ograničenja**, a dodir na dugme nije radio
-ništa jer `listenForSquare` izlazi odmah kad je već u slušanju. Dva izlaza sada
-postoje: slušanje ima rok od 10 sekundi, a dodir dok sluša prekida.
+**Mikrofon se gasi na dodir i sam od sebe.** Sa uređaja je stigla i prijava da je
+ostao upaljen posle „echo eight": ako izgovoreno nije polje — a „eight" lako ode
+u „ate" — Vosk je slušao **bez ograničenja**, a dodir na dugme nije radio ništa
+jer `listenForSquare` izlazi odmah kad je već u slušanju.
+
+Prvi pokušaj ispravke nije bio dovoljan, i to je dobra ilustracija: dodir jeste
+gasio, ali je `Surface` imao `enabled = isPlayerTurn`, pa **čim korisnik odustane
+ili pređe na sledeći zadatak dugme prestane da prima dodir** — a baš tad je
+najpotrebnije. Zato sada:
+
+- slušanje ima rok od 10 sekundi;
+- dugme je dodirljivo **uvek dok sluša**, i onda kad vežba više ne očekuje
+  odgovor (`enabled || isListening`);
+- `stopService()` je pod `runCatching`, da izuzetak pri zatvaranju ne ostavi
+  stanje zauvek na „slušam";
+- ViewModel-i gase mikrofon i sami — pri odustajanju, pri prelasku na sledeći
+  zadatak i na kraju sesije.
+
+Naravoučenije za dalje: **kad dugme ume da radi dve stvari, `enabled` sme da
+gasi samo jednu od njih.**
 
 Mikrofon je aktivan **samo kad se očekuje odgovor** — u Parovima kad potez
 stigne, u Završnici kad je korisnik na potezu, u Prati partiju kad stoji pitanje.

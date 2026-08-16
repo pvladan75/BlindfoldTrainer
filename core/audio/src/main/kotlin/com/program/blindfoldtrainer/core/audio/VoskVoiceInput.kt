@@ -156,10 +156,19 @@ class VoskVoiceInput @Inject constructor(
         }
     }
 
+    /**
+     * Gašenje prepoznavanja ne sme da obori stanje: ako Vosk baci pri
+     * zatvaranju, dugme bi ostalo crveno zauvek jer se do reda ispod ne bi ni
+     * stiglo.
+     */
     private fun stopService() {
-        speechService?.stop()
-        speechService?.shutdown()
+        val service = speechService ?: return
         speechService = null
+
+        runCatching {
+            service.stop()
+            service.shutdown()
+        }.onFailure { Log.w(TAG, "Zatvaranje prepoznavanja nije prošlo čisto", it) }
     }
 
     private val listener = object : RecognitionListener {

@@ -94,7 +94,10 @@ fun VoiceInputButton(
             }
         },
         modifier = modifier.size(52.dp),
-        enabled = enabled,
+        // Dok sluša, dugme je uvek dodirljivo — i onda kad vežba više ne očekuje
+        // odgovor. Inače bi odustajanje ili prelazak na sledeći zadatak ostavili
+        // upaljen mikrofon koji se nema čime ugasiti.
+        enabled = enabled || isListening,
         shape = MaterialTheme.shapes.medium,
         color = when {
             isListening -> MaterialTheme.colorScheme.errorContainer
