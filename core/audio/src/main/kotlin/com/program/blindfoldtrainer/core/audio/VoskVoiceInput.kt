@@ -4,10 +4,12 @@ import android.util.Log
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
+import com.program.blindfoldtrainer.core.model.VoiceLanguage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -50,60 +52,61 @@ class VoskVoiceInput @Inject constructor(
     private var settings: Settings = Settings.DEFAULT
 
     init {
+        // Paket se ne pakuje u APK nego se preuzima na zahtev, a jezik se bira u
+        // Podešavanjima — glasovni unos se zato pali i gasi u toku rada, pa se
+        // prati i izbor jezika i šta je instalirano i šta se upravo preuzima.
         scope.launch {
-            settingsRepository.settings.collect { updated ->
-                val languageChanged = updated.voiceLanguage != settings.voiceLanguage
-                settings = updated
+            combine(
+                settingsRepository.settings,
+                modelStore.installed,
+                modelStore.state
+            ) { settings, installed, modelState -> Triple(settings, installed, modelState) }
+                .collect { (updated, installed, modelState) ->
+                    val languageChanged = updated.voiceLanguage != settings.voiceLanguage
+                    settings = updated
 
-                // Model je vezan za jezik: kad se jezik promeni, stari se pušta
-                // i čeka se da store javi da je novi spreman.
-                if (languageChanged) releaseModel()
-            }
+                    // Paket je vezan za jezik: kad se jezik promeni, stari se pušta.
+                    if (languageChanged) releaseModel()
+
+                    applyState(installed, modelState)
+                }
         }
     }
 
-    init {
-        // Model se ne pakuje u APK nego se preuzima na zahtev, pa se glasovni
-        // unos pali i gasi u toku rada aplikacije — otud praćenje stanja umesto
-        // jednokratne provere pri pokretanju.
-        scope.launch {
-            modelStore.state.collect { modelState -> onModelState(modelState) }
+    private fun applyState(installed: Set<VoiceLanguage>, modelState: ModelState) {
+        val language = settings.voiceLanguage
+        val isBusyWithThisLanguage = when (modelState) {
+            is ModelState.Downloading -> modelState.language == language
+            is ModelState.Unpacking -> modelState.language == language
+            else -> false
         }
-    }
 
-    private fun onModelState(modelState: ModelState) {
-        when (modelState) {
-            is ModelState.Ready -> loadModel()
+        when {
+            isBusyWithThisLanguage -> _state.value = VoiceState.Preparing
 
-            ModelState.Absent -> {
+            language in installed -> loadModel(language)
+
+            else -> {
                 releaseModel()
-                // UI ovo vidi kroz stanje i sakrije mikrofon, umesto da nudi
-                // dugme koje ne radi ništa.
-                _state.value = VoiceState.Unavailable("Jezički model nije preuzet")
-            }
-
-            is ModelState.Downloading, ModelState.Unpacking -> {
-                _state.value = VoiceState.Preparing
-            }
-
-            is ModelState.Failed -> {
-                releaseModel()
-                _state.value = VoiceState.Unavailable(modelState.reason)
+                val failure = (modelState as? ModelState.Failed)?.takeIf { it.language == language }
+                _state.value = VoiceState.Unavailable(
+                    failure?.reason ?: "Paket za izabrani jezik nije preuzet"
+                )
             }
         }
     }
 
-    private fun loadModel() {
+    private fun loadModel(language: VoiceLanguage) {
         if (model != null) return
         _state.value = VoiceState.Preparing
 
         try {
-            model = Model(modelStore.directory.absolutePath)
+            model = Model(modelStore.directoryFor(language).absolutePath)
             _state.value = VoiceState.Idle
-            Log.d(TAG, "Vosk model spreman")
+            Log.d(TAG, "Vosk paket za ${language.code} spreman")
         } catch (error: Throwable) {
-            Log.e(TAG, "Učitavanje Vosk modela nije uspelo", error)
-            _state.value = VoiceState.Unavailable("Model nije učitan: ${error.message}")
+            Log.e(TAG, "Učitavanje paketa za ${language.code} nije uspelo", error)
+            _state.value = VoiceState.Unavailable("Paket nije učitan: ${error.message}")
         }
     }
 

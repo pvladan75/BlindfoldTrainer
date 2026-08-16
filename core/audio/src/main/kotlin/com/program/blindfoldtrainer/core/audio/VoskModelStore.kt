@@ -2,7 +2,6 @@ package com.program.blindfoldtrainer.core.audio
 
 import android.content.Context
 import android.util.Log
-import com.program.blindfoldtrainer.core.model.SettingsRepository
 import com.program.blindfoldtrainer.core.model.VoiceLanguage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
@@ -21,106 +20,87 @@ import java.net.URL
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Stanje jezičkog modela na uređaju. */
+/** Šta se upravo dešava sa paketima. Odnosi se na jedan jezik, onaj u obradi. */
 sealed interface ModelState {
-    /** Model nije preuzet. Glasovni unos ne postoji dok se to ne promeni. */
-    data object Absent : ModelState
+    /** Ništa se ne preuzima. */
+    data object Idle : ModelState
 
-    /** Preuzimanje u toku; [fraction] je `null` dok se ne zna ukupna veličina. */
-    data class Downloading(val fraction: Float?) : ModelState
+    /** [fraction] je `null` dok se ne zna ukupna veličina. */
+    data class Downloading(val language: VoiceLanguage, val fraction: Float?) : ModelState
 
-    /** Preuzeto, raspakuje se. */
-    data object Unpacking : ModelState
+    data class Unpacking(val language: VoiceLanguage) : ModelState
 
-    data object Ready : ModelState
-
-    data class Failed(val reason: String) : ModelState
+    data class Failed(val language: VoiceLanguage, val reason: String) : ModelState
 }
 
 /**
- * Jezički model za Vosk — preuzimanje, raspakivanje i brisanje.
+ * Jezički paketi za Vosk — preuzimanje, brisanje i evidencija šta je instalirano.
  *
- * Model je 39 MB za preuzimanje i oko 67 MB na disku, pa **ne ide u APK**.
+ * Paket je oko 40 MB za preuzimanje i 60–70 MB na disku, pa **ne ide u APK**.
  * Preuzima se na zahtev korisnika: kome glasovni unos ne treba, taj ga i ne
- * plaća. Isto tako sme i da ga obriše i vrati prostor.
+ * plaća. Svaki jezik ima svoj folder, pa povratak na već preuzet jezik ne traži
+ * novo preuzimanje.
  *
- * Nedovršeno preuzimanje se ne pamti kao model: folder se briše pri neuspehu, a
+ * Nedovršeno preuzimanje se ne pamti kao paket: folder se briše pri neuspehu, a
  * spremnost se proverava po fajlovima koje Vosk zaista traži, ne po postojanju
  * foldera.
  */
 @Singleton
 class VoskModelStore @Inject constructor(
-    @ApplicationContext private val context: Context,
-    settingsRepository: SettingsRepository
+    @ApplicationContext private val context: Context
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    private val _state = MutableStateFlow<ModelState>(ModelState.Absent)
+    private val _state = MutableStateFlow<ModelState>(ModelState.Idle)
     val state: StateFlow<ModelState> = _state.asStateFlow()
+
+    private val _installed = MutableStateFlow(scanInstalled())
+
+    /** Jezici čiji je paket na uređaju i upotrebljiv. */
+    val installed: StateFlow<Set<VoiceLanguage>> = _installed.asStateFlow()
 
     private var downloadJob: Job? = null
 
-    @Volatile
-    private var language: VoiceLanguage = VoiceLanguage.ENGLISH
-
-    /** Folder sa modelom; put koji se prosleđuje Vosk-u kad je [ModelState.Ready]. */
-    val directory: File get() = directoryFor(language)
-
-    /**
-     * Svaki jezik ima svoj folder, pa povratak na jezik koji je već preuzet ne
-     * traži novo preuzimanje.
-     */
-    private fun directoryFor(language: VoiceLanguage) =
+    /** Folder sa paketom; put koji se prosleđuje Vosk-u. */
+    fun directoryFor(language: VoiceLanguage): File =
         File(File(context.filesDir, DIRECTORY), language.code)
 
-    init {
-        scope.launch {
-            settingsRepository.settings.collect { settings ->
-                if (settings.voiceLanguage == language) return@collect
+    fun isInstalled(language: VoiceLanguage): Boolean =
+        ModelArchive.isComplete(directoryFor(language))
 
-                // Promena jezika prekida preuzimanje koje je u toku: ono što se
-                // preuzima više nije ono što je traženo.
-                downloadJob?.cancel()
-                language = settings.voiceLanguage
-                refreshState()
-            }
-        }
-        refreshState()
-    }
-
-    private fun refreshState() {
-        _state.value =
-            if (ModelArchive.isComplete(directory)) ModelState.Ready else ModelState.Absent
-    }
-
-    /** Bezbedno je zvati više puta — drugo pozivanje dok traje preuzimanje ne radi ništa. */
-    fun download() {
+    /** Bezbedno je zvati više puta — dok jedno preuzimanje traje, drugo se ne počinje. */
+    fun download(language: VoiceLanguage) {
         if (_state.value is ModelState.Downloading || _state.value is ModelState.Unpacking) return
-        if (_state.value is ModelState.Ready) return
+        if (isInstalled(language)) return
 
         downloadJob?.cancel()
         downloadJob = scope.launch {
             try {
-                _state.value = ModelState.Downloading(fraction = null)
-                val archive = fetchArchive()
+                _state.value = ModelState.Downloading(language, fraction = null)
+                val archive = fetchArchive(language)
 
-                _state.value = ModelState.Unpacking
-                unpack(archive)
+                _state.value = ModelState.Unpacking(language)
+                unpack(language, archive)
 
-                _state.value = if (ModelArchive.isComplete(directory)) {
-                    ModelState.Ready
+                if (isInstalled(language)) {
+                    _state.value = ModelState.Idle
                 } else {
-                    directory.deleteRecursively()
-                    ModelState.Failed("Preuzeti model je nepotpun")
+                    directoryFor(language).deleteRecursively()
+                    _state.value = ModelState.Failed(language, "Preuzeti paket je nepotpun")
                 }
             } catch (cancellation: CancellationException) {
-                cleanUp()
-                _state.value = ModelState.Absent
+                cleanUp(language)
+                _state.value = ModelState.Idle
                 throw cancellation
             } catch (error: Throwable) {
-                Log.e(TAG, "Preuzimanje modela nije uspelo", error)
-                cleanUp()
-                _state.value = ModelState.Failed(error.message ?: error::class.java.simpleName)
+                Log.e(TAG, "Preuzimanje paketa za ${language.code} nije uspelo", error)
+                cleanUp(language)
+                _state.value = ModelState.Failed(
+                    language,
+                    error.message ?: error::class.java.simpleName
+                )
+            } finally {
+                _installed.value = scanInstalled()
             }
         }
     }
@@ -129,24 +109,30 @@ class VoskModelStore @Inject constructor(
         downloadJob?.cancel()
     }
 
-    /** Briše model sa uređaja i vraća oko 67 MB prostora. */
-    fun delete() {
-        downloadJob?.cancel()
+    /** Briše paket sa uređaja i vraća 60–70 MB prostora. */
+    fun delete(language: VoiceLanguage) {
         scope.launch {
-            cleanUp()
-            _state.value = ModelState.Absent
+            cleanUp(language)
+            _installed.value = scanInstalled()
+            if ((_state.value as? ModelState.Failed)?.language == language) {
+                _state.value = ModelState.Idle
+            }
         }
     }
 
-    private suspend fun fetchArchive(): File = withContext(Dispatchers.IO) {
+    private fun scanInstalled(): Set<VoiceLanguage> =
+        VoiceLanguage.entries.filterTo(mutableSetOf()) { isInstalled(it) }
+
+    private suspend fun fetchArchive(language: VoiceLanguage): File = withContext(Dispatchers.IO) {
         val archive = File(context.cacheDir, ARCHIVE_NAME)
         archive.delete()
 
-        val connection = (URL(VoiceLanguages.urlFor(language)).openConnection() as HttpURLConnection).apply {
-            connectTimeout = TIMEOUT_MILLIS
-            readTimeout = TIMEOUT_MILLIS
-            instanceFollowRedirects = true
-        }
+        val connection = (URL(VoiceLanguages.urlFor(language)).openConnection() as HttpURLConnection)
+            .apply {
+                connectTimeout = TIMEOUT_MILLIS
+                readTimeout = TIMEOUT_MILLIS
+                instanceFollowRedirects = true
+            }
 
         try {
             val code = connection.responseCode
@@ -165,7 +151,10 @@ class VoskModelStore @Inject constructor(
                         written += read
                         // Stanje se osvežava po komadu, ne po bajtu — traka ne
                         // treba da bude tačnija od onoga što se vidi.
-                        _state.value = ModelState.Downloading(total?.let { written.toFloat() / it })
+                        _state.value = ModelState.Downloading(
+                            language,
+                            total?.let { written.toFloat() / it }
+                        )
                     }
                 }
             }
@@ -175,15 +164,16 @@ class VoskModelStore @Inject constructor(
         }
     }
 
-    private suspend fun unpack(archive: File) = withContext(Dispatchers.IO) {
+    private suspend fun unpack(language: VoiceLanguage, archive: File) = withContext(Dispatchers.IO) {
+        val directory = directoryFor(language)
         directory.deleteRecursively()
         archive.inputStream().use { ModelArchive.unpack(it, directory) }
         archive.delete()
     }
 
-    private fun cleanUp() {
+    private fun cleanUp(language: VoiceLanguage) {
         File(context.cacheDir, ARCHIVE_NAME).delete()
-        directory.deleteRecursively()
+        directoryFor(language).deleteRecursively()
     }
 
     private companion object {

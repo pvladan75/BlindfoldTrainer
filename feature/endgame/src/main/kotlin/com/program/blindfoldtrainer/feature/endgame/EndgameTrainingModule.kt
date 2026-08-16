@@ -21,7 +21,7 @@ class EndgameTrainingModule @Inject constructor() : TrainingModule {
     override val descriptionRes = R.string.endgame_description
     override val iconRes = R.drawable.ic_endgame
     override val difficulties = listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD)
-    override val needs = setOf(Capability.SPEECH_OUTPUT, Capability.ENGINE)
+    override val needs = setOf(Capability.SPEECH_OUTPUT, Capability.ENGINE, Capability.VOICE_INPUT)
 
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {

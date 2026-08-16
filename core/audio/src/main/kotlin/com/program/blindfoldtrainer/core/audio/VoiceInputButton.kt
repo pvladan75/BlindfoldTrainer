@@ -2,6 +2,7 @@ package com.program.blindfoldtrainer.core.audio
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
@@ -30,8 +31,10 @@ import androidx.core.content.ContextCompat
  * Stoji ovde, uz [VoiceState], a ne u svakom modulu: dozvola, stanja i ponašanje
  * pri odbijanju su isti svuda, a tri kopije bi se pre ili kasnije razišle.
  *
- * Kad glas nije upotrebljiv — model nije preuzet, ili je korisnik odbio dozvolu —
- * dugme se **ne prikazuje**. Bolje nego dugme koje ne radi ništa.
+ * **Dugme se ne skriva kad glas nije upotrebljiv.** Ranije jeste, pa se nije
+ * moglo razaznati da li fali paket, dozvola, ili je samo pogrešan trenutak u
+ * vežbi — a to je isti onaj nemi otkaz koji je u ovom projektu već dvaput skupo
+ * koštao. Sada dodir kaže šta nedostaje.
  */
 @Composable
 fun VoiceInputButton(
@@ -42,60 +45,80 @@ fun VoiceInputButton(
 ) {
     val context = LocalContext.current
 
-    var isDenied by remember { mutableStateOf(false) }
     var hasPermission by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) ==
                 PackageManager.PERMISSION_GRANTED
         )
     }
+    var wasDenied by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         hasPermission = granted
-        isDenied = !granted
-        // Dozvola stiže tek pošto je dugme već pritisnuto, pa se slušanje
-        // pokreće ovde — inače bi prvi dodir uvek propao.
-        if (granted) onStartListening()
-    }
+        wasDenied = !granted
 
-    if (state is VoiceState.Unavailable || isDenied) return
+        if (granted) {
+            // Dozvola stiže tek pošto je dugme već pritisnuto, pa se slušanje
+            // pokreće ovde — inače bi prvi dodir uvek propao.
+            onStartListening()
+        } else {
+            context.toast("Bez dozvole za mikrofon glasovni unos ne radi.")
+        }
+    }
 
     val isListening = state == VoiceState.Listening
     val isPreparing = state == VoiceState.Preparing
+    val unavailable = (state as? VoiceState.Unavailable)?.reason
 
     Surface(
         onClick = {
-            if (hasPermission) {
-                onStartListening()
-            } else {
-                permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+            when {
+                unavailable != null ->
+                    context.toast("$unavailable — jezik i paket biraš u Podešavanjima.")
+
+                isPreparing -> context.toast("Paket se još priprema.")
+
+                wasDenied && !hasPermission ->
+                    context.toast("Dozvoli mikrofon u podešavanjima telefona.")
+
+                hasPermission -> onStartListening()
+
+                else -> permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
             }
         },
         modifier = modifier.size(52.dp),
-        enabled = enabled && !isPreparing,
+        enabled = enabled,
         shape = MaterialTheme.shapes.medium,
-        color = if (isListening) {
-            MaterialTheme.colorScheme.errorContainer
-        } else {
-            MaterialTheme.colorScheme.secondaryContainer
+        color = when {
+            isListening -> MaterialTheme.colorScheme.errorContainer
+            unavailable != null -> MaterialTheme.colorScheme.surfaceVariant
+            else -> MaterialTheme.colorScheme.secondaryContainer
         }
     ) {
         Box(contentAlignment = Alignment.Center) {
-            when {
-                isPreparing -> CircularProgressIndicator(modifier = Modifier.size(20.dp))
-
-                else -> Icon(
+            if (isPreparing) {
+                CircularProgressIndicator(modifier = Modifier.size(20.dp))
+            } else {
+                Icon(
                     imageVector = if (isListening) Icons.Default.Mic else Icons.Default.MicOff,
-                    contentDescription = if (isListening) "Slušam" else "Izgovori polje",
-                    tint = if (isListening) {
-                        MaterialTheme.colorScheme.onErrorContainer
-                    } else {
-                        MaterialTheme.colorScheme.onSecondaryContainer
+                    contentDescription = when {
+                        isListening -> "Slušam"
+                        unavailable != null -> "Glasovni unos nije spreman"
+                        else -> "Izgovori polje"
+                    },
+                    tint = when {
+                        isListening -> MaterialTheme.colorScheme.onErrorContainer
+                        unavailable != null -> MaterialTheme.colorScheme.onSurfaceVariant
+                        else -> MaterialTheme.colorScheme.onSecondaryContainer
                     }
                 )
             }
         }
     }
+}
+
+private fun android.content.Context.toast(text: String) {
+    Toast.makeText(this, text, Toast.LENGTH_LONG).show()
 }

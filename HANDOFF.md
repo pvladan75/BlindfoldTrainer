@@ -246,14 +246,29 @@ Tri stvari koje su namerno tako:
 - **Unos koji vodi van foldera se odbija**, pa arhiva ne može da piše izvan svog
   mesta. `ModelArchiveTest` pokriva sve troje, bez mreže i bez uređaja.
 
-Kartica **Glasovni unos** stoji na dnu menija: stanje, dugme za preuzimanje sa
-trakom, prekid, i brisanje modela.
+**Izbor jezika i paket su na jednom mestu, u Podešavanjima.** Ranije je meni
+nudio preuzimanje a jezik se birao u Podešavanjima — korisnik je preuzimao paket
+ne videvši za koji je jezik. Sada meni nosi samo obaveštenje koje vodi tamo.
+
+Tok je: izabereš jezik iz spiska → **Instaliraj paket** → **Koristi jezik**.
+Drugo dugme stoji nedostupno dok paketa nema, jer bi prelazak na jezik bez paketa
+ugasio glasovni unos a korisnik ne bi znao zašto. Veličina preuzimanja piše samo
+uz jezik koji **nije** instaliran; uz instalirane stoji kvačica.
+
+Moduli koji primaju glas prijavljuju to kroz `Capability.VOICE_INPUT`, a meni na
+njihovoj kartici prikaže mikrofon. To je prva stvarna upotreba `needs` polja iz
+ugovora modula.
 
 Mikrofon je u **Parovima, Završnici i Prati partiju**. Dugme je jedno —
 `VoiceInputButton` u `:core:audio`, uz `VoiceState` — jer su dozvola, stanja i
 ponašanje pri odbijanju svuda isti, a tri kopije bi se pre ili kasnije razišle.
-Kad glas nije upotrebljiv (model nije preuzet, ili je dozvola odbijena), dugme se
-**ne prikazuje** umesto da stoji i ne radi ništa.
+
+**Dugme se ne skriva kad glas nije upotrebljiv.** Prvo je skrivano, pa se sa
+uređaja javilo „mikrofon nisam mogao da uključim" — a nije se moglo razaznati da
+li fali paket, dozvola, ili je samo pogrešan trenutak u vežbi. To je isti onaj
+nemi otkaz koji je u ovom projektu već dvaput skupo koštao. Sada dodir kaže šta
+nedostaje: da paket nije preuzet, da dozvola nije data, ili da se paket još
+priprema.
 
 Izgovoreno polje ide kroz **isti `onSquareClicked`** kao i dodir, pa nema drugog
 puta do odgovora ni druge provere. U Završnici to znači da se potez izgovara u

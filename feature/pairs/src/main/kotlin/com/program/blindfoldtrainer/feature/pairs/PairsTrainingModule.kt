@@ -21,7 +21,7 @@ class PairsTrainingModule @Inject constructor() : TrainingModule {
     override val descriptionRes = R.string.pairs_description
     override val iconRes = R.drawable.ic_pairs
     override val difficulties = listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD)
-    override val needs = setOf(Capability.SPEECH_OUTPUT)
+    override val needs = setOf(Capability.SPEECH_OUTPUT, Capability.VOICE_INPUT)
 
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {

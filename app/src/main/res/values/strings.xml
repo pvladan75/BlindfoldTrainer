@@ -26,14 +26,12 @@
     <string name="menu_achievements">Dostignuća: %1$d/%2$d</string>
 
     <string name="voice_title">Glasovni unos</string>
-    <string name="voice_absent">Jezički model nije preuzet. Bez njega vežbaš dodirom; sa njim možeš da izgovaraš polja. Jezik se bira u Podešavanjima.</string>
-    <string name="voice_downloading">Preuzimanje u toku…</string>
-    <string name="voice_unpacking">Raspakivanje…</string>
-    <string name="voice_ready">Model je spreman — mikrofon radi u modulima koji ga nude.</string>
-    <string name="voice_failed">Preuzimanje nije uspelo: %1$s</string>
-    <string name="voice_download">PREUZMI MODEL</string>
+    <string name="voice_notice">Jezik prepoznavanja i preuzimanje paketa biraš u Podešavanjima.</string>
+    <string name="voice_failed">Nije uspelo: %1$s</string>
     <string name="voice_cancel">PREKINI</string>
-    <string name="voice_delete">OBRIŠI MODEL</string>
+    <string name="voice_delete">Obriši paket</string>
+
+    <string name="menu_module_voice">Ovaj modul prihvata glasovni unos</string>
 
     <string name="settings_title">Podešavanja</string>
     <string name="settings_back">Nazad</string>
@@ -52,8 +50,14 @@
     <string name="settings_voice">Prepoznavanje — ti govoriš aplikaciji</string>
     <string name="settings_voice_hint">Odnosi se na polja koja ti izgovaraš u mikrofon. Nema veze sa jezikom na kom aplikacija govori.</string>
     <string name="settings_language">Jezik prepoznavanja</string>
-    <string name="settings_language_size">Jezik na kom ti izgovaraš polja. Promena traži nov model, oko %1$d MB.</string>
+    <string name="settings_language_hint">Jezik na kom ti izgovaraš polja.</string>
     <string name="settings_language_item">%1$s (%2$d MB)</string>
+    <string name="settings_language_install">INSTALIRAJ PAKET</string>
+    <string name="settings_language_installed">Instaliran</string>
+    <string name="settings_language_use">KORISTI JEZIK</string>
+    <string name="settings_language_in_use">U upotrebi</string>
+    <string name="settings_language_downloading">Paket se preuzima…</string>
+    <string name="settings_language_unpacking">Paket se raspakuje…</string>
 
     <string name="language_english">Engleski</string>
     <string name="language_german">Nemački</string>

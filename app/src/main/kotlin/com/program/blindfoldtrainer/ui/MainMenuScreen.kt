@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MicNone
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -32,7 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.program.blindfoldtrainer.R
-import com.program.blindfoldtrainer.core.audio.ModelState
+import com.program.blindfoldtrainer.core.model.Capability
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.moduleapi.TrainingModule
 import com.program.blindfoldtrainer.core.progress.Achievement
@@ -44,10 +46,6 @@ import com.program.blindfoldtrainer.core.progress.Rank
 fun MainMenuScreen(
     modules: List<TrainingModule>,
     progress: ProgressSnapshot,
-    voiceModel: ModelState,
-    onDownloadVoiceModel: () -> Unit,
-    onCancelVoiceModel: () -> Unit,
-    onDeleteVoiceModel: () -> Unit,
     onStart: (TrainingModule, Difficulty) -> Unit,
     onOpenSettings: () -> Unit
 ) {
@@ -98,14 +96,7 @@ fun MainMenuScreen(
                 ModuleCard(module = module, onStart = { onStart(module, it) })
             }
 
-            item(key = "voice") {
-                VoiceModelCard(
-                    state = voiceModel,
-                    onDownload = onDownloadVoiceModel,
-                    onCancel = onCancelVoiceModel,
-                    onDelete = onDeleteVoiceModel
-                )
-            }
+            item(key = "voice") { VoiceNotice(onOpenSettings = onOpenSettings) }
         }
     }
 }
@@ -184,77 +175,41 @@ private fun RankCard(progress: ProgressSnapshot) {
 }
 
 /**
- * Jezički model za glasovni unos.
+ * Obaveštenje o glasovnom unosu — bez ijednog dugmeta.
  *
- * Stoji na dnu menija, ispod modula, jer nije vežba nego oprema. Preuzimanje
- * pokreće korisnik — 39 MB nema ko da nametne onome ko vežba dodirom.
+ * Ranije je ovde stajalo preuzimanje paketa, a jezik se birao u Podešavanjima:
+ * korisnik je preuzimao paket ne videvši za koji je jezik. Sada je sav izbor na
+ * jednom mestu, a meni samo pokazuje put.
  */
 @Composable
-private fun VoiceModelCard(
-    state: ModelState,
-    onDownload: () -> Unit,
-    onCancel: () -> Unit,
-    onDelete: () -> Unit
-) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = stringResource(R.string.voice_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+private fun VoiceNotice(onOpenSettings: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable { onOpenSettings() },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.MicNone,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
-
-            Spacer(Modifier.height(6.dp))
-
-            Text(
-                text = when (state) {
-                    ModelState.Absent -> stringResource(R.string.voice_absent)
-                    is ModelState.Downloading -> stringResource(R.string.voice_downloading)
-                    ModelState.Unpacking -> stringResource(R.string.voice_unpacking)
-                    ModelState.Ready -> stringResource(R.string.voice_ready)
-                    is ModelState.Failed -> stringResource(R.string.voice_failed, state.reason)
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (state is ModelState.Failed) {
-                    MaterialTheme.colorScheme.error
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                }
-            )
-
-            if (state is ModelState.Downloading || state is ModelState.Unpacking) {
-                Spacer(Modifier.height(10.dp))
-                val fraction = (state as? ModelState.Downloading)?.fraction
-                if (fraction == null) {
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                } else {
-                    LinearProgressIndicator(
-                        progress = { fraction.coerceIn(0f, 1f) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(12.dp))
-
-            when (state) {
-                ModelState.Absent, is ModelState.Failed ->
-                    FilledTonalButton(onClick = onDownload) {
-                        Text(stringResource(R.string.voice_download))
-                    }
-
-                is ModelState.Downloading ->
-                    FilledTonalButton(onClick = onCancel) {
-                        Text(stringResource(R.string.voice_cancel))
-                    }
-
-                // Raspakivanje traje kratko i nema šta da se prekine na pola.
-                ModelState.Unpacking -> Unit
-
-                ModelState.Ready ->
-                    FilledTonalButton(onClick = onDelete) {
-                        Text(stringResource(R.string.voice_delete))
-                    }
+            Spacer(Modifier.size(12.dp))
+            Column {
+                Text(
+                    text = stringResource(R.string.voice_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = stringResource(R.string.voice_notice),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
@@ -277,8 +232,19 @@ private fun ModuleCard(module: TrainingModule, onStart: (Difficulty) -> Unit) {
                 Spacer(Modifier.size(12.dp))
                 Text(
                     text = stringResource(module.titleRes),
-                    style = MaterialTheme.typography.headlineSmall
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.weight(1f)
                 )
+
+                // Modul sam prijavljuje da ume glasom; meni to samo prikaže.
+                if (Capability.VOICE_INPUT in module.needs) {
+                    Icon(
+                        imageVector = Icons.Default.MicNone,
+                        contentDescription = stringResource(R.string.menu_module_voice),
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
             Spacer(Modifier.height(6.dp))

@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -19,10 +20,13 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -31,6 +35,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -45,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.program.blindfoldtrainer.R
+import com.program.blindfoldtrainer.core.audio.ModelState
 import com.program.blindfoldtrainer.core.audio.PHONETIC_FILES
 import com.program.blindfoldtrainer.core.audio.VoiceLanguages
 import com.program.blindfoldtrainer.core.model.Settings
@@ -185,10 +191,7 @@ private fun VoiceSection(settings: Settings, viewModel: SettingsViewModel) {
 
         Spacer(Modifier.height(10.dp))
 
-        LanguagePicker(
-            selected = settings.voiceLanguage,
-            onSelect = viewModel::onVoiceLanguage
-        )
+        LanguageSection(settings = settings, viewModel = viewModel)
 
         Spacer(Modifier.height(4.dp))
 
@@ -223,6 +226,117 @@ private fun VoiceSection(settings: Settings, viewModel: SettingsViewModel) {
             checked = settings.separateLetterAndNumber,
             onCheckedChange = viewModel::onSeparateLetterAndNumber
         )
+    }
+}
+
+/**
+ * Izbor jezika i paket koji uz njega ide.
+ *
+ * Izbor iz spiska **ne menja jezik odmah**. Jezik bez paketa bi ugasio glasovni
+ * unos, a korisnik ne bi znao zašto — zato se prvo bira, pa instalira, pa tek
+ * onda koristi. „Koristi jezik" stoji nedostupno dok paketa nema.
+ */
+@Composable
+private fun LanguageSection(settings: Settings, viewModel: SettingsViewModel) {
+    val installed by viewModel.installedLanguages.collectAsState()
+    val modelState by viewModel.modelState.collectAsState()
+
+    // Šta je izabrano u spisku; počinje od jezika koji je u upotrebi.
+    var candidate by remember(settings.voiceLanguage) { mutableStateOf(settings.voiceLanguage) }
+
+    val isCandidateInstalled = candidate in installed
+    val isInUse = candidate == settings.voiceLanguage
+    val busy = modelState as? ModelState.Downloading
+    val unpacking = modelState as? ModelState.Unpacking
+    val failure = (modelState as? ModelState.Failed)?.takeIf { it.language == candidate }
+
+    LanguagePicker(
+        selected = candidate,
+        installed = installed,
+        onSelect = { candidate = it }
+    )
+
+    Spacer(Modifier.height(8.dp))
+
+    when {
+        busy?.language == candidate -> {
+            Text(
+                text = stringResource(R.string.settings_language_downloading),
+                style = MaterialTheme.typography.bodySmall
+            )
+            Spacer(Modifier.height(6.dp))
+            val fraction = busy?.fraction
+            if (fraction == null) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            } else {
+                LinearProgressIndicator(
+                    progress = { fraction.coerceIn(0f, 1f) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(onClick = viewModel::onCancelInstall) {
+                Text(stringResource(R.string.voice_cancel))
+            }
+        }
+
+        unpacking?.language == candidate -> {
+            Text(
+                text = stringResource(R.string.settings_language_unpacking),
+                style = MaterialTheme.typography.bodySmall
+            )
+            Spacer(Modifier.height(6.dp))
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        }
+
+        else -> {
+            failure?.let {
+                Text(
+                    text = stringResource(R.string.voice_failed, it.reason),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Spacer(Modifier.height(6.dp))
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilledTonalButton(
+                    onClick = { viewModel.onInstall(candidate) },
+                    enabled = !isCandidateInstalled
+                ) {
+                    Text(
+                        stringResource(
+                            if (isCandidateInstalled) {
+                                R.string.settings_language_installed
+                            } else {
+                                R.string.settings_language_install
+                            }
+                        )
+                    )
+                }
+
+                FilledTonalButton(
+                    onClick = { viewModel.onVoiceLanguage(candidate) },
+                    enabled = isCandidateInstalled && !isInUse
+                ) {
+                    Text(
+                        stringResource(
+                            if (isInUse) {
+                                R.string.settings_language_in_use
+                            } else {
+                                R.string.settings_language_use
+                            }
+                        )
+                    )
+                }
+            }
+
+            if (isCandidateInstalled && !isInUse) {
+                TextButton(onClick = { viewModel.onDelete(candidate) }) {
+                    Text(stringResource(R.string.voice_delete))
+                }
+            }
+        }
     }
 }
 
@@ -272,9 +386,12 @@ private fun PhoneticWordList() {
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun LanguagePicker(selected: VoiceLanguage, onSelect: (VoiceLanguage) -> Unit) {
+private fun LanguagePicker(
+    selected: VoiceLanguage,
+    installed: Set<VoiceLanguage>,
+    onSelect: (VoiceLanguage) -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
-    val spec = VoiceLanguages.specFor(selected)
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -285,24 +402,41 @@ private fun LanguagePicker(selected: VoiceLanguage, onSelect: (VoiceLanguage) ->
             onValueChange = {},
             readOnly = true,
             label = { Text(stringResource(R.string.settings_language)) },
-            supportingText = {
-                Text(stringResource(R.string.settings_language_size, spec.downloadMegabytes))
-            },
+            supportingText = { Text(stringResource(R.string.settings_language_hint)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth()
         )
 
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             VoiceLanguage.entries.forEach { language ->
+                val name = stringResource(language.labelRes())
+
                 DropdownMenuItem(
                     text = {
+                        // Veličina stoji samo uz jezik koji nije instaliran —
+                        // kod već preuzetog nema šta da se preuzima, pa bi broj
+                        // samo zbunjivao.
                         Text(
-                            stringResource(
-                                R.string.settings_language_item,
-                                stringResource(language.labelRes()),
-                                VoiceLanguages.specFor(language).downloadMegabytes
-                            )
+                            if (language in installed) {
+                                name
+                            } else {
+                                stringResource(
+                                    R.string.settings_language_item,
+                                    name,
+                                    VoiceLanguages.specFor(language).downloadMegabytes
+                                )
+                            }
                         )
+                    },
+                    trailingIcon = {
+                        if (language in installed) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = stringResource(
+                                    R.string.settings_language_installed
+                                )
+                            )
+                        }
                     },
                     onClick = {
                         expanded = false
