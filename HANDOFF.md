@@ -147,6 +147,22 @@ Uz to, `PuzzleCatalog` sada obriše folder ako raspakivanje `puzzles.zip` pukne 
 pola. Ranije bi poluprazan folder zauvek preskakao novi pokušaj, jer se
 proveravalo samo da li je prazan.
 
+### Drugi takav: regularni izraz koji radi na JVM-u, a ne na Androidu
+
+Prati partiju je javljao `NoClassDefFoundError: …core.chess.Pgn` iako je klasa
+bila u APK-u. Ispod je stajalo `ExceptionInInitializerError`, a ispod toga pravi
+uzrok: `PatternSyntaxException` na izrazu `\{[^}]*}`. **Android-ov regex je
+stroži od JVM-ovog** — zalutalu `}` ili `]` JVM prihvata, Android odbija. Statički
+inicijalizator objekta zato pukne, a svaki sledeći dodir te klase javlja
+`NoClassDefFoundError`, koji izgleda kao problem pakovanja i odvodi na pogrešnu
+stranu.
+
+**Nijedan JVM test ovo ne može da uhvati** — isti izraz se kod njih prevede bez
+reči. Odbrana je da se zagrade eskejpuju i tamo gde JVM to ne traži.
+
+Ovo je našao lanac uzroka na ekranu (`Throwable.userReason()`); sa samo spoljnim
+slojem poruke bi se i dalje tražilo po pakovanju.
+
 ---
 
 ## Stockfish je izbačen
