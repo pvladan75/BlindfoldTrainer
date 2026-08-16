@@ -287,6 +287,12 @@ gasio, ali je `Surface` imao `enabled = isPlayerTurn`, pa **čim korisnik odusta
 ili pređe na sledeći zadatak dugme prestane da prima dodir** — a baš tad je
 najpotrebnije. Zato sada:
 
+- **za drugo polje se mikrofon više ne gasi.** Uz „slušaj ceo potez" se ranije
+  gasio pa palio posle 250 ms, i tu bi umeo tiho da ne krene: prethodni snimač se
+  još zatvara kad se traži novi. Umesto pogađanja te pauze, `listenForSquares`
+  sada **ostaje da sluša** dok modul traži još jedno polje. Pošto tada nema
+  paljenja, nema ni vibracije koja ga prati — pa se izabrano polazno polje
+  **izgovara**, i to je znak da mikrofon još sluša;
 - slušanje ima rok od 10 sekundi;
 - dugme je dodirljivo **uvek dok sluša**, i onda kad vežba više ne očekuje
   odgovor (`enabled || isListening`);
@@ -402,10 +408,13 @@ Formatiranje je zato prešlo iz proširenja u `Speaker` (`say(move)`, `say(squar
 na ha šest" — **beli pa crni, a unutar boje kralj pa dama pa ostalo**. Redosled je
 uvek isti da bi se pozicija pamtila kao niz, a ne kao skup; test to i čuva.
 
-**Čita se u delovima, sa pauzom od 50 ms** — „bela dama na" *(pauza)* „e pet"
-*(pauza)*. Primedba sa uređaja, i tačna: naslepo se pamti u dva koraka, šta stoji
-pa gde stoji, a bez pauze se niz stopi u rečenicu koju uho ne stigne da rasklopi.
-Prvo je bilo 200 ms i to je na uređaju ispalo predugo.
+**Čita se u delovima** — „bela dama na", pa „e pet", pa sledeća figura — jer se
+naslepo pamti u dva koraka: šta stoji, pa gde stoji.
+
+Između delova je stajala tišina, prvo 200 ms pa 50 ms. **Sada je nema.** Sa
+uređaja je stiglo da ne treba: motor i sam zastane na zarezu i tački kojima
+`spokenParts` razdvaja figure i strane, pa je pauza samo usporavala čitanje.
+Podela na delove ostaje — po njoj se ponavlja i po njoj se prekida.
 
 **Izgovor ume i da sačeka svoj red** (`interrupt = false`). Motor ponekad odgovori
 pre nego što se dovrši izgovor tvog poteza, pa bi ga presekao na pola reči — a
@@ -413,10 +422,9 @@ bez ekrana je taj izgovor jedina potvrda šta je razumela. U Završnici zato red
 ide: tvoj potez, potez motora, ishod, sledeća pozicija — nijedan ne preseca
 prethodni. Preseca samo ono što ti sam zatražiš: „ponovi" i „čitaj poziciju".
 
-Pauza ide kao **zasebna tišina u redu izgovaranja** (`playSilentUtterance`), a ne
-kao interpunkcija — tako njena dužina ne zavisi od toga kako je koji TTS motor
-tumači. `Speaker` zato barata spiskom delova, pa i „ponovi" ponavlja sa istim
-pauzama.
+`Speaker` barata **spiskom delova**, a ne jednim tekstom: po toj podeli se
+ponavlja, prekida i pušta u red. Tišina koja je između njih nekad stajala
+(`playSilentUtterance`) je izbačena, ali je podela ostala korisna i bez nje.
 
 Rod se slaže uz figuru: u srpskom je dama ženskog roda, u ruskom i ladja i
 peška, u francuskom dama i top. `SpeechWords.femininePieces` to nosi po jeziku.
@@ -476,10 +484,23 @@ Tri pojasa, uvek istim redom, jer se meta pamti rukom a ne čitanjem:
 | **sredina, 25%** | pomoć: ponavljanje i čitanje stanja | ispod glavne zone, van sata i otvora za kameru |
 | **dole, 25%** | izlaz (dva dodira) | jedino nepovratno, pa najdalje od palca u pokretu |
 
-Prva podela je bila 55 / 25 / 20 i sa uređaja je stiglo da su donje dve pretanke:
-**u njih se prst ne spušta nego cilja**, a to je upravo ono što zone treba da
-uklone. Odnos stoji na jednom mestu (`MAIN_ZONE_WEIGHT`, `HELPER_ZONE_WEIGHT`),
-pa se menja jednom za svih pet modula.
+Odnos stoji na jednom mestu (`MAIN_ZONE_WEIGHT`, `HELPER_ZONE_WEIGHT`), pa se
+menja jednom za svih pet modula.
+
+**Zone se dugo nisu ni širile po visini.** Sa uređaja je stiglo da su donje dve
+tanke trake, sa praznim ekranom ispod. Prva sumnja je bila na odnos 55/25/20 i on
+je promenjen na 50/25/25 — i ništa se nije videlo, jer uzrok nije bio tu:
+
+> `weight` unutar `Row` deli **širinu**, a unutar `Column` **visinu**.
+
+Redovi su dobijali svoj deo visine, ali ga nisu prosleđivali zonama u sebi, pa se
+svaka zona skupljala na visinu svog natpisa. Mikrofon je izgledao ispravno samo
+zato što stoji **direktno u koloni**, gde `weight` i jeste visina. Zone sada
+dobijaju `fillMaxHeight()`.
+
+Pouka je opštija od ovog ekrana: **kad promena razmere ne pomeri ništa, razmera
+nije ni bila u igri.** Drugo podešavanje istog broja je bilo protraćeno; slika sa
+uređaja je pokazala uzrok za sekund.
 
 **Orijentacija je zaključana na portret** dok su zone na ekranu. Zone se dele po
 visini, pa bi u pejzažu postale niske trake; uz to bi okretanje telefona usred
@@ -688,10 +709,9 @@ jedno i drugo računa iz istorije.
 
 Svih šest modula postoji i radi na uređaju. Ostalo je:
 
-1. **Probati novu podelu zona (50/25/25) i zaključan portret.** Prva proba je
-   pokazala da sve radi; ovo su ispravke po primedbama sa uređaja i nisu još
-   viđene. Uz to i dalje nisu probani raniji dodaci Završnici — poništavanje
-   dugim pritiskom i pauza od 50 ms.
+1. **Probati zone koje se sad zaista šire po visini**, zaključan portret i
+   „slušaj ceo potez" bez gašenja mikrofona. Sve troje su ispravke po primedbama
+   sa uređaja i nisu još viđene.
 2. **Izlaz iz sažetka sesije bez ekrana** — vidi gore; kraj se čuje, ali se
    dijalog zatvara dugmetom koje se ne vidi.
 3. Dogovoriti brojeve bodovanja i da li rang išta otključava

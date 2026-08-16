@@ -63,11 +63,11 @@ fun Square.spoken(words: SpeechWords): String =
 fun Move.spoken(words: SpeechWords): String = "${from.spoken(words)}, ${to.spoken(words)}"
 
 /**
- * Cela pozicija, u delovima između kojih ide pauza.
+ * Cela pozicija, u delovima.
  *
  * Deli se na „bela dama na" pa „e pet", pa sledeća figura — jer se naslepo
- * pamti u dva koraka: šta stoji, pa gde stoji. Bez pauze se niz stopi u jednu
- * rečenicu koju uho ne stigne da rasklopi.
+ * pamti u dva koraka: šta stoji, pa gde stoji. Zarez i tačka razdvajaju figure
+ * i strane, i na njima motor sam malo zastane.
  *
  * Beli pa crni, a unutar boje po vrednosti figure — kralj prvi, jer se oko njega
  * gradi slika. Redosled je uvek isti da bi se pozicija pamtila kao niz, a ne kao

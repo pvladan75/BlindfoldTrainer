@@ -30,11 +30,25 @@ interface VoiceInput {
 
     val state: StateFlow<VoiceState>
 
-    /** Sluša do prvog prepoznatog polja, pa se sama zaustavlja. */
-    fun listenForSquare(onSquare: (Square) -> Unit)
+    /**
+     * Sluša polja dok [onSquare] vraća `true`.
+     *
+     * Nastavak ide **bez gašenja mikrofona**. Ranije se za drugo polje slušanje
+     * gasilo pa paljelo posle kratke pauze, a to ume tiho da ne uspe: prethodni
+     * snimač se još zatvara kad se traži novi, pa mikrofon deluje mrtav.
+     * Pogađati dužinu te pauze je uzaludno — jednostavnije je ne prekidati.
+     */
+    fun listenForSquares(onSquare: (Square) -> Boolean)
 
     fun stop()
 }
+
+/** Sluša do prvog prepoznatog polja, pa se sama zaustavlja. */
+fun VoiceInput.listenForSquare(onSquare: (Square) -> Unit) =
+    listenForSquares { square ->
+        onSquare(square)
+        false
+    }
 
 // Čitanje izgovorenog stoji u SpokenInput.kt. Preselilo se odande kad je unos
 // prestao da bude prosto „tekst u polje": uz podešavanja treba da razume i fonetsku

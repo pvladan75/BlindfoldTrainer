@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.program.blindfoldtrainer.core.audio.Speaker
 import com.program.blindfoldtrainer.core.audio.VoiceInput
 import com.program.blindfoldtrainer.core.audio.VoiceState
+import com.program.blindfoldtrainer.core.audio.listenForSquare
 import com.program.blindfoldtrainer.core.chess.Board
 import com.program.blindfoldtrainer.core.chess.Move
 import com.program.blindfoldtrainer.core.chess.Square

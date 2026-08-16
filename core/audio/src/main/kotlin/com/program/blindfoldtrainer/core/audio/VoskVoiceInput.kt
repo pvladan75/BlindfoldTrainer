@@ -18,6 +18,7 @@ import org.vosk.Model
 import org.vosk.Recognizer
 import org.vosk.android.RecognitionListener
 import org.vosk.android.SpeechService
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -42,7 +43,17 @@ class VoskVoiceInput @Inject constructor(
 
     private var model: Model? = null
     private var speechService: SpeechService? = null
-    private var onSquareRecognized: ((Square) -> Unit)? = null
+    private var onSquareRecognized: ((Square) -> Boolean)? = null
+
+    /**
+     * Brava oko predaje polja.
+     *
+     * Isti izgovor ume da stigne dvaput — kroz `onResult`, pa još jednom kroz
+     * `onFinalResult` pri gašenju, a gašenje se pokreće baš iz predaje. Bez
+     * brave bi se polje predalo dva puta, a naslepo je to odigran potez koji
+     * niko nije rekao.
+     */
+    private val isDelivering = AtomicBoolean(false)
 
     /** Kolona koja čeka svoj red, kad se polje izgovara u dva dela. */
     @Volatile
@@ -116,7 +127,7 @@ class VoskVoiceInput @Inject constructor(
         model = null
     }
 
-    override fun listenForSquare(onSquare: (Square) -> Unit) {
+    override fun listenForSquares(onSquare: (Square) -> Boolean) {
         val readyModel = model
         if (readyModel == null) {
             Log.w(TAG, "Traženo slušanje pre nego što je model spreman")
@@ -216,9 +227,17 @@ class VoskVoiceInput @Inject constructor(
     }
 
     private fun deliver(square: Square) {
-        val callback = onSquareRecognized
-        stop()
-        callback?.invoke(square)
+        val callback = onSquareRecognized ?: return
+        if (!isDelivering.compareAndSet(false, true)) return
+
+        try {
+            pendingFile = null
+            // Slušanje ostaje upaljeno ako se traži još jedno polje — vidi
+            // VoiceInput.listenForSquares.
+            if (!callback(square)) stop()
+        } finally {
+            isDelivering.set(false)
+        }
     }
 
     /**

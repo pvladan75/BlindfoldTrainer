@@ -121,11 +121,11 @@ class AndroidSpeaker @Inject constructor(
     override fun say(move: Move, interrupt: Boolean) =
         sayParts(listOf(move.spoken(wordsForSpeech())), interrupt)
 
-    // Pozicija ide u delovima, sa tišinom između — vidi Board.spokenParts.
+    // Pozicija ide u delovima — vidi Board.spokenParts.
     override fun say(board: Board, interrupt: Boolean) =
         sayParts(board.spokenParts(wordsForSpeech()), interrupt)
 
-    /** Ponavlja doslovno, sa istim pauzama; ako ništa nije rečeno, ćuti. */
+    /** Ponavlja doslovno; ako ništa nije rečeno, ćuti. */
     override fun repeat() {
         lastSpoken?.let { sayParts(it) }
     }
@@ -149,10 +149,14 @@ class AndroidSpeaker @Inject constructor(
     }
 
     /**
-     * Izgovara delove sa tišinom između njih.
+     * Izgovara delove, jedan za drugim.
      *
-     * Tišina ide kao zasebna izjava u redu, a ne kao interpunkcija: dužina pauze
-     * tako ne zavisi od toga kako je koji TTS motor tumači.
+     * Između njih je stajala tišina od 50 ms, da bi se „bela dama na" i „e pet"
+     * čuli kao dva koraka. Sa uređaja je stiglo da ne treba: motor i sam
+     * zastane na zarezu i tački iz [Board.spokenParts], a pauza je samo
+     * usporavala čitanje.
+     *
+     * Podela na delove ostaje — po njoj se ponavlja i po njoj se prekida.
      */
     private fun speakParts(parts: List<String>, interrupt: Boolean = true) {
         parts.forEachIndexed { index, part ->
@@ -162,10 +166,6 @@ class AndroidSpeaker @Inject constructor(
                 TextToSpeech.QUEUE_ADD
             }
             tts.speak(part, mode, null, "part-$index")
-
-            if (index != parts.lastIndex) {
-                tts.playSilentUtterance(PAUSE_MILLIS, TextToSpeech.QUEUE_ADD, "pause-$index")
-            }
         }
     }
 
@@ -180,8 +180,5 @@ class AndroidSpeaker @Inject constructor(
 
     private companion object {
         const val TAG = "AndroidSpeaker"
-
-        /** Pauza između „bela dama na" i „e pet". Provereno na uređaju. */
-        const val PAUSE_MILLIS = 50L
     }
 }

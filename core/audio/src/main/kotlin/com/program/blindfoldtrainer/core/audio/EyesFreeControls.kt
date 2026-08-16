@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -225,7 +226,11 @@ fun EyesFreeControls(
                         zone = zone,
                         color = zone.tone.color(),
                         buzz = buzz,
-                        modifier = Modifier.weight(zone.weight)
+                        // `weight` unutar reda deli **širinu**; visinu red mora
+                        // da preda izričito. Bez `fillMaxHeight` se zona skupi
+                        // na visinu svog natpisa — meta postane tanka traka, a
+                        // ispod nje ostane prazan ekran koji ništa ne prima.
+                        modifier = Modifier.fillMaxHeight().weight(zone.weight)
                     )
                 }
             }

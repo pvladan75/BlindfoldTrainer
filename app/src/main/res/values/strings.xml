@@ -82,7 +82,7 @@
     <string name="settings_phonetic_hint">Kolona se kaže rečju: „bravo" umesto „b". Pomaže kad model brka slična slova. Reči su one iste koje koriste piloti i radio-veza.</string>
     <string name="settings_phonetic_english_only">Reči su engleske, pa ih model drugog jezika ne prepoznaje. Ako ti izgovor polja na izabranom jeziku ne prolazi, pređi na engleski model i probaj sa ovim.</string>
     <string name="settings_whole_move">Slušaj ceo potez</string>
-    <string name="settings_whole_move_hint">U Završnici jedan pritisak sluša oba polja, umesto pritiska po polju.</string>
+    <string name="settings_whole_move_hint">Odnosi se samo na Dokrajči protivnika — jedinu vežbu u kojoj je odgovor potez, a ne jedno polje. Tamo jedan pritisak sluša oba polja, umesto pritiska po polju. Ostale module ne dira.</string>
     <string name="settings_separate">Slovo i broj odvojeno</string>
     <string name="settings_separate_hint">Sme da se kaže „e", pa zatim „four", umesto celog polja odjednom.</string>
 

@@ -99,7 +99,6 @@ private fun setupFor(difficulty: Difficulty) = when (difficulty) {
 private const val MOVE_FLASH_MILLIS = 700L
 private const val OUTCOME_PAUSE_MILLIS = 2_000L
 private const val TAG = "EndgameViewModel"
-private const val VOICE_CONTINUE_MILLIS = 250L
 
 @HiltViewModel
 class EndgameViewModel @Inject constructor(
@@ -190,20 +189,15 @@ class EndgameViewModel @Inject constructor(
      * Potez se izgovara u dva koraka — polazno pa odredišno polje — jer prolazi
      * kroz isti [onSquareClicked] kao i dodir.
      *
-     * Uz uključeno „slušaj ceo potez", drugi korak ne traži nov pritisak:
-     * slušanje se nastavlja samo. Kratka pauza je zato što se prepoznavanje
-     * upravo ugasilo, a novo se pali na istom mikrofonu.
+     * Uz uključeno „slušaj ceo potez" drugi korak ne traži nov pritisak:
+     * **mikrofon prosto ostaje upaljen** dok se ne prepozna i odredišno polje.
+     * Ranije se gasio pa palio posle 250 ms i tu bi umeo da ne krene, jer se
+     * prethodni snimač još zatvarao.
      */
     fun onVoiceInput() {
-        voiceInput.listenForSquare { square ->
+        voiceInput.listenForSquares { square ->
             onSquareClicked(square)
-
-            if (settings.listenWholeMove && _uiState.value.selectedSquare != null) {
-                viewModelScope.launch {
-                    delay(VOICE_CONTINUE_MILLIS)
-                    onVoiceInput()
-                }
-            }
+            settings.listenWholeMove && _uiState.value.selectedSquare != null
         }
     }
 
@@ -336,6 +330,12 @@ class EndgameViewModel @Inject constructor(
             val piece = state.position.board[square]
             if (piece != null && piece.color == playerColor) {
                 _uiState.update { it.copy(selectedSquare = square, errorSquare = null) }
+
+                // Bez ekrana je izbor figure nevidljiv, a ćutanje ovde znači
+                // promašaj — pa se izabrano polje potvrđuje naglas. Uz „slušaj
+                // ceo potez" je to i jedini znak da mikrofon još sluša, jer se
+                // ne gasi pa ne može ni da vibrira pri paljenju.
+                if (settings.eyesFree) speaker.say(square)
             }
             return
         }
