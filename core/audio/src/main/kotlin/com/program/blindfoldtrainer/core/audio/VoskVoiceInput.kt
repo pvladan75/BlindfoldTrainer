@@ -223,7 +223,11 @@ class VoskVoiceInput @Inject constructor(
             ?: return
 
         when (val spoken = parseSpokenInput(text, currentWords())) {
-            is SpokenInput.Full -> deliver(spoken.square)
+            is SpokenInput.Full -> deliver(listOf(spoken.square))
+
+            // Oba polja su iz istog izgovora, pa idu zajedno: modul ih dobija
+            // jedno za drugim, kao da su dva puta dodirnuta.
+            is SpokenInput.Move -> deliver(listOf(spoken.from, spoken.to))
 
             is SpokenInput.File -> if (settings.separateLetterAndNumber) {
                 // Slušanje se ne prekida — čeka se broj koji ide uz ovu kolonu.
@@ -234,7 +238,7 @@ class VoskVoiceInput @Inject constructor(
                 val file = pendingFile
                 if (settings.separateLetterAndNumber && file != null) {
                     pendingFile = null
-                    Square.of(file, spoken.rank)?.let { deliver(it) }
+                    Square.of(file, spoken.rank)?.let { deliver(listOf(it)) }
                 }
             }
 
@@ -242,24 +246,36 @@ class VoskVoiceInput @Inject constructor(
         }
     }
 
-    private fun deliver(square: Square) {
+    /**
+     * Predaje polja iz **jednog** izgovora, redom.
+     *
+     * Granica se proverava po izgovoru a ne po polju: „b four g four" nosi dva
+     * polja odjednom i ona ne smeju da se poklope kao ponavljanje.
+     */
+    private fun deliver(squares: List<Square>) {
         val callback = onSquareRecognized ?: return
         if (!isDelivering.compareAndSet(false, true)) return
 
         try {
             val now = System.currentTimeMillis()
-            if (now - lastDeliveryMillis < MIN_GAP_BETWEEN_SQUARES_MILLIS) {
+            if (now - lastDeliveryMillis < MIN_GAP_BETWEEN_UTTERANCES_MILLIS) {
                 // Isti izgovor prijavljen dvaput. Granica je ljudska, ne
-                // biblioteka: dva polja se ne izgovore za pola sekunde.
-                Log.d(TAG, "Polje $square stiglo prebrzo posle prethodnog — preskačem")
+                // biblioteka: dva izgovora se ne smene za pola sekunde.
+                Log.d(TAG, "Izgovor $squares stigao prebrzo posle prethodnog — preskačem")
                 return
             }
             lastDeliveryMillis = now
-
             pendingFile = null
-            // Slušanje ostaje upaljeno ako se traži još jedno polje — vidi
-            // VoiceInput.listenForSquares.
-            if (!callback(square)) stop()
+
+            // Slušanje ostaje upaljeno dok modul traži još polja — vidi
+            // VoiceInput.listenForSquares. Modul koji traži samo jedno prekida
+            // ovde, pa mu drugo polje iz istog izgovora i ne stigne.
+            for (square in squares) {
+                if (!callback(square)) {
+                    stop()
+                    return
+                }
+            }
         } finally {
             isDelivering.set(false)
         }
@@ -294,11 +310,11 @@ class VoskVoiceInput @Inject constructor(
         const val LISTEN_TIMEOUT_MILLIS = 10_000
 
         /**
-         * Najmanji razmak između dva predata polja.
+         * Najmanji razmak između dva izgovora.
          *
          * Brava je za istovremenost, ovo je za ponavljanje: isti izgovor ume da
-         * bude prijavljen dvaput, a čovek ne izgovori dva polja za pola sekunde.
+         * bude prijavljen dvaput, a čovek ne smeni dva izgovora za pola sekunde.
          */
-        const val MIN_GAP_BETWEEN_SQUARES_MILLIS = 500L
+        const val MIN_GAP_BETWEEN_UTTERANCES_MILLIS = 500L
     }
 }

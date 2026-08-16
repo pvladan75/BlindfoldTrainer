@@ -8,13 +8,22 @@ sealed interface SpokenInput {
     /** Celo polje ("e four"). */
     data class Full(val square: Square) : SpokenInput
 
+    /**
+     * Dva polja u **jednom** izgovoru („b four g four") — ceo potez odjednom.
+     *
+     * Tako se potez i izgovara kad se ne misli na aplikaciju: u jednom dahu.
+     * Bez ovoga se „b four g four" sastavi u `b4g4`, a to nije polje — pa se
+     * ćuti. Sa uređaja je prijavljeno baš to.
+     */
+    data class Move(val from: Square, val to: Square) : SpokenInput
+
     /** Samo kolona ("e", ili „echo" po fonetskoj abecedi). */
     data class File(val file: Char) : SpokenInput
 
     /** Samo red ("four"). */
     data class Rank(val rank: Int) : SpokenInput
 
-    /** Nešto što nije ni jedno ni drugo. */
+    /** Ništa od navedenog. */
     data object Unknown : SpokenInput
 }
 
@@ -57,6 +66,13 @@ fun parseSpokenInput(
         .joinToString("") { token -> normalizeToken(token, words) }
 
     Square.fromAlgebraic(normalized)?.let { return SpokenInput.Full(it) }
+
+    // Ceo potez u jednom dahu: „b four g four" dođe kao `b4g4`.
+    if (normalized.length == 4) {
+        val from = Square.fromAlgebraic(normalized.take(2))
+        val to = Square.fromAlgebraic(normalized.drop(2))
+        if (from != null && to != null) return SpokenInput.Move(from, to)
+    }
 
     if (normalized.length == 1) {
         val single = normalized.first()

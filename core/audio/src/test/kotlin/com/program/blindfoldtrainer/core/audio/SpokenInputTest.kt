@@ -40,6 +40,38 @@ class SpokenInputTest {
         }
     }
 
+    /**
+     * Ceo potez u jednom dahu. Ovo je stiglo sa uređaja: „b four g four" se
+     * sastavljalo u `b4g4`, što nije polje, pa se ćutalo.
+     */
+    @Test
+    fun `dva polja u jednom dahu su potez`() {
+        assertEquals(
+            SpokenInput.Move(square("b4"), square("g4")),
+            parseSpokenInput("b four g four")
+        )
+        assertEquals(
+            SpokenInput.Move(square("e2"), square("e4")),
+            parseSpokenInput("e two e four")
+        )
+        // Model ume da vrati i sabijeno, bez razmaka između polja.
+        assertEquals(
+            SpokenInput.Move(square("a1"), square("h8")),
+            parseSpokenInput("a1 h8")
+        )
+        // I fonetski, jer se kolone čitaju istom tabelom.
+        assertEquals(
+            SpokenInput.Move(square("b4"), square("g4")),
+            parseSpokenInput("bravo four golf four")
+        )
+    }
+
+    @Test
+    fun `cetiri znaka koja nisu dva polja ostaju neprepoznata`() {
+        assertEquals(SpokenInput.Unknown, parseSpokenInput("e nine e four"))
+        assertEquals(SpokenInput.Unknown, parseSpokenInput("four four four four"))
+    }
+
     @Test
     fun `sama kolona je delimican unos`() {
         assertEquals(SpokenInput.File('e'), parseSpokenInput("e"))

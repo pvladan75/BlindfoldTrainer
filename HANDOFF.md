@@ -302,28 +302,33 @@ najpotrebnije. Zato sada:
 Naravoučenije za dalje: **kad dugme ume da radi dve stvari, `enabled` sme da
 gasi samo jednu od njih.**
 
-#### Telefon čuje sam sebe
+#### „Slušaj ceo potez" je slušao jedno po jedno polje
 
-Dok mikrofon sluša, **aplikacija ne sme da govori**. Uz „slušaj ceo potez" je
-posle izabranog polazišta izgovarana potvrda („e dva") — a mikrofon je tad još
-otvoren, pa je Vosk tu potvrdu prepoznao kao **novo polje**. Sa uzanom
-gramatikom se to i ne može promašiti: sve što zvučnik kaže je iz istog rečnika
-koji se sluša.
+Podešavanje je značilo: prepoznaj prvo polje, pa **nastavi** da slušaš drugo.
+Korisnik je, sasvim razumno, izgovarao **ceo potez u jednom dahu** — „b four g
+four". Vosk to vrati kao jedan izgovor, `parseSpokenInput` sastavi tokene u
+`b4g4`, a to nije polje — pa se ćutalo.
 
-Posledica je bila zbunjujuća: prvo polje se „ponavljalo", a drugo nije radilo
-ništa — jer drugo predavanje istog polja poništava izbor figure.
+`SpokenInput.Move` sada čita četiri znaka kao dva polja, a `deliver` predaje oba
+polja **iz istog izgovora**, jedno za drugim, kao da su dva puta dodirnuta.
+Modul koji traži samo jedno polje (Parovi, Prati partiju, Skakač) uzme prvo i
+prekine — njihov ugovor se nije promenio.
 
-Zato potvrda polazišta ide **samo kad mikrofon nije ostao upaljen**. Uz „slušaj
-ceo potez" se ćuti do kraja poteza, koji se onda izgovori ceo.
+Nastavak slušanja i dalje postoji, za onoga ko zastane između polja.
 
-Uz to su zatvorena i dva ponavljanja koja ne zavise od zvučnika: `onFinalResult`
-se **ne predaje** (stiže pri gašenju i ponavlja ono što je već stiglo kroz
-`onResult`), a predaja ima i najmanji razmak od pola sekunde — granica je
-ljudska, dva polja se ne izgovore tako brzo.
+Traženje ovog baga je otišlo u dva promašena kruga i vredi zapisati zašto:
+prijava je bila „ponavlja se prvo polje", a to je zvučalo kao da se isto polje
+predaje dvaput. Zapravo je to bila **potvrda polazišta** koju aplikacija sama
+izgovara — radila je tačno ono što treba. Pravi trag je bio u drugoj polovini
+iste rečenice: „kad izgovorim oba polja, ne dešava se ništa."
 
-Pravo rešenje je da prepoznavanje ćuti dok TTS priča (`Speaker` bi morao da javi
-kad govori), ali dok toga nema, **pravilo je da modul ne govori dok je mikrofon
-otvoren.**
+**Pouka: kad prijava sadrži i ono što radi i ono što ne radi, uzrok je gotovo
+uvek u drugom delu.**
+
+Usput su zatvorena i dva stvarna ponavljanja: `onFinalResult` se **ne predaje**
+(stiže pri gašenju i ponavlja ono što je već stiglo kroz `onResult`), a predaja
+ima najmanji razmak od pola sekunde — granica je ljudska, dva izgovora se ne
+smene tako brzo.
 
 Mikrofon je aktivan **samo kad se očekuje odgovor** — u Parovima kad potez
 stigne, u Završnici kad je korisnik na potezu, u Prati partiju kad stoji pitanje.
