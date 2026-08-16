@@ -16,7 +16,18 @@ sealed interface SpokenInput {
      * Bez ovoga se „b four g four" sastavi u `b4g4`, a to nije polje — pa se
      * ćuti. Sa uređaja je prijavljeno baš to.
      */
-    data class Move(val from: Square, val to: Square) : SpokenInput
+    data class Move(
+        val from: Square,
+        val to: Square,
+        /**
+         * Figura koju je korisnik **imenovao**, ako jeste („rook c three c two").
+         *
+         * Ne odbacuje se kao suvišna iako polja već sve kažu: ime je tvrdnja o
+         * tome šta korisnik misli da tamo stoji. Ako se ne slaže sa tablom,
+         * slika u glavi je pogrešna — a odigrati potez bi tu zabludu potvrdilo.
+         */
+        val piece: PieceType? = null
+    ) : SpokenInput
 
     /**
      * Figura i odredište („rook e two"), bez polazišta.
@@ -81,7 +92,7 @@ private sealed interface Symbol {
  * | „e four" | polje |
  * | „e four e two" | potez, polazno pa odredišno |
  * | „rook e two" | figura i odredište |
- * | „rook e four e two" | potez; ime figure je suvišno i ne smeta |
+ * | „rook e four e two" | potez, uz imenovanu figuru — modul je proverava |
  *
  * Reči zavise od jezika ("four" ili „vier" ili „четыре"), pa se tabela prosleđuje
  * spolja. Latinična slova a–h i cifre 1–8 prolaze uvek — model ih ponekad vrati
@@ -119,7 +130,7 @@ fun parseSpokenInput(
     }
 
     return when {
-        squares.size >= 2 -> SpokenInput.Move(squares[0], squares[1])
+        squares.size >= 2 -> SpokenInput.Move(squares[0], squares[1], piece)
         squares.size == 1 && piece != null -> SpokenInput.PieceMove(piece, squares[0])
         squares.size == 1 -> SpokenInput.Full(squares[0])
 

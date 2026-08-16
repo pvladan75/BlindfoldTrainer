@@ -31,6 +31,18 @@ interface Speaker {
 
     fun say(move: Move, interrupt: Boolean = true)
 
+    /**
+     * Potez sa figurom koja ga igra: „dama", pa „c tri, c dva".
+     *
+     * Sama polja ne kažu **šta** se pomerilo, a naslepo je to pola slike. Bez
+     * imena figure se odigran potez ne razlikuje od pogrešno razumljenog, pa
+     * potvrda ume da učvrsti baš onu zabludu zbog koje je greška i nastala.
+     *
+     * Boja se ne izgovara: u vežbi se strane smenjuju, pa bi bila samo duža
+     * rečenica. Tako se potez i najavljuje u pravoj partiji naslepo.
+     */
+    fun say(piece: PieceType, move: Move, interrupt: Boolean = true)
+
     /** Čita celu poziciju: „beli kralj na e2, bela dama na e5…". */
     fun say(board: Board, interrupt: Boolean = true)
 

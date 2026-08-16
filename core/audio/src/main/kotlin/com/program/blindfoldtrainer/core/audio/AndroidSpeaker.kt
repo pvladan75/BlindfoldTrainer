@@ -5,6 +5,7 @@ import android.speech.tts.TextToSpeech
 import android.util.Log
 import com.program.blindfoldtrainer.core.chess.Board
 import com.program.blindfoldtrainer.core.chess.Move
+import com.program.blindfoldtrainer.core.chess.PieceType
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
@@ -120,6 +121,12 @@ class AndroidSpeaker @Inject constructor(
 
     override fun say(move: Move, interrupt: Boolean) =
         sayParts(listOf(move.spoken(wordsForSpeech())), interrupt)
+
+    // Ime figure pa polja, u dva dela — kao i pri čitanju pozicije.
+    override fun say(piece: PieceType, move: Move, interrupt: Boolean) {
+        val words = wordsForSpeech()
+        sayParts(listOf(words.pieces.getValue(piece), move.spoken(words)), interrupt)
+    }
 
     // Pozicija ide u delovima — vidi Board.spokenParts.
     override fun say(board: Board, interrupt: Boolean) =

@@ -85,11 +85,20 @@ class SpokenInputTest {
         )
     }
 
+    /**
+     * Ime uz oba polja se **pamti**, ne odbacuje. Modul ga proverava: „top c
+     * tri c dva" dok na c3 stoji dama znači da slika u glavi nije tačna, a
+     * odigrati taj potez bi zabludu potvrdilo.
+     */
     @Test
-    fun `ime figure uz oba polja je suvisno i ne smeta`() {
+    fun `ime figure uz oba polja ostaje uz potez`() {
+        assertEquals(
+            SpokenInput.Move(square("e4"), square("e2"), PieceType.ROOK),
+            parseSpokenInput("rook e four e two")
+        )
         assertEquals(
             SpokenInput.Move(square("e4"), square("e2")),
-            parseSpokenInput("rook e four e two")
+            parseSpokenInput("e four e two")
         )
     }
 
@@ -101,7 +110,7 @@ class SpokenInputTest {
     @Test
     fun `veznici u recenici ne kvare potez`() {
         assertEquals(
-            SpokenInput.Move(square("e4"), square("e2")),
+            SpokenInput.Move(square("e4"), square("e2"), PieceType.ROOK),
             parseSpokenInput("rook [unk] e four two e two")
         )
     }

@@ -327,12 +327,40 @@ je rečeno vidi se tek pri čitanju. Svi ovi oblici prolaze kroz isti pritisak:
 | „e four" | polje — bira figuru, sledeće polje dovršava potez |
 | „e four e two" | ceo potez |
 | „rook e two" | figura i odredište |
-| „rook e four e two" | potez; ime figure je suvišno i ne smeta |
+| „rook e four e two" | potez, uz imenovanu figuru — koja se **proverava** |
 
 **Kad na isto polje mogu dve iste figure, ne pogađa se.** Kaže se da su dve i
 traži se polazište. To nije korisnikova greška nego nedorečenost, pa se i ne
 broji kao promašaj — a usput je i korisna vest: dve figure koje gađaju isto polje
 su baš ono što naslepo izmiče.
+
+#### Pogrešno ime figure obara potez
+
+Prva verzija je ime uz oba polja odbacivala kao suvišno — polja ionako sve kažu.
+Sa uređaja je stigla primedba koja to obara: dok na c3 stoji **dama**, prošla su
+sva četiri oblika, uključujući „rook c three c two". Potez se odigrao, potvrda je
+bila „c tri, c dva", i korisnik je mogao da ode dalje verujući da mu je top na c2.
+
+> Koliko je dobro oruđe, toliko je i lak prelaz u zabludu.
+
+Ime figure zato **nije ukras nego tvrdnja** o tome šta korisnik misli da tamo
+stoji. Ako se ne slaže sa tablom, tabla se ne dira i kaže se šta je zaista tu:
+„Na ce tri nije top nego dama." Broji se kao promašaj, isto kao nemoguć potez —
+i jedno i drugo je pogrešna predstava o poziciji, a ne omaška u izgovoru.
+
+#### Potez se izgovara sa figurom
+
+Iz iste primedbe: potvrda „c tri, c dva" ne kaže **šta** se pomerilo, a naslepo je
+to pola slike. Završnica sada izgovara i figuru — „dama", pa „c tri, c dva" — i za
+tvoj potez i za odgovor motora. Tako se potez i najavljuje u pravoj partiji
+naslepo.
+
+Boja se ne izgovara: strane se smenjuju, pa bi bila samo duža rečenica.
+`SpeechWords` već ima imena figura po jeziku, pa je i ovo dvojezično bez ijedne
+nove tabele.
+
+**Ostali moduli su namerno ostavljeni na poljima.** U Parovima i Prati partiju je
+figura deo onoga što se pamti; izgovoriti je značilo bi rešiti pola zadatka.
 
 **Imena figura postoje samo na engleskom.** Dodata su posle polja i proverena su
 samo tamo; ostali jezici ih nemaju i rade kao i pre, poljima. Test drži da ih

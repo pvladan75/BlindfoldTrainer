@@ -223,9 +223,7 @@ class EndgameViewModel @Inject constructor(
         }
 
         is SpokenInput.Move -> {
-            // Ista dva dodira, samo iz jednog izgovora.
-            onSquareClicked(spoken.from)
-            onSquareClicked(spoken.to)
+            onSpokenMove(spoken.from, spoken.to, spoken.piece)
             false
         }
 
@@ -235,6 +233,43 @@ class EndgameViewModel @Inject constructor(
         }
 
         else -> false
+    }
+
+    /**
+     * Potez zadat sa oba polja. Ako je uz njih **imenovana** i figura, ime se
+     * proverava i potez se odbija kad se ne slaže sa tablom.
+     *
+     * Ime nije ukras. „Top ce tri ce dva" dok na c3 stoji dama znači da slika u
+     * glavi nije tačna; odigrati taj potez bi zabludu **potvrdilo**, jer polja
+     * jesu ispravna pa bi sve zvučalo kao da je prošlo. Zato se kaže šta tamo
+     * zaista stoji i ne dira se tabla.
+     *
+     * Broji se kao promašaj, isto kao nemoguć potez: i jedno i drugo je pogrešna
+     * predstava o poziciji, a ne omaška u kucanju.
+     */
+    private fun onSpokenMove(from: Square, to: Square, named: PieceType?) {
+        val state = _uiState.value
+        if (!state.isPlayerTurn) return
+
+        val actual = state.position.board[from]
+        if (named != null && actual?.type != named) {
+            speaker.say("Na")
+            speaker.say(from, interrupt = false)
+            speaker.say(
+                if (actual == null) {
+                    "nema figure"
+                } else {
+                    "nije ${named.spokenName()} nego ${actual.type.spokenName()}"
+                },
+                interrupt = false
+            )
+            onIllegalMove(from)
+            return
+        }
+
+        // Ista dva dodira, samo iz jednog izgovora.
+        onSquareClicked(from)
+        onSquareClicked(to)
     }
 
     /**
@@ -461,9 +496,11 @@ class EndgameViewModel @Inject constructor(
             )
         )
 
-        // Izgovara se šta je odigrano: bez ekrana je to jedina potvrda da je
-        // prepoznato ono što je i rečeno.
-        speaker.say(move)
+        // Izgovara se šta je odigrano, **sa figurom**: bez ekrana je to jedina
+        // potvrda da je prepoznato ono što je i rečeno, a sama polja ne kažu
+        // šta se pomerilo.
+        val moving = before.position.board[move.from]?.type
+        if (moving != null) speaker.say(moving, move) else speaker.say(move)
 
         val next = _uiState.value.position.applyMove(move)
         _uiState.update {
@@ -506,7 +543,12 @@ class EndgameViewModel @Inject constructor(
             val after = position.applyMove(reply)
             // Čeka svoj red: motor ume da odgovori pre nego što se dovrši
             // izgovor tvog poteza, pa bi ga inače presekao.
-            speaker.say(reply, interrupt = false)
+            val moving = position.board[reply.from]?.type
+            if (moving != null) {
+                speaker.say(moving, reply, interrupt = false)
+            } else {
+                speaker.say(reply, interrupt = false)
+            }
 
             _uiState.update {
                 it.copy(
