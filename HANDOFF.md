@@ -741,12 +741,25 @@ odluka koja deli vežbu na pola. Pritisak na to dugme prekida čitanje, pa se
 čitanje i slaganje nikad ne preklapaju sama od sebe — jedino ako se čitanje
 izričito zatraži tokom slaganja, što je onda svesna provera.
 
-**Čitanje je neograničeno i broji se**, po ugledu na „Čitaj poziciju" u
-Završnici — ali za razliku od nje, **broj stoji na ekranu** („Čitanja: 3"). Merilo
-koje se ne vidi ne meri ništa; kad taj broj vremenom padne sa pet na jedno, to je
-i ceo dokaz da vežba radi. Zato je „ČITAJ PONOVO" i **glavno dugme** u fazi
-slaganja: pozicija se ovde samo čuje, pa je ponovno čitanje jedini put do
-zadatka — alat, ne pomoć.
+**Čitanje je neograničeno**, po ugledu na „Čitaj poziciju" u Završnici — kome ide
+teže, taj sme da pita koliko god treba. Broj čitanja **stoji na ekranu**
+(„Čitanja: 3"), jer merilo koje se ne vidi ne meri ništa; kad vremenom padne sa
+pet na jedno, to je i ceo dokaz da vežba radi.
+
+Ali **ne košta isto u obe faze**:
+
+| faza | čitanje | zašto |
+|---|---|---|
+| slušanje | slobodno | to je sama vežba |
+| slaganje | **broji se kao propust** | rekao si „znam gde je šta", pa se ispostavilo da ne znaš |
+
+Ova druga polovina je primedba sa uređaja, i tačna je: pošto potvrda postoji,
+ona nešto i **znači**. Vraćanje na čitanje posle nje nije korišćenje alata nego
+priznanje da slika u glavi nije bila gotova — a to je baš ono što modul meri.
+
+Cena zato piše **iznad dugmeta, pre dodira** („Ponovno čitanje sada se broji kao
+propust"), a ne da se vidi tek kao uvećan broj grešaka. Iz istog razloga „ČITAJ
+PONOVO" u toj fazi više nije glavno dugme.
 
 Težina je broj figura — 3 / 5 / 7. **Sata nema**: pritisak vremena bi merio brzinu
 slušanja, a ne to koliko se odjednom drži u glavi.

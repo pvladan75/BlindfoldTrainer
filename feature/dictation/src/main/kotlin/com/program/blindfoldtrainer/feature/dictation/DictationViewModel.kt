@@ -125,17 +125,29 @@ class DictationViewModel @Inject constructor(
     }
 
     /**
-     * Ponovo čita zadatu poziciju.
+     * Ponovo čita zadatu poziciju. **Neograničeno je namerno** — kome ide teže,
+     * taj sme da pita koliko god treba.
      *
-     * **Neograničeno je namerno.** Kome ide teže, taj sme da pita koliko god
-     * treba; broj čitanja stoji na ekranu kao merilo napretka, ne kao prekor —
+     * Ali **ne košta isto u obe faze**:
+     *
+     * - dok se sluša, čitanje je sama vežba i slobodno je;
+     * - dok se slaže, korisnik je već rekao „znam gde je šta". Ako se onda seti
+     *   da ipak ne zna, to je **propust** i broji se kao greška.
+     *
+     * Granica nije kazna nego merilo. Broj čitanja i inače stoji na ekranu, a
      * kad vremenom padne sa pet na jedno, to je i ceo dokaz da vežba radi.
      */
     fun onReplay() {
         val state = _uiState.value
         if (state.phase == DictationPhase.REVIEW) return
 
-        _uiState.update { it.copy(replays = it.replays + 1) }
+        val isLapse = state.phase == DictationPhase.PLACING
+        _uiState.update {
+            it.copy(
+                replays = it.replays + 1,
+                mistakes = it.mistakes + if (isLapse) 1 else 0
+            )
+        }
         speaker.say(state.target)
     }
 

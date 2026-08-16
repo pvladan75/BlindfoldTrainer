@@ -192,8 +192,11 @@ private fun Palette(uiState: DictationUiState, onPieceClick: (Int) -> Unit) {
 }
 
 /**
- * „Čitaj ponovo" je glavno dugme, ne pomoćno: pozicija se ovde **samo** čuje, pa
- * je ponovno čitanje jedini put do zadatka — ne pomoć nego alat.
+ * Dugmad po fazama.
+ *
+ * Dok se sluša, čitanje je sama vežba i slobodno je. Dok se slaže, korisnik je
+ * već rekao da zna gde je šta — pa je čitanje tada priznanje da ipak ne zna, i
+ * broji se. Zato je i prestalo da bude glavno dugme u toj fazi.
  */
 @Composable
 private fun Controls(
@@ -221,19 +224,33 @@ private fun Controls(
             }
         }
 
-        DictationPhase.PLACING -> Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            val buttonModifier = Modifier.weight(1f).height(52.dp)
+        // Posle potvrde „znam gde je šta" čitanje se broji kao propust, pa cena
+        // mora da piše **pre** dodira, a ne da se vidi tek u broju grešaka.
+        DictationPhase.PLACING -> Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                val buttonModifier = Modifier.weight(1f).height(52.dp)
 
-            Button(onClick = onReplay, modifier = buttonModifier) {
-                Text("ČITAJ PONOVO", fontWeight = FontWeight.Bold)
+                OutlinedButton(onClick = onReplay, modifier = buttonModifier) {
+                    Text("ČITAJ PONOVO")
+                }
+
+                Button(onClick = onCheck, modifier = buttonModifier) {
+                    Text("PROVERI", fontWeight = FontWeight.Bold)
+                }
             }
 
-            OutlinedButton(onClick = onCheck, modifier = buttonModifier) {
-                Text("PROVERI")
-            }
+            Spacer(Modifier.height(6.dp))
+
+            Text(
+                text = "Ponovno čitanje sada se broji kao propust.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
 
         // Sledeći zadatak stiže sam; dugme bi samo mamilo na dodir.
