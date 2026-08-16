@@ -25,7 +25,7 @@ te izmene svejedno vredi komitovati da se ne izgube.
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **svih šest** modula za trening. Poslednji
-build je prošao čisto, bez upozorenja. **112 testova, nijedan ne pada.**
+build je prošao čisto, bez upozorenja. **120 testova, nijedan ne pada.**
 
 **Svih šest modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -50,7 +50,7 @@ adb install -r C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer\app\build\o
 | `:core:audio` | `Speaker` (TTS), `VoiceInput` (Vosk) | **5** |
 | `:core:engine` | `ChessEngine` interfejs, `LocalEngine` | — |
 | `:core:progress` | `Xp`, `Rank`, `Achievement`, `ProgressSnapshot`, `ProgressRepository` | **27** |
-| `:core:data` | Room istorija sesija, `RoomProgressRepository` | — |
+| `:core:data` | Room istorija sesija, DataStore podešavanja | — |
 | `:feature:geometry` | Geometrija table | — |
 | `:feature:pairs` | Interaktivni parovi | — |
 | `:feature:endgame` | Dokrajči protivnika | — |
@@ -259,7 +259,33 @@ Izgovoreno polje ide kroz **isti `onSquareClicked`** kao i dodir, pa nema drugog
 puta do odgovora ni druge provere. U Završnici to znači da se potez izgovara u
 dva koraka: polazno pa odredišno polje.
 
-**Nije provereno na uređaju** — ni preuzimanje modela ni prepoznavanje.
+Model je preuzet i spreman na uređaju; **prepoznavanje polja još nije probano**.
+
+### Podešavanja
+
+`:core:data` uz istoriju sesija drži i podešavanja (DataStore), a tip i ugovor
+(`Settings`, `SettingsRepository`) stoje u `:core:model` — čist Kotlin, pa se
+moduli koji ih koriste testiraju bez DataStore-a.
+
+Pravilo po kom je birano šta ide u Podešavanja: **samo ono što zavisi od
+korisnika, a ne od toga šta je objektivno bolje.** Glasovne opcije su takve —
+koja je bolja zavisi od izgovora, a to aplikacija ne može da zna.
+
+| Podešavanje | Podrazumevano |
+|---|---|
+| Tema: automatski / svetla / tamna | automatski |
+| Brzina izgovaranja (0,5–1,5) | 0,85 — kao pre |
+| NATO abeceda za slova („bravo" umesto „b") | isključeno |
+| Slušaj ceo potez (Završnica, jedan pritisak) | isključeno |
+| Slovo i broj odvojeno („e", pa „four") | isključeno |
+
+Sve glasovne opcije su podrazumevano **isključene, tj. zatečeno ponašanje** — ko
+ništa ne dira, ništa mu se i ne menja.
+
+Dve stvari koje su usput ispravljene: brzinu govora su ranije zakucavala tri
+ViewModel-a svaki za sebe, a sada je čita `AndroidSpeaker` iz podešavanja; i
+NATO reči ulaze u Vosk rečnik samo kad su izabrane, jer širi rečnik znači i više
+prilika da se pogreši.
 
 ### APK je 57,7 MB
 Skoro sve su Vosk native biblioteke za pet ABI-ja — uključujući `mips`, koji ne
@@ -273,7 +299,6 @@ težina menja *vrstu* zadatka: srednje = „jesu li dva polja iste boje", teško
 odnos polja (ista dijagonala, šta leži između). Odloženo dogovorom.
 
 ### Nenapisano
-- podešavanja (DataStore) — `:core:data` zasad drži samo istoriju sesija
 - ekran sa spiskom dostignuća; podaci postoje, prikaza nema osim brojača
 
 ### Kvalitet odbrane u teškim pozicijama
@@ -320,9 +345,8 @@ jedno i drugo računa iz istorije.
 
 Svih šest modula postoji i radi na uređaju. Ostalo je:
 
-1. Probati glasovni unos na uređaju — model je preuzet, ali prepoznavanje polja
-   nije nikad izvršeno
+1. Probati glasovni unos na uređaju i videti koje od tri opcije zaista pomažu
 2. Dogovoriti brojeve bodovanja i da li rang išta otključava
-4. Podešavanja (DataStore) i ekran sa spiskom dostignuća
-5. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
-6. Težine u Geometriji (vidi gore) — odloženo dogovorom
+3. Ekran sa spiskom dostignuća
+4. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
+5. Težine u Geometriji (vidi gore) — odloženo dogovorom

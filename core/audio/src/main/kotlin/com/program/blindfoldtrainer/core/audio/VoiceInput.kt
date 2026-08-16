@@ -36,23 +36,6 @@ interface VoiceInput {
     fun stop()
 }
 
-/**
- * Pretvara ono što je prepoznato u polje.
- *
- * Vosk brojeve vraća rečima ("e four"), a razmaci padaju kako padnu, pa se
- * tekst prvo normalizuje.
- */
-fun parseSpokenSquare(text: String): Square? {
-    val normalized = text.lowercase()
-        .replace("one", "1")
-        .replace("two", "2")
-        .replace("three", "3")
-        .replace("four", "4")
-        .replace("five", "5")
-        .replace("six", "6")
-        .replace("seven", "7")
-        .replace("eight", "8")
-        .filterNot { it.isWhitespace() }
-
-    return Square.fromAlgebraic(normalized)
-}
+// Čitanje izgovorenog stoji u SpokenInput.kt. Preselilo se odande kad je unos
+// prestao da bude prosto „tekst u polje": uz podešavanja treba da razume i NATO
+// abecedu i kolonu bez reda.

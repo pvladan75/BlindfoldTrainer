@@ -21,7 +21,7 @@ Postojeći moduli:
 :core:audio         Speaker (TTS) i VoiceInput (Vosk) iza interfejsa
 :core:designsystem  tema i ChessBoard komponenta
 :core:progress      čist Kotlin — bodovanje, rangovi, sabiranje napretka
-:core:data          Room istorija sesija iza ProgressRepository interfejsa
+:core:data          Room istorija sesija i DataStore podešavanja, iza interfejsa
 :feature:geometry   Geometrija table
 :feature:pairs      Interaktivni parovi
 :feature:endgame    Dokrajči protivnika
@@ -36,8 +36,12 @@ Planirani:
 :feature:followgame Prati partiju
 ```
 
-Podešavanja (DataStore) i dostignuća još ne postoje; `:core:data` zasad drži
-samo istoriju sesija.
+Dostignuća postoje u `:core:progress`, ali još nemaju svoj ekran.
+
+Podešavanja imaju pravilo: **u njih ide samo ono što zavisi od korisnika, a ne
+od toga šta je objektivno bolje.** Glasovne opcije su takve — koja je bolja
+zavisi od izgovora, a to aplikacija ne može da zna. Sve podrazumevano stoji na
+zatečenom ponašanju.
 
 `:core:model`, `:core:chess` i `:core:progress` su **čist Kotlin, bez Androida**. Testovi šahovske
 logike se zato vrte u sekundama, bez emulatora — a upravo je tu bilo najviše

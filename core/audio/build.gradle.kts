@@ -30,6 +30,8 @@ android {
 
 dependencies {
     api(project(":core:chess"))
+    // Glasovni unos i govor se podešavaju; podešavanja žive u :core:model.
+    implementation(project(":core:model"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)

@@ -112,7 +112,6 @@ class PairsViewModel @Inject constructor(
         isStarted = true
         this.difficulty = difficulty
         setup = setupFor(difficulty)
-        speaker.setRate(0.85f)
 
         viewModelScope.launch {
             val loaded = runCatching {

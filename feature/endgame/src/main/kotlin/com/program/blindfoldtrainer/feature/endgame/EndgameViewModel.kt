@@ -17,6 +17,8 @@ import com.program.blindfoldtrainer.core.engine.ChessEngine
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Settings
+import com.program.blindfoldtrainer.core.model.SettingsRepository
 import com.program.blindfoldtrainer.core.moduleapi.userReason
 import com.program.blindfoldtrainer.feature.endgame.data.EndgameCatalog
 import com.program.blindfoldtrainer.feature.endgame.data.EndgamePuzzle
@@ -90,23 +92,46 @@ private fun setupFor(difficulty: Difficulty) = when (difficulty) {
 private const val MOVE_FLASH_MILLIS = 700L
 private const val OUTCOME_PAUSE_MILLIS = 2_000L
 private const val TAG = "EndgameViewModel"
+private const val VOICE_CONTINUE_MILLIS = 250L
 
 @HiltViewModel
 class EndgameViewModel @Inject constructor(
     private val catalog: EndgameCatalog,
     private val engine: ChessEngine,
     private val speaker: Speaker,
-    private val voiceInput: VoiceInput
+    private val voiceInput: VoiceInput,
+    settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     val voiceState: StateFlow<VoiceState> = voiceInput.state
 
+    private var settings: Settings = Settings.DEFAULT
+
+    init {
+        viewModelScope.launch {
+            settingsRepository.settings.collect { settings = it }
+        }
+    }
+
     /**
      * Potez se izgovara u dva koraka — polazno pa odredišno polje — jer prolazi
      * kroz isti [onSquareClicked] kao i dodir.
+     *
+     * Uz uključeno „slušaj ceo potez", drugi korak ne traži nov pritisak:
+     * slušanje se nastavlja samo. Kratka pauza je zato što se prepoznavanje
+     * upravo ugasilo, a novo se pali na istom mikrofonu.
      */
     fun onVoiceInput() {
-        voiceInput.listenForSquare { square -> onSquareClicked(square) }
+        voiceInput.listenForSquare { square ->
+            onSquareClicked(square)
+
+            if (settings.listenWholeMove && _uiState.value.selectedSquare != null) {
+                viewModelScope.launch {
+                    delay(VOICE_CONTINUE_MILLIS)
+                    onVoiceInput()
+                }
+            }
+        }
     }
 
     private val _uiState = MutableStateFlow(EndgameUiState())
@@ -127,7 +152,6 @@ class EndgameViewModel @Inject constructor(
         isStarted = true
         this.difficulty = difficulty
         setup = setupFor(difficulty)
-        speaker.setRate(0.85f)
 
         viewModelScope.launch {
             // Motor se podiže dok korisnik još gleda prvu poziciju, da se

@@ -2,6 +2,7 @@ package com.program.blindfoldtrainer.core.data
 
 import android.content.Context
 import androidx.room.Room
+import com.program.blindfoldtrainer.core.model.SettingsRepository
 import com.program.blindfoldtrainer.core.progress.ProgressRepository
 import dagger.Binds
 import dagger.Module
@@ -31,4 +32,8 @@ abstract class ProgressModule {
     @Binds
     @Singleton
     abstract fun bindProgressRepository(repository: RoomProgressRepository): ProgressRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSettingsRepository(repository: DataStoreSettingsRepository): SettingsRepository
 }

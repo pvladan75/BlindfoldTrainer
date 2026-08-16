@@ -12,5 +12,8 @@ kotlin {
 }
 
 dependencies {
+    // Samo zbog Flow-a u SettingsRepository — modul i dalje ne zna za Android.
+    api(libs.kotlinx.coroutines.core)
+
     testImplementation(libs.kotlin.test)
 }

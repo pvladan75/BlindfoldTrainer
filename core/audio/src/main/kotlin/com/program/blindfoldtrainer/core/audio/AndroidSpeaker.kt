@@ -3,7 +3,12 @@ package com.program.blindfoldtrainer.core.audio
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.util.Log
+import com.program.blindfoldtrainer.core.model.SettingsRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -18,7 +23,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class AndroidSpeaker @Inject constructor(
-    @ApplicationContext context: Context
+    @ApplicationContext context: Context,
+    settingsRepository: SettingsRepository
 ) : Speaker, TextToSpeech.OnInitListener {
 
     private var isReady = false
@@ -26,6 +32,16 @@ class AndroidSpeaker @Inject constructor(
     private var pending: String? = null
 
     private val tts = TextToSpeech(context, this)
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+    init {
+        // Brzinu bira korisnik. Ranije su je moduli zakucavali svaki za sebe, pa
+        // je izmena tražila diranje tri ViewModel-a.
+        scope.launch {
+            settingsRepository.settings.collect { setRate(it.speechRate) }
+        }
+    }
 
     override fun onInit(status: Int) {
         if (status != TextToSpeech.SUCCESS) {

@@ -35,6 +35,28 @@
     <string name="voice_cancel">PREKINI</string>
     <string name="voice_delete">OBRIŠI MODEL</string>
 
+    <string name="settings_title">Podešavanja</string>
+    <string name="settings_back">Nazad</string>
+    <string name="settings_open">Podešavanja</string>
+
+    <string name="settings_theme">Tema</string>
+    <string name="settings_theme_system">Automatski</string>
+    <string name="settings_theme_light">Svetla</string>
+    <string name="settings_theme_dark">Tamna</string>
+
+    <string name="settings_speech">Govor</string>
+    <string name="settings_speech_rate">Brzina izgovaranja: %1$.2f</string>
+    <string name="settings_speech_hint">Utiče na potez koji se izgovara u Parovima i Završnici.</string>
+
+    <string name="settings_voice">Glasovni unos</string>
+    <string name="settings_voice_hint">Koje podešavanje je bolje zavisi od tvog izgovora, pa je izbor ostavljen tebi. Podrazumevano je sve isključeno — polje se kaže u jednom dahu, na primer „e four".</string>
+    <string name="settings_nato">NATO abeceda za slova</string>
+    <string name="settings_nato_hint">Kolona se kaže rečju: „bravo" umesto „b". Pomaže kad model meša slična slova.</string>
+    <string name="settings_whole_move">Slušaj ceo potez</string>
+    <string name="settings_whole_move_hint">U Završnici jedan pritisak sluša oba polja, umesto pritiska po polju.</string>
+    <string name="settings_separate">Slovo i broj odvojeno</string>
+    <string name="settings_separate_hint">Sme da se kaže „e", pa zatim „four", umesto celog polja odjednom.</string>
+
     <string name="achievement_first_session">Prvi trening</string>
     <string name="achievement_first_perfect">Bez ijedne greške</string>
     <string name="achievement_ten_perfect">Deset besprekornih</string>

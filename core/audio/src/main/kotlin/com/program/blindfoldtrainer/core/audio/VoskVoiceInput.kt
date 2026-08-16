@@ -2,6 +2,8 @@ package com.program.blindfoldtrainer.core.audio
 
 import android.util.Log
 import com.program.blindfoldtrainer.core.chess.Square
+import com.program.blindfoldtrainer.core.model.Settings
+import com.program.blindfoldtrainer.core.model.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -27,7 +29,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class VoskVoiceInput @Inject constructor(
-    private val modelStore: VoskModelStore
+    private val modelStore: VoskModelStore,
+    settingsRepository: SettingsRepository
 ) : VoiceInput {
 
     private val _state = MutableStateFlow<VoiceState>(VoiceState.Preparing)
@@ -38,6 +41,19 @@ class VoskVoiceInput @Inject constructor(
     private var model: Model? = null
     private var speechService: SpeechService? = null
     private var onSquareRecognized: ((Square) -> Unit)? = null
+
+    /** Kolona koja čeka svoj red, kad se polje izgovara u dva dela. */
+    @Volatile
+    private var pendingFile: Char? = null
+
+    @Volatile
+    private var settings: Settings = Settings.DEFAULT
+
+    init {
+        scope.launch {
+            settingsRepository.settings.collect { settings = it }
+        }
+    }
 
     init {
         // Model se ne pakuje u APK nego se preuzima na zahtev, pa se glasovni
@@ -99,6 +115,7 @@ class VoskVoiceInput @Inject constructor(
         if (_state.value == VoiceState.Listening) return
 
         onSquareRecognized = onSquare
+        pendingFile = null
 
         try {
             stopService()
@@ -120,6 +137,7 @@ class VoskVoiceInput @Inject constructor(
     override fun stop() {
         stopService()
         onSquareRecognized = null
+        pendingFile = null
         if (_state.value == VoiceState.Listening) {
             _state.value = VoiceState.Idle
         }
@@ -155,12 +173,27 @@ class VoskVoiceInput @Inject constructor(
             ?.takeIf { it.isNotBlank() }
             ?: return
 
-        val square = parseSpokenSquare(text)
-        if (square == null) {
-            Log.d(TAG, "Prepoznato \"$text\", ali to nije polje")
-            return
-        }
+        when (val spoken = parseSpokenInput(text)) {
+            is SpokenInput.Full -> deliver(spoken.square)
 
+            is SpokenInput.File -> if (settings.separateLetterAndNumber) {
+                // Slušanje se ne prekida — čeka se broj koji ide uz ovu kolonu.
+                pendingFile = spoken.file
+            }
+
+            is SpokenInput.Rank -> {
+                val file = pendingFile
+                if (settings.separateLetterAndNumber && file != null) {
+                    pendingFile = null
+                    Square.of(file, spoken.rank)?.let { deliver(it) }
+                }
+            }
+
+            SpokenInput.Unknown -> Log.d(TAG, "Prepoznato \"$text\", ali to nije polje")
+        }
+    }
+
+    private fun deliver(square: Square) {
         val callback = onSquareRecognized
         stop()
         callback?.invoke(square)
@@ -172,12 +205,13 @@ class VoskVoiceInput @Inject constructor(
      */
     private fun chessGrammar(): String {
         val words = buildList {
-            for (file in 'a'..'h') {
-                for (rank in '1'..'8') add("$file$rank")
-                add(file.toString())
-            }
-            for (rank in '1'..'8') add(rank.toString())
+            for (file in 'a'..'h') add(file.toString())
             addAll(listOf("one", "two", "three", "four", "five", "six", "seven", "eight"))
+
+            // NATO reči ulaze samo kad su izabrane: širi rečnik znači i više
+            // prilika da se pogreši, a njih traži samo onaj kome slova ne prolaze.
+            if (settings.natoAlphabet) addAll(NATO_FILES.keys)
+
             add("[unk]")
         }
         return words.joinToString(prefix = "[", postfix = "]") { "\"$it\"" }
