@@ -86,6 +86,9 @@ class FollowGameViewModel @Inject constructor(
         voiceInput.listenForSquare { square -> onSquareClicked(square) }
     }
 
+    /** Prekid slušanja na dodir — bez toga se upaljen mikrofon ne može ugasiti. */
+    fun onVoiceStop() = voiceInput.stop()
+
     private val _uiState = MutableStateFlow(FollowGameUiState())
     val uiState: StateFlow<FollowGameUiState> = _uiState.asStateFlow()
 

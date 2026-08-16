@@ -40,6 +40,7 @@ import androidx.core.content.ContextCompat
 fun VoiceInputButton(
     state: VoiceState,
     onStartListening: () -> Unit,
+    onStopListening: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
@@ -75,6 +76,10 @@ fun VoiceInputButton(
     Surface(
         onClick = {
             when {
+                // Dok sluša, dodir gasi. Bez toga se slušanje nije moglo
+                // prekinuti ničim — dugme je ćutalo, a mikrofon ostajao upaljen.
+                isListening -> onStopListening()
+
                 unavailable != null ->
                     context.toast("$unavailable — jezik i paket biraš u Podešavanjima.")
 

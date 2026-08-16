@@ -132,7 +132,10 @@ class VoskVoiceInput @Inject constructor(
             val recognizer = Recognizer(readyModel, SAMPLE_RATE, chessGrammar())
             speechService = SpeechService(recognizer, SAMPLE_RATE)
 
-            if (speechService?.startListening(listener) == true) {
+            // Sa vremenskim ograničenjem, a ne bez njega: ako ono što je rečeno
+            // nije polje, Vosk bi inače slušao dok ga neko ne prekine — a
+            // korisnik je javio da mu je mikrofon ostao upaljen bez izlaza.
+            if (speechService?.startListening(listener, LISTEN_TIMEOUT_MILLIS) == true) {
                 _state.value = VoiceState.Listening
             } else {
                 Log.e(TAG, "startListening je vratio false")
@@ -233,5 +236,8 @@ class VoskVoiceInput @Inject constructor(
     private companion object {
         const val TAG = "VoskVoiceInput"
         const val SAMPLE_RATE = 16000.0f
+
+        /** Koliko se najduže sluša pre nego što se odustane samo od sebe. */
+        const val LISTEN_TIMEOUT_MILLIS = 10_000
     }
 }

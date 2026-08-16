@@ -270,6 +270,16 @@ nemi otkaz koji je u ovom projektu već dvaput skupo koštao. Sada dodir kaže �
 nedostaje: da paket nije preuzet, da dozvola nije data, ili da se paket još
 priprema.
 
+**Mikrofon se gasi na dodir i sam od sebe.** Sa uređaja je stigla i prijava da
+je ostao upaljen posle „echo eight": ako izgovoreno nije polje — a „eight" lako
+ode u „ate" — Vosk je slušao **bez ograničenja**, a dodir na dugme nije radio
+ništa jer `listenForSquare` izlazi odmah kad je već u slušanju. Dva izlaza sada
+postoje: slušanje ima rok od 10 sekundi, a dodir dok sluša prekida.
+
+Mikrofon je aktivan **samo kad se očekuje odgovor** — u Parovima kad potez
+stigne, u Završnici kad je korisnik na potezu, u Prati partiju kad stoji pitanje.
+Van toga je izbledeo namerno.
+
 Izgovoreno polje ide kroz **isti `onSquareClicked`** kao i dodir, pa nema drugog
 puta do odgovora ni druge provere. U Završnici to znači da se potez izgovara u
 dva koraka: polazno pa odredišno polje.

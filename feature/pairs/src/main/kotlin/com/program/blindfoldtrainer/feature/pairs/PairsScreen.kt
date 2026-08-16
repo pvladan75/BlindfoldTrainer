@@ -101,7 +101,8 @@ fun PairsScreen(
                 onRepeat = viewModel::onRepeatMove,
                 onReveal = viewModel::onRevealPieces,
                 onNext = viewModel::onNextPuzzle,
-                onVoiceInput = viewModel::onVoiceInput
+                onVoiceInput = viewModel::onVoiceInput,
+                onVoiceStop = viewModel::onVoiceStop
             )
         }
 
@@ -189,7 +190,8 @@ private fun Controls(
     onRepeat: () -> Unit,
     onReveal: () -> Unit,
     onNext: () -> Unit,
-    onVoiceInput: () -> Unit
+    onVoiceInput: () -> Unit,
+    onVoiceStop: () -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -230,6 +232,7 @@ private fun Controls(
         VoiceInputButton(
             state = voiceState,
             onStartListening = onVoiceInput,
+            onStopListening = onVoiceStop,
             enabled = uiState.phase == PairsPhase.AWAITING_INPUT
         )
     }

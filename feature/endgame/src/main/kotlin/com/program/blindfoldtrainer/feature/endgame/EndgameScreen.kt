@@ -90,7 +90,8 @@ fun EndgameScreen(
             onHidePieces = viewModel::onHidePieces,
             onGiveUp = viewModel::onGiveUp,
             onNext = viewModel::onNextPuzzle,
-            onVoiceInput = viewModel::onVoiceInput
+            onVoiceInput = viewModel::onVoiceInput,
+            onVoiceStop = viewModel::onVoiceStop
         )
     }
 }
@@ -157,7 +158,8 @@ private fun Controls(
     onHidePieces: () -> Unit,
     onGiveUp: () -> Unit,
     onNext: () -> Unit,
-    onVoiceInput: () -> Unit
+    onVoiceInput: () -> Unit,
+    onVoiceStop: () -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -196,6 +198,7 @@ private fun Controls(
         VoiceInputButton(
             state = voiceState,
             onStartListening = onVoiceInput,
+            onStopListening = onVoiceStop,
             enabled = uiState.isPlayerTurn
         )
     }

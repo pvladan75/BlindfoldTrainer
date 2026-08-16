@@ -103,6 +103,7 @@ fun FollowGameScreen(
             VoiceInputButton(
                 state = voiceState,
                 onStartListening = viewModel::onVoiceInput,
+                onStopListening = viewModel::onVoiceStop,
                 enabled = uiState.phase == FollowPhase.QUESTION
             )
         }

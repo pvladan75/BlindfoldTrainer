@@ -105,6 +105,9 @@ class EndgameViewModel @Inject constructor(
 
     val voiceState: StateFlow<VoiceState> = voiceInput.state
 
+    /** Prekid slušanja na dodir — bez toga se upaljen mikrofon ne može ugasiti. */
+    fun onVoiceStop() = voiceInput.stop()
+
     private var settings: Settings = Settings.DEFAULT
 
     init {
