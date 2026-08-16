@@ -5,4 +5,8 @@
          aplikacija ne bi morala da zna koji sve moduli glas koriste. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
+    <!-- Jezički model se preuzima na zahtev korisnika. U APK-u ga nema jer bi
+         dodao 67 MB i onima koji glasovni unos ne koriste. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
 </manifest>

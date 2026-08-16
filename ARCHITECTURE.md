@@ -135,8 +135,9 @@ modul. Odloženi izvor stoji u `_stockfish-odlozeno/`.
 ## Sadržaj i veliki fajlovi
 
 Stari repo je narastao na 157 MB jer su NNUE mreža (75 MB) i Vosk model (70 MB)
-bili u gitu. Ovde NNUE više ne postoji, a Vosk model se preuzima pri prvom
-pokretanju; `.gitignore` ih drži napolju.
+bili u gitu. Ovde NNUE više ne postoji, a Vosk model se **preuzima na zahtev
+korisnika** (`VoskModelStore`) — nije ni u repou ni u APK-u. Ko vežba dodirom, ne
+plaća 39 MB preuzimanja; ko ga preuzme, sme i da ga obriše.
 
 Zagonetke idu u `assets` kao JSON po konvenciji `{modul}_{tezina}_puzzles.json`,
 kao u `BrainTrainer`-u. `UniversalPuzzleSolver` (BFS nad pravilima modula) služi

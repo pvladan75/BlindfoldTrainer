@@ -1,19 +1,19 @@
 package com.program.blindfoldtrainer.core.audio
 
-import android.content.Context
 import android.util.Log
 import com.program.blindfoldtrainer.core.chess.Square
-import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.vosk.Model
 import org.vosk.Recognizer
 import org.vosk.android.RecognitionListener
 import org.vosk.android.SpeechService
-import org.vosk.android.StorageService
-import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,53 +27,68 @@ import javax.inject.Singleton
  */
 @Singleton
 class VoskVoiceInput @Inject constructor(
-    @ApplicationContext private val context: Context
+    private val modelStore: VoskModelStore
 ) : VoiceInput {
 
     private val _state = MutableStateFlow<VoiceState>(VoiceState.Preparing)
     override val state: StateFlow<VoiceState> = _state.asStateFlow()
 
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     private var model: Model? = null
     private var speechService: SpeechService? = null
-    private var unpackStarted = false
     private var onSquareRecognized: ((Square) -> Unit)? = null
 
     init {
-        prepareModel()
-    }
-
-    private fun prepareModel() {
-        if (unpackStarted) return
-        unpackStarted = true
-
-        if (!isModelBundled()) {
-            // Bez modela glasovni unos ne postoji — UI to vidi kroz stanje i
-            // sakrije mikrofon, umesto da nudi dugme koje ne radi ništa.
-            _state.value = VoiceState.Unavailable("Jezički model nije preuzet")
-            Log.w(TAG, "Vosk model '$MODEL_ASSET' nije nađen u assets")
-            return
+        // Model se ne pakuje u APK nego se preuzima na zahtev, pa se glasovni
+        // unos pali i gasi u toku rada aplikacije — otud praćenje stanja umesto
+        // jednokratne provere pri pokretanju.
+        scope.launch {
+            modelStore.state.collect { modelState -> onModelState(modelState) }
         }
-
-        _state.value = VoiceState.Preparing
-        StorageService.unpack(
-            context,
-            MODEL_ASSET,
-            MODEL_TARGET_DIR,
-            { loaded: Model ->
-                model = loaded
-                _state.value = VoiceState.Idle
-                Log.d(TAG, "Vosk model spreman")
-            },
-            { error: IOException ->
-                _state.value = VoiceState.Unavailable("Model nije učitan: ${error.message}")
-                Log.e(TAG, "Raspakivanje Vosk modela nije uspelo", error)
-            }
-        )
     }
 
-    private fun isModelBundled(): Boolean =
-        runCatching { context.assets.list("")?.contains(MODEL_ASSET) == true }
-            .getOrDefault(false)
+    private fun onModelState(modelState: ModelState) {
+        when (modelState) {
+            is ModelState.Ready -> loadModel()
+
+            ModelState.Absent -> {
+                releaseModel()
+                // UI ovo vidi kroz stanje i sakrije mikrofon, umesto da nudi
+                // dugme koje ne radi ništa.
+                _state.value = VoiceState.Unavailable("Jezički model nije preuzet")
+            }
+
+            is ModelState.Downloading, ModelState.Unpacking -> {
+                _state.value = VoiceState.Preparing
+            }
+
+            is ModelState.Failed -> {
+                releaseModel()
+                _state.value = VoiceState.Unavailable(modelState.reason)
+            }
+        }
+    }
+
+    private fun loadModel() {
+        if (model != null) return
+        _state.value = VoiceState.Preparing
+
+        try {
+            model = Model(modelStore.directory.absolutePath)
+            _state.value = VoiceState.Idle
+            Log.d(TAG, "Vosk model spreman")
+        } catch (error: Throwable) {
+            Log.e(TAG, "Učitavanje Vosk modela nije uspelo", error)
+            _state.value = VoiceState.Unavailable("Model nije učitan: ${error.message}")
+        }
+    }
+
+    private fun releaseModel() {
+        stopService()
+        model?.close()
+        model = null
+    }
 
     override fun listenForSquare(onSquare: (Square) -> Unit) {
         val readyModel = model
@@ -170,8 +185,6 @@ class VoskVoiceInput @Inject constructor(
 
     private companion object {
         const val TAG = "VoskVoiceInput"
-        const val MODEL_ASSET = "model-en-us"
-        const val MODEL_TARGET_DIR = "vosk-model"
         const val SAMPLE_RATE = 16000.0f
     }
 }

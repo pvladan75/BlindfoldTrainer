@@ -25,7 +25,7 @@ te izmene svejedno vredi komitovati da se ne izgube.
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **svih šest** modula za trening. Poslednji
-build je prošao čisto, bez upozorenja. **107 testova, nijedan ne pada.**
+build je prošao čisto, bez upozorenja. **112 testova, nijedan ne pada.**
 
 **Svih šest modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -224,31 +224,39 @@ viši rang i nabraja dostignuća osvojena baš tom sesijom.
 
 ## Šta ne radi i šta nedostaje
 
-### Glasovni unos — čeka odluku, ne kod
-`VoskVoiceInput` je gotov: raspakivanje jednom po pokretanju, uzak rečnik od 64
-polja (uz njega Vosk gotovo ne greši), stanje kroz `VoiceState`. Fali **samo
-model**. `isModelBundled()` ga traži u `assets` kao `model-en-us`; kad ga nema,
-stanje je `Unavailable` i nijedan modul ne prikazuje mikrofon.
+### Glasovni unos — model se preuzima, mikrofon još nije u modulima
+**Odlučeno: model se preuzima na zahtev korisnika**, ne pakuje se u APK. Razlog
+je izbor — kome glas ne treba, taj ne plaća 39 MB preuzimanja ni 67 MB na disku,
+a sme i da obriše model kasnije.
 
-Model stoji u starom projektu: `BlindfoldChessCouch\app\src\main\assets\model-en-us`,
-**67,6 MB u 15 fajlova**. Tri puta:
+`VoskModelStore` u `:core:audio` preuzima
+`alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip` preko
+`HttpURLConnection` (bez nove biblioteke), raspakuje ga u `filesDir/vosk-model` i
+javlja stanje kroz `ModelState`. `VoskVoiceInput` prati to stanje i učitava
+`Model(putanja)` čim model postane spreman — glasovni unos se zato pali i gasi u
+toku rada, bez ponovnog pokretanja aplikacije.
 
-1. **U `assets`, van gita.** `.gitignore` već ima `/app/src/main/assets/model-*/`,
-   pa lokalni build radi odmah, a repo ostaje mali. Ali APK skače na ~127 MB i
-   svako ko klonira repo mora sam da nabavi model.
-2. **Preuzimanje pri prvom pokretanju** sa `alphacephei.com`. APK ostaje mali,
-   ali traži ekran za preuzimanje, rukovanje prekidom veze i `Model(putanja)`
-   umesto `StorageService.unpack` iz `assets`.
-3. **Android-ov `SpeechRecognizer`** umesto Vosk-a. Nula megabajta i nula
-   preuzimanja, ali traži internet u toku vežbe i nema uzak rečnik, pa je
-   prepoznavanje polja osetno lošije.
+Tri stvari koje su namerno tako:
 
-Dok se ne odluči, `:core:audio` nosi Vosk native biblioteke za pet ABI-ja (vidi
-sledeću stavku) iako se ne koriste.
+- **Nedovršeno preuzimanje se ne pamti kao model.** Pri prekidu ili grešci folder
+  se briše, a spremnost se proverava po fajlovima koje Vosk zaista traži
+  (`am/final.mdl`, `graph/HCLr.fst`, …), ne po postojanju foldera.
+- **Omotački folder iz arhive se skida** — Vosk arhiva ima
+  `vosk-model-small-en-us-0.15/` na vrhu, a `Model()` očekuje ono što je unutra.
+- **Unos koji vodi van foldera se odbija**, pa arhiva ne može da piše izvan svog
+  mesta. `ModelArchiveTest` pokriva sve troje, bez mreže i bez uređaja.
 
-### APK je 59,5 MB
+Kartica **Glasovni unos** stoji na dnu menija: stanje, dugme za preuzimanje sa
+trakom, prekid, i brisanje modela.
+
+**Šta ostaje:** nijedan modul još ne prikazuje mikrofon. Parovi, Završnica i
+Prati partiju bi ga dobili kad je `VoiceState.Idle`, uz traženje `RECORD_AUDIO`
+dozvole pri prvom dodiru.
+
+### APK je 57,7 MB
 Skoro sve su Vosk native biblioteke za pet ABI-ja — uključujući `mips`, koji ne
-postoji od 2019. Kad se bude radio glasovni unos, tu se skida tridesetak megabajta.
+postoji od 2019. Tu se skida tridesetak megabajta, ili filtriranjem ABI-ja ili
+podelom po arhitekturi pri objavljivanju.
 
 ### Težine u Geometriji se ne razlikuju dovoljno
 Primedba sa uređaja: lako i teško deluju isto. Trenutno se razlikuju samo po
@@ -304,9 +312,10 @@ jedno i drugo računa iz istorije.
 
 Svih šest modula postoji i radi na uređaju. Ostalo je:
 
-1. Odlučiti odakle Vosk model (vidi „Glasovni unos"), pa mikrofon u Parovima,
-   Završnici i Prati partiju — odloženo dogovorom
-2. Dogovoriti brojeve bodovanja i da li rang išta otključava
-3. Podešavanja (DataStore) i ekran sa spiskom dostignuća
-4. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
-5. Težine u Geometriji (vidi gore) — odloženo dogovorom
+1. Preuzeti model na uređaju i videti da kartica dođe do „spreman" — preuzimanje
+   nije nikad izvršeno na telefonu
+2. Mikrofon u Parovima, Završnici i Prati partiju, uz `RECORD_AUDIO` dozvolu
+3. Dogovoriti brojeve bodovanja i da li rang išta otključava
+4. Podešavanja (DataStore) i ekran sa spiskom dostignuća
+5. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
+6. Težine u Geometriji (vidi gore) — odloženo dogovorom

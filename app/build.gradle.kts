@@ -48,6 +48,8 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:moduleapi"))
     implementation(project(":core:designsystem"))
+    // Meni nudi preuzimanje jezičkog modela — model je oprema školjke, ne modula.
+    implementation(project(":core:audio"))
     implementation(project(":core:progress"))
     // Samo zbog Hilt vezivanja ProgressRepository -> Room implementacija;
     // :app ne dodiruje nijedan tip iz :core:data.

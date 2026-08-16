@@ -29,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.program.blindfoldtrainer.R
+import com.program.blindfoldtrainer.core.audio.ModelState
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.moduleapi.TrainingModule
 import com.program.blindfoldtrainer.core.progress.Achievement
@@ -40,6 +41,10 @@ import com.program.blindfoldtrainer.core.progress.Rank
 fun MainMenuScreen(
     modules: List<TrainingModule>,
     progress: ProgressSnapshot,
+    voiceModel: ModelState,
+    onDownloadVoiceModel: () -> Unit,
+    onCancelVoiceModel: () -> Unit,
+    onDeleteVoiceModel: () -> Unit,
     onStart: (TrainingModule, Difficulty) -> Unit
 ) {
     Scaffold(
@@ -79,6 +84,15 @@ fun MainMenuScreen(
 
             items(modules, key = { it.id.key }) { module ->
                 ModuleCard(module = module, onStart = { onStart(module, it) })
+            }
+
+            item(key = "voice") {
+                VoiceModelCard(
+                    state = voiceModel,
+                    onDownload = onDownloadVoiceModel,
+                    onCancel = onCancelVoiceModel,
+                    onDelete = onDeleteVoiceModel
+                )
             }
         }
     }
@@ -152,6 +166,83 @@ private fun RankCard(progress: ProgressSnapshot) {
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+        }
+    }
+}
+
+/**
+ * Jezički model za glasovni unos.
+ *
+ * Stoji na dnu menija, ispod modula, jer nije vežba nego oprema. Preuzimanje
+ * pokreće korisnik — 39 MB nema ko da nametne onome ko vežba dodirom.
+ */
+@Composable
+private fun VoiceModelCard(
+    state: ModelState,
+    onDownload: () -> Unit,
+    onCancel: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = stringResource(R.string.voice_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(Modifier.height(6.dp))
+
+            Text(
+                text = when (state) {
+                    ModelState.Absent -> stringResource(R.string.voice_absent)
+                    is ModelState.Downloading -> stringResource(R.string.voice_downloading)
+                    ModelState.Unpacking -> stringResource(R.string.voice_unpacking)
+                    ModelState.Ready -> stringResource(R.string.voice_ready)
+                    is ModelState.Failed -> stringResource(R.string.voice_failed, state.reason)
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (state is ModelState.Failed) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                }
+            )
+
+            if (state is ModelState.Downloading || state is ModelState.Unpacking) {
+                Spacer(Modifier.height(10.dp))
+                val fraction = (state as? ModelState.Downloading)?.fraction
+                if (fraction == null) {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                } else {
+                    LinearProgressIndicator(
+                        progress = { fraction.coerceIn(0f, 1f) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            when (state) {
+                ModelState.Absent, is ModelState.Failed ->
+                    FilledTonalButton(onClick = onDownload) {
+                        Text(stringResource(R.string.voice_download))
+                    }
+
+                is ModelState.Downloading ->
+                    FilledTonalButton(onClick = onCancel) {
+                        Text(stringResource(R.string.voice_cancel))
+                    }
+
+                // Raspakivanje traje kratko i nema šta da se prekine na pola.
+                ModelState.Unpacking -> Unit
+
+                ModelState.Ready ->
+                    FilledTonalButton(onClick = onDelete) {
+                        Text(stringResource(R.string.voice_delete))
+                    }
             }
         }
     }

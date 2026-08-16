@@ -25,6 +25,16 @@
     <string name="menu_rank_top">Vrh lestvice — nema višeg ranga.</string>
     <string name="menu_achievements">Dostignuća: %1$d/%2$d</string>
 
+    <string name="voice_title">Glasovni unos</string>
+    <string name="voice_absent">Jezički model nije preuzet. Bez njega vežbaš dodirom; sa njim možeš da izgovaraš polja. Preuzimanje je 39 MB, a na telefonu zauzima oko 67 MB.</string>
+    <string name="voice_downloading">Preuzimanje u toku…</string>
+    <string name="voice_unpacking">Raspakivanje…</string>
+    <string name="voice_ready">Model je spreman — mikrofon radi u modulima koji ga nude.</string>
+    <string name="voice_failed">Preuzimanje nije uspelo: %1$s</string>
+    <string name="voice_download">PREUZMI MODEL</string>
+    <string name="voice_cancel">PREKINI</string>
+    <string name="voice_delete">OBRIŠI MODEL</string>
+
     <string name="achievement_first_session">Prvi trening</string>
     <string name="achievement_first_perfect">Bez ijedne greške</string>
     <string name="achievement_ten_perfect">Deset besprekornih</string>

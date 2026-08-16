@@ -19,6 +19,7 @@ import com.program.blindfoldtrainer.core.moduleapi.ModuleArgs
 import com.program.blindfoldtrainer.ui.MainMenuScreen
 import com.program.blindfoldtrainer.ui.ProgressViewModel
 import com.program.blindfoldtrainer.ui.SessionSummaryDialog
+import com.program.blindfoldtrainer.ui.VoiceModelViewModel
 
 private const val ROUTE_MENU = "menu"
 private const val ARG_MODULE = "module"
@@ -43,12 +44,19 @@ fun AppNavigation(registry: ModuleRegistry) {
     val progressViewModel: ProgressViewModel = hiltViewModel()
     val progress by progressViewModel.snapshot.collectAsState()
 
+    val voiceModelViewModel: VoiceModelViewModel = hiltViewModel()
+    val voiceModel by voiceModelViewModel.state.collectAsState()
+
     NavHost(navController = navController, startDestination = ROUTE_MENU) {
 
         composable(ROUTE_MENU) {
             MainMenuScreen(
                 modules = registry.all,
                 progress = progress,
+                voiceModel = voiceModel,
+                onDownloadVoiceModel = voiceModelViewModel::download,
+                onCancelVoiceModel = voiceModelViewModel::cancel,
+                onDeleteVoiceModel = voiceModelViewModel::delete,
                 onStart = { module, difficulty ->
                     navController.navigate(moduleRoute(module.id.key, difficulty))
                 }
