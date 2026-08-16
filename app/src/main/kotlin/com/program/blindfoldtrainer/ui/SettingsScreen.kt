@@ -135,13 +135,26 @@ private fun ThemeSection(theme: ThemeChoice, onTheme: (ThemeChoice) -> Unit) {
     }
 }
 
+/**
+ * Ono što **aplikacija govori tebi**.
+ *
+ * Odvojeno od prepoznavanja i naslovom i objašnjenjem: dva jezika u istoj
+ * aplikaciji lako se pobrkaju, a odnose se na suprotne smerove.
+ */
 @Composable
 private fun SpeechSection(rate: Float, onRate: (Float) -> Unit) {
     SettingsCard(stringResource(R.string.settings_speech)) {
         Text(
-            text = stringResource(R.string.settings_speech_rate, rate),
-            style = MaterialTheme.typography.bodyMedium,
+            text = stringResource(R.string.settings_speech_hint),
+            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        Text(
+            text = stringResource(R.string.settings_speech_rate, rate),
+            style = MaterialTheme.typography.bodyMedium
         )
         Slider(
             value = rate,
@@ -150,8 +163,11 @@ private fun SpeechSection(rate: Float, onRate: (Float) -> Unit) {
             // Deset koraka po 0.1 kroz ceo opseg — finije od toga se ne čuje.
             steps = 9
         )
+
+        // Jezik izgovora se zasad ne bira; da to nigde ne piše, izbor jezika
+        // prepoznavanja bi izgledao kao da menja i ovo.
         Text(
-            text = stringResource(R.string.settings_speech_hint),
+            text = stringResource(R.string.settings_speech_language),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

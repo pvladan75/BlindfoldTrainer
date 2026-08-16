@@ -275,7 +275,7 @@ koja je bolja zavisi od izgovora, a to aplikacija ne može da zna.
 |---|---|
 | Tema: automatski / svetla / tamna | automatski |
 | Brzina izgovaranja (0,5–1,5) | 0,85 — kao pre |
-| Jezik izgovora (9 jezika) | engleski |
+| Jezik prepoznavanja (9 jezika) | engleski |
 | Slova kao reči („bravo" umesto „b") | isključeno |
 | Slušaj ceo potez (Završnica, jedan pritisak) | isključeno |
 | Slovo i broj odvojeno („e", pa „four") | isključeno |
@@ -308,7 +308,29 @@ Izbor se pri promeni jezika **ne briše** nego samo ne dejstvuje
 (`usesPhoneticAlphabet` naspram `phoneticAlphabet`), pa se vraća sam kad se vrati
 engleski.
 
-### Jezici glasovnog unosa
+### Dva jezika, dva smera — ne mešati
+
+U aplikaciji postoje **dva jezika i lako se brkaju**, jer se odnose na suprotne
+smerove:
+
+| | ko govori | šta određuje |
+|---|---|---|
+| **Prepoznavanje** | korisnik → aplikaciji | koji se Vosk model preuzima i koje se reči slušaju |
+| **Izgovor** | aplikacija → korisniku | TTS glas kojim se čitaju potezi |
+
+**Izgovor je zasad uvek engleski** (`Locale.US`, „e four"), bez obzira na jezik
+prepoznavanja. To sada i piše na ekranu — ranije nije, pa je izbor jezika
+prepoznavanja izgledao kao da menja i ono što aplikacija govori.
+
+Podešavanja su zato podeljena u dve kartice sa izričitim naslovima:
+„Izgovor — aplikacija govori tebi" i „Prepoznavanje — ti govoriš aplikaciji".
+
+Ako se jednom bude radio i izgovor na drugom jeziku, tabela u `VoiceLanguages`
+već nosi reči za oba smera — iste te reči kojima se sluša mogu i da se čitaju.
+Ostaje da se proveri ima li uređaj TTS glas za taj jezik i da se pada nazad na
+engleski kad ga nema.
+
+### Jezici prepoznavanja
 
 **Srpskog nema i neće ga biti dok ga Vosk ne objavi.** Provereno na spisku od 76
 modela: nema nijedan južnoslovenski jezik — ni srpski, ni hrvatski, bosanski,
