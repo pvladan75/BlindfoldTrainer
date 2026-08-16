@@ -1,7 +1,13 @@
 # Dokle smo stigli
 
-Stanje na dan **15. avgust 2026.** Ovaj fajl služi da se rad nastavi u novoj
+Stanje na dan **16. avgust 2026.** Ovaj fajl služi da se rad nastavi u novoj
 sesiji bez ponovnog objašnjavanja.
+
+**Gde smo stali:** svih šest modula radi na uređaju; napredak, podešavanja i
+glasovni unos rade; poslednje na čemu se radilo je **režim bez ekrana** u modulu
+Dokrajči protivnika — vežbanje zatvorenih očiju, sa čitanjem pozicije naglas,
+zonama umesto dugmadi i poništavanjem poteza. Nije još probano na uređaju u
+poslednjem obliku (poništavanje i ispravke zona).
 
 ---
 
@@ -578,9 +584,20 @@ jedno i drugo računa iz istorije.
 
 Svih šest modula postoji i radi na uređaju. Ostalo je:
 
-1. Probati glasovni unos na uređaju i videti koje od tri opcije zaista pomažu;
-   ako se proba neki jezik osim engleskog, upisati `isVerified` u `VoiceLanguages`
-2. Dogovoriti brojeve bodovanja i da li rang išta otključava
-3. Ekran sa spiskom dostignuća
-4. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
-5. Težine u Geometriji (vidi gore) — odloženo dogovorom
+1. **Probati poslednje izmene režima bez ekrana** — poništavanje dugim pritiskom,
+   novi raspored zona, pauza od 50 ms. Nisu još viđene na uređaju.
+2. **Režim bez ekrana u ostalim modulima.** Zasad radi samo u Završnici, a svih
+   šest ga podnosi: Geometrija i Putanja skakača su ionako pitanje-odgovor,
+   Parovi i Prati partiju već izgovaraju poteze, a Zapamti poziciju bi umesto
+   gledanja dobio čitanje — što je čak čistija vežba.
+3. Dogovoriti brojeve bodovanja i da li rang išta otključava
+4. Ekran sa spiskom dostignuća
+5. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
+6. Težine u Geometriji (vidi gore) — odloženo dogovorom
+7. Ako se proba neki jezik osim engleskog, upisati `isVerified` u
+   `VoiceLanguages` odnosno `SpeechLanguages`
+
+**Otvoreno pitanje koje se nije zatvorilo:** da li potvrđivati prepoznat potez
+pre nego što se odigra. Sada se odigra pa objavi, uz poništavanje — zaključeno
+da je to brže od pitanja pred svaki potez, ali odluka nije proverena kroz duže
+korišćenje.
