@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.program.blindfoldtrainer.core.audio.Speaker
+import com.program.blindfoldtrainer.core.audio.SpokenInput
 import com.program.blindfoldtrainer.core.audio.VoiceInput
 import com.program.blindfoldtrainer.core.audio.VoiceState
 import com.program.blindfoldtrainer.core.chess.Color
@@ -89,6 +90,16 @@ private data class UndoPoint(
     val lastMove: Move?,
     val statusMessage: String
 )
+
+/** Ime figure za izgovor. Rod se ne menja jer stoji uz „može" i „ne može". */
+private fun PieceType.spokenName(): String = when (this) {
+    PieceType.KING -> "kralj"
+    PieceType.QUEEN -> "dama"
+    PieceType.ROOK -> "top"
+    PieceType.BISHOP -> "lovac"
+    PieceType.KNIGHT -> "skakač"
+    PieceType.PAWN -> "pešak"
+}
 
 private fun setupFor(difficulty: Difficulty) = when (difficulty) {
     Difficulty.EASY -> Setup(puzzleCount = 3, engineDepth = 10)
@@ -186,8 +197,14 @@ class EndgameViewModel @Inject constructor(
     }
 
     /**
-     * Potez se izgovara u dva koraka — polazno pa odredišno polje — jer prolazi
-     * kroz isti [onSquareClicked] kao i dodir.
+     * Prima izgovor u bilo kom obliku koji Završnica ume:
+     *
+     * - **polje** („e four") — bira figuru, pa sledeće polje dovršava potez;
+     * - **ceo potez** („e four e two") — oba polja iz jednog daha;
+     * - **figura i odredište** („rook e two") — polazište traži sama.
+     *
+     * Ne bira se između njih i nema režima: rečnik je jedan, a šta je rečeno
+     * vidi se tek pri čitanju.
      *
      * Uz uključeno „slušaj ceo potez" drugi korak ne traži nov pritisak:
      * **mikrofon prosto ostaje upaljen** dok se ne prepozna i odredišno polje.
@@ -195,9 +212,64 @@ class EndgameViewModel @Inject constructor(
      * prethodni snimač još zatvarao.
      */
     fun onVoiceInput() {
-        voiceInput.listenForSquares { square ->
-            onSquareClicked(square)
+        voiceInput.listen { spoken -> onSpokenInput(spoken) }
+    }
+
+    /** Vraća `true` ako se sluša dalje. */
+    private fun onSpokenInput(spoken: SpokenInput): Boolean = when (spoken) {
+        is SpokenInput.Full -> {
+            onSquareClicked(spoken.square)
             settings.listenWholeMove && _uiState.value.selectedSquare != null
+        }
+
+        is SpokenInput.Move -> {
+            // Ista dva dodira, samo iz jednog izgovora.
+            onSquareClicked(spoken.from)
+            onSquareClicked(spoken.to)
+            false
+        }
+
+        is SpokenInput.PieceMove -> {
+            onSpokenPieceMove(spoken.piece, spoken.to)
+            false
+        }
+
+        else -> false
+    }
+
+    /**
+     * „Top na e dva" — polazište se traži iz legalnih poteza.
+     *
+     * Kad na isto polje mogu dve iste figure, odgovor nije jedan i **ne pogađa
+     * se**: kaže se da su dve i traži se polazište. To nije greška korisnika
+     * nego nedorečenost, pa se i ne broji kao promašaj — a usput je i korisna
+     * vest, jer dve figure koje gađaju isto polje su baš ono što naslepo izmiče.
+     */
+    private fun onSpokenPieceMove(type: PieceType, to: Square) {
+        val state = _uiState.value
+        if (!state.isPlayerTurn) return
+
+        val candidates = state.position.legalMoves()
+            .filter { it.to == to && state.position.board[it.from]?.type == type }
+        val origins = candidates.map { it.from }.distinct()
+
+        when {
+            origins.isEmpty() -> {
+                speaker.say("Nijedan ${type.spokenName()} ne može na")
+                speaker.say(to, interrupt = false)
+                onIllegalMove(to)
+            }
+
+            origins.size > 1 -> {
+                speaker.say("Dva puta ${type.spokenName()} može na")
+                speaker.say(to, interrupt = false)
+                speaker.say("reci i polazno polje", interrupt = false)
+            }
+
+            // Promocija se podrazumeva u damu — kao i pri dodiru.
+            else -> applyPlayerMove(
+                candidates.firstOrNull { it.promotion == PieceType.QUEEN } ?: candidates.first()
+            )
         }
     }
 

@@ -1,5 +1,6 @@
 package com.program.blindfoldtrainer.core.audio
 
+import com.program.blindfoldtrainer.core.chess.PieceType
 import com.program.blindfoldtrainer.core.chess.Square
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -70,6 +71,46 @@ class SpokenInputTest {
     fun `cetiri znaka koja nisu dva polja ostaju neprepoznata`() {
         assertEquals(SpokenInput.Unknown, parseSpokenInput("e nine e four"))
         assertEquals(SpokenInput.Unknown, parseSpokenInput("four four four four"))
+    }
+
+    @Test
+    fun `figura i odrediste, bez polazista`() {
+        assertEquals(
+            SpokenInput.PieceMove(PieceType.ROOK, square("e2")),
+            parseSpokenInput("rook e two")
+        )
+        assertEquals(
+            SpokenInput.PieceMove(PieceType.KNIGHT, square("f3")),
+            parseSpokenInput("knight f three")
+        )
+    }
+
+    @Test
+    fun `ime figure uz oba polja je suvisno i ne smeta`() {
+        assertEquals(
+            SpokenInput.Move(square("e4"), square("e2")),
+            parseSpokenInput("rook e four e two")
+        )
+    }
+
+    /**
+     * „from" model ne zna, pa ga vrati kao `[unk]` i preskačemo ga. „to" čuje
+     * kao „two" — engleski ih izgovara isto — pa stigne kao red bez kolone
+     * ispred sebe, i takav otpada.
+     */
+    @Test
+    fun `veznici u recenici ne kvare potez`() {
+        assertEquals(
+            SpokenInput.Move(square("e4"), square("e2")),
+            parseSpokenInput("rook [unk] e four two e two")
+        )
+    }
+
+    @Test
+    fun `neprepoznata rec obara ceo izgovor`() {
+        // Nije isto što i `[unk]`: reč koju model nije ni trebalo da vrati znači
+        // da izgovor nije razumljen, pa se ništa ne pogađa iz ostatka.
+        assertEquals(SpokenInput.Unknown, parseSpokenInput("bunar e four"))
     }
 
     @Test

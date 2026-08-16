@@ -316,6 +316,48 @@ prekine — njihov ugovor se nije promenio.
 
 Nastavak slušanja i dalje postoji, za onoga ko zastane između polja.
 
+#### Potez se sme reći i preko imena figure
+
+„rook e two" — polazište Završnica nađe sama, iz legalnih poteza. Radi **uporedo**
+sa izgovaranjem polja i **ništa se ne bira**: rečnik je jedan spisak reči, a šta
+je rečeno vidi se tek pri čitanju. Svi ovi oblici prolaze kroz isti pritisak:
+
+| rečeno | ispada |
+|---|---|
+| „e four" | polje — bira figuru, sledeće polje dovršava potez |
+| „e four e two" | ceo potez |
+| „rook e two" | figura i odredište |
+| „rook e four e two" | potez; ime figure je suvišno i ne smeta |
+
+**Kad na isto polje mogu dve iste figure, ne pogađa se.** Kaže se da su dve i
+traži se polazište. To nije korisnikova greška nego nedorečenost, pa se i ne
+broji kao promašaj — a usput je i korisna vest: dve figure koje gađaju isto polje
+su baš ono što naslepo izmiče.
+
+**Imena figura postoje samo na engleskom.** Dodata su posle polja i proverena su
+samo tamo; ostali jezici ih nemaju i rade kao i pre, poljima. Test drži da ih
+jezik ili ima sva ili nema nijedno — pola spiska bi značilo da se „rook e two"
+razume a „bishop e two" ne, bez ikakvog znaka zašto.
+
+#### Čitanje ide reč po reč, a ne spajanjem
+
+Ovo je omogućilo i jedno i drugo. `parseSpokenInput` je ranije sve tokene lepio u
+jedan niz i tražio tačno jedno polje; sada prolazi **reč po reč** i sklapa kolonu
+i red u polje čim se sretnu, pa se ono što se skupi tumači na kraju.
+
+Uz to se `[unk]` — ono što Vosk vrati za izgovor van gramatike — **preskače**, dok
+reč koja nije ni to ni iz rečnika i dalje obara ceo izgovor. Razlika je namerna:
+`[unk]` znači „nešto je rečeno, ne znam šta", a to je bezbedno preskočiti; sve
+ostalo znači da izgovor nije razumljen i tu se ništa ne pogađa.
+
+Zato prolazi i cela rečenica: **„rook from e four to e two"**. „from" model ne zna
+pa dođe kao `[unk]` i otpadne; „to" čuje kao „two" — engleski ih izgovara isto —
+pa stigne kao red bez kolone ispred sebe i takav se propušta. Ostaje top, e4, e2.
+
+Veznici se **namerno ne dodaju u rečnik**: „to" i „two" su ista reč po zvuku, pa
+bi svako „e two" postalo neizvesno. Bolje je pustiti ih kroz `[unk]` nego uneti
+dvosmislenost u ono što radi.
+
 Traženje ovog baga je otišlo u dva promašena kruga i vredi zapisati zašto:
 prijava je bila „ponavlja se prvo polje", a to je zvučalo kao da se isto polje
 predaje dvaput. Zapravo je to bila **potvrda polazišta** koju aplikacija sama
@@ -666,7 +708,8 @@ preuzimanje.
 
 **Dodavanje jezika je jedan unos u `VoiceLanguages`**: ime arhive sa
 `alphacephei.com/vosk/models`, veličina, i šesnaest reči — osam za kolone a–h i
-osam za redove 1–8. Ništa drugo u aplikaciji ne zna za jezike.
+osam za redove 1–8. Uz njih smeju i šest imena figura, ali su neobavezna: jezik
+bez njih radi poljima. Ništa drugo u aplikaciji ne zna za jezike.
 
 ⚠ **Samo je engleski proveren na uređaju.** Reči za ostale jezike su upisane po
 pravopisu, a ne po sluhu, i model ih možda uopšte nema u svom rečniku — Vosk
@@ -745,7 +788,8 @@ Svih šest modula postoji i radi na uređaju. Ostalo je:
 5. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
 6. Težine u Geometriji (vidi gore) — odloženo dogovorom
 7. Ako se proba neki jezik osim engleskog, upisati `isVerified` u
-   `VoiceLanguages` odnosno `SpeechLanguages`
+   `VoiceLanguages` odnosno `SpeechLanguages`; imena figura postoje samo na
+   engleskom i dopunjuju se istim putem
 8. Oblik pitanja za Zapamti poziciju bez ekrana — odloženo dogovorom
 
 **Otvoreno pitanje koje se nije zatvorilo:** da li potvrđivati prepoznat potez

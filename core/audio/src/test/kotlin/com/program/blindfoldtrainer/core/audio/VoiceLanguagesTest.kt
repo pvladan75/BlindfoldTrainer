@@ -1,5 +1,6 @@
 package com.program.blindfoldtrainer.core.audio
 
+import com.program.blindfoldtrainer.core.chess.PieceType
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.VoiceLanguage
 import org.junit.Assert.assertEquals
@@ -55,14 +56,40 @@ class VoiceLanguagesTest {
     }
 
     @Test
-    fun `recnik ima tacno sesnaest reci`() {
+    fun `polja se izgovaraju sa tacno sesnaest reci`() {
         VoiceLanguage.entries.forEach { language ->
             assertEquals(
                 language.name,
                 16,
-                VoiceLanguages.specFor(language).words.allWords.size
+                VoiceLanguages.specFor(language).words.squareWords.size
             )
         }
+    }
+
+    /**
+     * Imena figura su dodata posle polja i proverena su samo na engleskom.
+     * Jezik ih ili ima sva, ili nema nijedno — pola spiska bi značilo da se
+     * „rook e two" razume a „bishop e two" ne, bez ikakvog znaka zašto.
+     */
+    @Test
+    fun `imena figura su ili sva ili nijedno`() {
+        VoiceLanguage.entries.forEach { language ->
+            val pieces = VoiceLanguages.specFor(language).words.pieces
+            assertTrue(
+                "${language.name}: ${pieces.size} imena figura",
+                pieces.isEmpty() || pieces.size == 6
+            )
+        }
+    }
+
+    @Test
+    fun `engleski razume figuru i odrediste`() {
+        val words = VoiceLanguages.specFor(VoiceLanguage.ENGLISH).words
+
+        assertEquals(
+            SpokenInput.PieceMove(PieceType.ROOK, requireNotNull(Square.fromAlgebraic("e2"))),
+            parseSpokenInput("rook e two", words)
+        )
     }
 
     @Test

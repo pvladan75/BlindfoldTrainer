@@ -321,6 +321,27 @@ private fun VoiceSection(settings: Settings, viewModel: SettingsViewModel) {
             checked = settings.separateLetterAndNumber,
             onCheckedChange = viewModel::onSeparateLetterAndNumber
         )
+
+        // Bez prekidača: imena figura rade uvek kad ih jezik ima, uporedo sa
+        // poljima. Prekidač bi lagao da postoji izbor — ali niko ne bi ni
+        // pogodio da „rook e two" prolazi, pa mora bar da piše.
+        Notice(
+            title = stringResource(R.string.settings_piece_names),
+            text = stringResource(R.string.settings_piece_names_hint)
+        )
+    }
+}
+
+/** Objašnjenje bez prekidača — za ono što radi samo od sebe. */
+@Composable
+private fun Notice(title: String, text: String) {
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+        Text(text = title, style = MaterialTheme.typography.bodyLarge)
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

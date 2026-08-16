@@ -43,7 +43,7 @@ class VoskVoiceInput @Inject constructor(
 
     private var model: Model? = null
     private var speechService: SpeechService? = null
-    private var onSquareRecognized: ((Square) -> Boolean)? = null
+    private var onSpokenRecognized: ((SpokenInput) -> Boolean)? = null
 
     /**
      * Brava oko predaje polja.
@@ -131,7 +131,7 @@ class VoskVoiceInput @Inject constructor(
         model = null
     }
 
-    override fun listenForSquares(onSquare: (Square) -> Boolean) {
+    override fun listen(onSpoken: (SpokenInput) -> Boolean) {
         val readyModel = model
         if (readyModel == null) {
             Log.w(TAG, "Traženo slušanje pre nego što je model spreman")
@@ -139,7 +139,7 @@ class VoskVoiceInput @Inject constructor(
         }
         if (_state.value == VoiceState.Listening) return
 
-        onSquareRecognized = onSquare
+        onSpokenRecognized = onSpoken
         pendingFile = null
 
         try {
@@ -164,7 +164,7 @@ class VoskVoiceInput @Inject constructor(
 
     override fun stop() {
         stopService()
-        onSquareRecognized = null
+        onSpokenRecognized = null
         pendingFile = null
         if (_state.value == VoiceState.Listening) {
             _state.value = VoiceState.Idle
@@ -223,12 +223,6 @@ class VoskVoiceInput @Inject constructor(
             ?: return
 
         when (val spoken = parseSpokenInput(text, currentWords())) {
-            is SpokenInput.Full -> deliver(listOf(spoken.square))
-
-            // Oba polja su iz istog izgovora, pa idu zajedno: modul ih dobija
-            // jedno za drugim, kao da su dva puta dodirnuta.
-            is SpokenInput.Move -> deliver(listOf(spoken.from, spoken.to))
-
             is SpokenInput.File -> if (settings.separateLetterAndNumber) {
                 // Slušanje se ne prekida — čeka se broj koji ide uz ovu kolonu.
                 pendingFile = spoken.file
@@ -238,22 +232,24 @@ class VoskVoiceInput @Inject constructor(
                 val file = pendingFile
                 if (settings.separateLetterAndNumber && file != null) {
                     pendingFile = null
-                    Square.of(file, spoken.rank)?.let { deliver(listOf(it)) }
+                    Square.of(file, spoken.rank)?.let { deliver(SpokenInput.Full(it)) }
                 }
             }
 
             SpokenInput.Unknown -> Log.d(TAG, "Prepoznato \"$text\", ali to nije polje")
+
+            else -> deliver(spoken)
         }
     }
 
     /**
-     * Predaje polja iz **jednog** izgovora, redom.
+     * Predaje ono što je prepoznato iz **jednog** izgovora.
      *
-     * Granica se proverava po izgovoru a ne po polju: „b four g four" nosi dva
-     * polja odjednom i ona ne smeju da se poklope kao ponavljanje.
+     * Granica se proverava po izgovoru: „e four e two" nosi ceo potez odjednom i
+     * ne sme da se poklopi sa ponavljanjem.
      */
-    private fun deliver(squares: List<Square>) {
-        val callback = onSquareRecognized ?: return
+    private fun deliver(spoken: SpokenInput) {
+        val callback = onSpokenRecognized ?: return
         if (!isDelivering.compareAndSet(false, true)) return
 
         try {
@@ -261,21 +257,14 @@ class VoskVoiceInput @Inject constructor(
             if (now - lastDeliveryMillis < MIN_GAP_BETWEEN_UTTERANCES_MILLIS) {
                 // Isti izgovor prijavljen dvaput. Granica je ljudska, ne
                 // biblioteka: dva izgovora se ne smene za pola sekunde.
-                Log.d(TAG, "Izgovor $squares stigao prebrzo posle prethodnog — preskačem")
+                Log.d(TAG, "Izgovor $spoken stigao prebrzo posle prethodnog — preskačem")
                 return
             }
             lastDeliveryMillis = now
             pendingFile = null
 
-            // Slušanje ostaje upaljeno dok modul traži još polja — vidi
-            // VoiceInput.listenForSquares. Modul koji traži samo jedno prekida
-            // ovde, pa mu drugo polje iz istog izgovora i ne stigne.
-            for (square in squares) {
-                if (!callback(square)) {
-                    stop()
-                    return
-                }
-            }
+            // Slušanje ostaje upaljeno dok modul traži još — vidi VoiceInput.listen.
+            if (!callback(spoken)) stop()
         } finally {
             isDelivering.set(false)
         }

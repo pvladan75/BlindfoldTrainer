@@ -82,7 +82,9 @@
     <string name="settings_phonetic_hint">Kolona se kaže rečju: „bravo" umesto „b". Pomaže kad model brka slična slova. Reči su one iste koje koriste piloti i radio-veza.</string>
     <string name="settings_phonetic_english_only">Reči su engleske, pa ih model drugog jezika ne prepoznaje. Ako ti izgovor polja na izabranom jeziku ne prolazi, pređi na engleski model i probaj sa ovim.</string>
     <string name="settings_whole_move">Slušaj ceo potez</string>
-    <string name="settings_whole_move_hint">Potez se kaže u jednom dahu — „bravo four golf four" — umesto pritiska po polju. Sme i sa pauzom: mikrofon sačeka drugo polje. Odnosi se samo na Dokrajči protivnika, jedinu vežbu u kojoj je odgovor potez a ne jedno polje.</string>
+    <string name="settings_whole_move_hint">Potez se kaže u jednom dahu — „e four e two" — umesto pritiska po polju. Sme i sa pauzom: mikrofon sačeka drugo polje. Odnosi se samo na Dokrajči protivnika, jedinu vežbu u kojoj je odgovor potez a ne jedno polje.</string>
+    <string name="settings_piece_names">Potez preko imena figure</string>
+    <string name="settings_piece_names_hint">U Dokrajči protivnika sme i „rook e two" — polazno polje se nađe samo. Radi uporedo sa izgovaranjem polja, ništa se ne bira. Kad na isto polje mogu dve iste figure, aplikacija to kaže i zatraži polazište. Zasad samo uz engleski paket.</string>
     <string name="settings_separate">Slovo i broj odvojeno</string>
     <string name="settings_separate_hint">Sme da se kaže „e", pa zatim „four", umesto celog polja odjednom.</string>
 

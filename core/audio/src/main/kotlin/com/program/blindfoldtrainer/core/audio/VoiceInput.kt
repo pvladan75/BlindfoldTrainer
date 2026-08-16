@@ -31,24 +31,41 @@ interface VoiceInput {
     val state: StateFlow<VoiceState>
 
     /**
-     * Sluša polja dok [onSquare] vraća `true`.
+     * Sluša dok [onSpoken] vraća `true`.
+     *
+     * Predaje se **ono što je rečeno**, neprotumačeno: polje, ceo potez, ili
+     * figura i odredište. Modul odlučuje šta od toga ume — Završnica prima
+     * potez, ostali samo polje.
      *
      * Nastavak ide **bez gašenja mikrofona**. Ranije se za drugo polje slušanje
      * gasilo pa paljelo posle kratke pauze, a to ume tiho da ne uspe: prethodni
      * snimač se još zatvara kad se traži novi, pa mikrofon deluje mrtav.
      * Pogađati dužinu te pauze je uzaludno — jednostavnije je ne prekidati.
      */
-    fun listenForSquares(onSquare: (Square) -> Boolean)
+    fun listen(onSpoken: (SpokenInput) -> Boolean)
 
     fun stop()
 }
 
-/** Sluša do prvog prepoznatog polja, pa se sama zaustavlja. */
+/**
+ * Sluša do prvog prepoznatog polja, pa se sama zaustavlja.
+ *
+ * Za module u kojima je odgovor jedno polje. Ako se izgovori ceo potez, uzima se
+ * **polazno** polje: bolje uzeti prvo rečeno nego ćutati.
+ */
 fun VoiceInput.listenForSquare(onSquare: (Square) -> Unit) =
-    listenForSquares { square ->
-        onSquare(square)
+    listen { spoken ->
+        spoken.firstSquare()?.let(onSquare)
         false
     }
+
+/** Prvo polje koje je izgovor pomenuo, ako ga ima. */
+fun SpokenInput.firstSquare(): Square? = when (this) {
+    is SpokenInput.Full -> square
+    is SpokenInput.Move -> from
+    is SpokenInput.PieceMove -> to
+    else -> null
+}
 
 // Čitanje izgovorenog stoji u SpokenInput.kt. Preselilo se odande kad je unos
 // prestao da bude prosto „tekst u polje": uz podešavanja treba da razume i fonetsku

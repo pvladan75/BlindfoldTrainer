@@ -1,5 +1,6 @@
 package com.program.blindfoldtrainer.core.audio
 
+import com.program.blindfoldtrainer.core.chess.PieceType
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.VoiceLanguage
 
@@ -16,6 +17,16 @@ sealed interface SpokenInput {
      * ćuti. Sa uređaja je prijavljeno baš to.
      */
     data class Move(val from: Square, val to: Square) : SpokenInput
+
+    /**
+     * Figura i odredište („rook e two"), bez polazišta.
+     *
+     * Tako se potez i misli u glavi: ne „sa e četiri na e dva" nego „top na e
+     * dva". Polazište traži onaj ko sluša, a ne onaj ko govori — pa ga i ovde
+     * traži modul, iz legalnih poteza. Kad na isto polje mogu dve iste figure,
+     * odgovor nije jedan i mora se pitati.
+     */
+    data class PieceMove(val piece: PieceType, val to: Square) : SpokenInput
 
     /** Samo kolona ("e", ili „echo" po fonetskoj abecedi). */
     data class File(val file: Char) : SpokenInput
@@ -49,8 +60,28 @@ val PHONETIC_FILES: Map<String, Char> = mapOf(
     "hotel" to 'h'
 )
 
+/** Jedna prepoznata reč, pre nego što se sklopi u odgovor. */
+private sealed interface Symbol {
+    data class Whole(val square: Square) : Symbol
+    data class File(val file: Char) : Symbol
+    data class Rank(val rank: Int) : Symbol
+    data class Piece(val type: PieceType) : Symbol
+}
+
 /**
- * Prevodi ono što je prepoznato u polje, kolonu ili red.
+ * Prevodi ono što je prepoznato u polje, potez, kolonu ili red.
+ *
+ * Ide **reč po reč**, a ne spajanjem svega u jedan niz. Spajanje je radilo dok se
+ * očekivalo tačno jedno polje, ali je „b four g four" pretvaralo u `b4g4` — što
+ * nije polje, pa se ćutalo. Sada se kolona i red sklope u polje čim se sretnu, a
+ * ono što se skupi određuje odgovor:
+ *
+ * | rečeno | ispada |
+ * |---|---|
+ * | „e four" | polje |
+ * | „e four e two" | potez, polazno pa odredišno |
+ * | „rook e two" | figura i odredište |
+ * | „rook e four e two" | potez; ime figure je suvišno i ne smeta |
  *
  * Reči zavise od jezika ("four" ili „vier" ili „четыре"), pa se tabela prosleđuje
  * spolja. Latinična slova a–h i cifre 1–8 prolaze uvek — model ih ponekad vrati
@@ -60,27 +91,48 @@ fun parseSpokenInput(
     text: String,
     words: VoiceWords = VoiceLanguages.specFor(VoiceLanguage.ENGLISH).words
 ): SpokenInput {
-    val normalized = text.lowercase()
+    val tokens = text.lowercase()
         .split(' ', '\t', '\n')
-        .filter { it.isNotBlank() }
-        .joinToString("") { token -> normalizeToken(token, words) }
+        .map { it.trim().trimEnd('.', ',') }
+        .filter { it.isNotBlank() && it != UNKNOWN_TOKEN }
 
-    Square.fromAlgebraic(normalized)?.let { return SpokenInput.Full(it) }
+    val symbols = tokens.map { symbolOf(it, words) ?: return SpokenInput.Unknown }
 
-    // Ceo potez u jednom dahu: „b four g four" dođe kao `b4g4`.
-    if (normalized.length == 4) {
-        val from = Square.fromAlgebraic(normalized.take(2))
-        val to = Square.fromAlgebraic(normalized.drop(2))
-        if (from != null && to != null) return SpokenInput.Move(from, to)
+    val squares = mutableListOf<Square>()
+    var piece: PieceType? = null
+    var openFile: Char? = null
+
+    for (symbol in symbols) {
+        when (symbol) {
+            is Symbol.Whole -> squares += symbol.square
+            is Symbol.Piece -> if (piece == null) piece = symbol.type
+            is Symbol.File -> openFile = symbol.file
+            is Symbol.Rank -> {
+                val file = openFile
+                openFile = null
+                // Red bez kolone ispred sebe se propušta. Tako „rook from e four
+                // to e two" prolazi: „from" model ne zna, a „to" čuje kao „two",
+                // pa taj zalutali red ovde otpadne.
+                if (file != null) Square.of(file, symbol.rank)?.let { squares += it }
+            }
+        }
     }
 
-    if (normalized.length == 1) {
-        val single = normalized.first()
-        if (single in 'a'..'h') return SpokenInput.File(single)
-        if (single in '1'..'8') return SpokenInput.Rank(single - '0')
-    }
+    return when {
+        squares.size >= 2 -> SpokenInput.Move(squares[0], squares[1])
+        squares.size == 1 && piece != null -> SpokenInput.PieceMove(piece, squares[0])
+        squares.size == 1 -> SpokenInput.Full(squares[0])
 
-    return SpokenInput.Unknown
+        // Polovičan unos vredi samo kad je to sve što je rečeno — inače je ono
+        // što je ostalo neuklopljeno znak da izgovor nije razumljen.
+        symbols.size == 1 -> when (val only = symbols.first()) {
+            is Symbol.File -> SpokenInput.File(only.file)
+            is Symbol.Rank -> SpokenInput.Rank(only.rank)
+            else -> SpokenInput.Unknown
+        }
+
+        else -> SpokenInput.Unknown
+    }
 }
 
 /** Zadržano zbog mesta koja traže samo celo polje. */
@@ -89,14 +141,22 @@ fun parseSpokenSquare(
     words: VoiceWords = VoiceLanguages.specFor(VoiceLanguage.ENGLISH).words
 ): Square? = (parseSpokenInput(text, words) as? SpokenInput.Full)?.square
 
-private fun normalizeToken(token: String, words: VoiceWords): String {
-    val clean = token.trim().trimEnd('.', ',')
+private fun symbolOf(token: String, words: VoiceWords): Symbol? {
+    words.files[token]?.let { return Symbol.File(it) }
+    words.ranks[token]?.let { return Symbol.Rank(it - '0') }
+    words.pieces[token]?.let { return Symbol.Piece(it) }
+    PHONETIC_FILES[token]?.let { return Symbol.File(it) }
 
-    words.files[clean]?.let { return it.toString() }
-    words.ranks[clean]?.let { return it.toString() }
-    PHONETIC_FILES[clean]?.let { return it.toString() }
+    // Model ponekad vrati polje sklopljeno („e4"), a ponekad samo slovo.
+    Square.fromAlgebraic(token)?.let { return Symbol.Whole(it) }
+    if (token.length == 1) {
+        val single = token.first()
+        if (single in 'a'..'h') return Symbol.File(single)
+        if (single in '1'..'8') return Symbol.Rank(single - '0')
+    }
 
-    // "e4" ili "e" stižu takvi kakvi jesu; sve ostalo se propušta pa otpadne
-    // pri čitanju polja.
-    return clean
+    return null
 }
+
+/** Ono što Vosk vrati za izgovor van gramatike — reč koju prosto preskačemo. */
+private const val UNKNOWN_TOKEN = "[unk]"
