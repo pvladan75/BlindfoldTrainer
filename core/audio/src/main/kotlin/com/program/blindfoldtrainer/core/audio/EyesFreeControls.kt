@@ -15,12 +15,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -43,14 +47,18 @@ import androidx.core.content.ContextCompat
  * velika i uvek na istom mestu. Mikrofon je najveći jer se koristi najviše.
  *
  * ```
- * ┌───────────────┬───────────────┐
+ * ┌───────────────────────────────┐
+ * │           MIKROFON            │
+ * ├───────────────┬───────────────┤
  * │    PONOVI     │   POZICIJA    │
  * ├───────────────┴───────────────┤
- * │           MIKROFON            │
- * ├───────────────────────────────┤
  * │      ODUSTANI (dva puta)      │
  * └───────────────────────────────┘
  * ```
+ *
+ * Mikrofon je gore i najveći: promašiti ga je teško. Pomoćne zone su **ispod
+ * njega, a ne na samom vrhu** — vrh ekrana zauzimaju sat i otvor za kameru, pa
+ * se tamo bez gledanja ne pogađa. Iz istog razloga se poštuju sistemske ivice.
  *
  * Svaka zona vibrira drugačije, pa se pogodak prepozna **pre** nego što se išta
  * izgovori. Odustajanje traži dva dodira, jer je jedino nepovratno.
@@ -91,8 +99,43 @@ fun EyesFreeControls(
     // Naoružano odustajanje traje kratko: ako se drugi dodir ne desi, zaboravi se.
     var armedAtMillis by remember { mutableLongStateOf(0L) }
 
-    Column(modifier = modifier.fillMaxSize()) {
-        Row(modifier = Modifier.fillMaxWidth().weight(0.22f)) {
+    // Kad slušanje krene samo od sebe — drugi deo poteza, bez novog dodira —
+    // vibracija je jedini znak da je mikrofon opet živ.
+    LaunchedEffect(isListening) {
+        if (isListening) buzz(BuzzKind.LONG)
+    }
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.safeDrawing)
+    ) {
+        Zone(
+            label = if (isListening) "SLUŠAM — DODIRNI DA STANE" else "MIKROFON",
+            modifier = Modifier.fillMaxWidth().weight(0.55f),
+            color = if (isListening) {
+                MaterialTheme.colorScheme.errorContainer
+            } else {
+                MaterialTheme.colorScheme.primaryContainer
+            },
+            fontSize = 26.sp,
+            onClick = {
+                buzz(BuzzKind.SHORT)
+                when {
+                    isListening -> onMicrophone()
+                    voiceState is VoiceState.Unavailable -> Toast.makeText(
+                        context,
+                        "${voiceState.reason} — jezik i paket biraš u Podešavanjima.",
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                    hasPermission -> onMicrophone()
+                    else -> permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                }
+            }
+        )
+
+        Row(modifier = Modifier.fillMaxWidth().weight(0.25f)) {
             Zone(
                 label = "PONOVI",
                 modifier = Modifier.weight(1f),
@@ -112,31 +155,6 @@ fun EyesFreeControls(
                 }
             )
         }
-
-        Zone(
-            label = if (isListening) "SLUŠAM — DODIRNI DA STANE" else "MIKROFON",
-            modifier = Modifier.fillMaxWidth().weight(0.58f),
-            color = if (isListening) {
-                MaterialTheme.colorScheme.errorContainer
-            } else {
-                MaterialTheme.colorScheme.primaryContainer
-            },
-            fontSize = 26.sp,
-            onClick = {
-                buzz(BuzzKind.LONG)
-                when {
-                    isListening -> onMicrophone()
-                    voiceState is VoiceState.Unavailable -> Toast.makeText(
-                        context,
-                        "${voiceState.reason} — jezik i paket biraš u Podešavanjima.",
-                        Toast.LENGTH_LONG
-                    ).show()
-
-                    hasPermission -> onMicrophone()
-                    else -> permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                }
-            }
-        )
 
         Zone(
             label = "ODUSTANI",

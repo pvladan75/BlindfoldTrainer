@@ -115,12 +115,15 @@ class AndroidSpeaker @Inject constructor(
         return if (available.isEmpty() || wanted in available) wanted else SpeechLanguage.ENGLISH
     }
 
-    override fun say(square: Square) = say(square.spoken(wordsForSpeech()))
+    override fun say(square: Square, interrupt: Boolean) =
+        sayParts(listOf(square.spoken(wordsForSpeech())), interrupt)
 
-    override fun say(move: Move) = say(move.spoken(wordsForSpeech()))
+    override fun say(move: Move, interrupt: Boolean) =
+        sayParts(listOf(move.spoken(wordsForSpeech())), interrupt)
 
     // Pozicija ide u delovima, sa tišinom između — vidi Board.spokenParts.
-    override fun say(board: Board) = sayParts(board.spokenParts(wordsForSpeech()))
+    override fun say(board: Board, interrupt: Boolean) =
+        sayParts(board.spokenParts(wordsForSpeech()), interrupt)
 
     /** Ponavlja doslovno, sa istim pauzama; ako ništa nije rečeno, ćuti. */
     override fun repeat() {
@@ -129,9 +132,9 @@ class AndroidSpeaker @Inject constructor(
 
     private fun wordsForSpeech(): SpeechWords = SpeechLanguages.wordsFor(spokenLanguage())
 
-    override fun say(text: String) = sayParts(listOf(text))
+    override fun say(text: String, interrupt: Boolean) = sayParts(listOf(text), interrupt)
 
-    private fun sayParts(parts: List<String>) {
+    private fun sayParts(parts: List<String>, interrupt: Boolean = true) {
         val spoken = parts.filter { it.isNotBlank() }
         if (spoken.isEmpty()) return
 
@@ -142,7 +145,7 @@ class AndroidSpeaker @Inject constructor(
             pending = spoken
             return
         }
-        speakParts(spoken)
+        speakParts(spoken, interrupt)
     }
 
     /**
@@ -151,9 +154,13 @@ class AndroidSpeaker @Inject constructor(
      * Tišina ide kao zasebna izjava u redu, a ne kao interpunkcija: dužina pauze
      * tako ne zavisi od toga kako je koji TTS motor tumači.
      */
-    private fun speakParts(parts: List<String>) {
+    private fun speakParts(parts: List<String>, interrupt: Boolean = true) {
         parts.forEachIndexed { index, part ->
-            val mode = if (index == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD
+            val mode = if (index == 0 && interrupt) {
+                TextToSpeech.QUEUE_FLUSH
+            } else {
+                TextToSpeech.QUEUE_ADD
+            }
             tts.speak(part, mode, null, "part-$index")
 
             if (index != parts.lastIndex) {
@@ -174,7 +181,7 @@ class AndroidSpeaker @Inject constructor(
     private companion object {
         const val TAG = "AndroidSpeaker"
 
-        /** Pauza između „bela dama na" i „e pet". */
-        const val PAUSE_MILLIS = 200L
+        /** Pauza između „bela dama na" i „e pet". Provereno na uređaju. */
+        const val PAUSE_MILLIS = 50L
     }
 }

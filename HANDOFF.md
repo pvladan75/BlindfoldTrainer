@@ -395,9 +395,16 @@ Formatiranje je zato prešlo iz proširenja u `Speaker` (`say(move)`, `say(squar
 na ha šest" — **beli pa crni, a unutar boje kralj pa dama pa ostalo**. Redosled je
 uvek isti da bi se pozicija pamtila kao niz, a ne kao skup; test to i čuva.
 
-**Čita se u delovima, sa pauzom od 200 ms** — „bela dama na" *(pauza)* „e pet"
+**Čita se u delovima, sa pauzom od 50 ms** — „bela dama na" *(pauza)* „e pet"
 *(pauza)*. Primedba sa uređaja, i tačna: naslepo se pamti u dva koraka, šta stoji
 pa gde stoji, a bez pauze se niz stopi u rečenicu koju uho ne stigne da rasklopi.
+Prvo je bilo 200 ms i to je na uređaju ispalo predugo.
+
+**Izgovor ume i da sačeka svoj red** (`interrupt = false`). Motor ponekad odgovori
+pre nego što se dovrši izgovor tvog poteza, pa bi ga presekao na pola reči — a
+bez ekrana je taj izgovor jedina potvrda šta je razumela. U Završnici zato red
+ide: tvoj potez, potez motora, ishod, sledeća pozicija — nijedan ne preseca
+prethodni. Preseca samo ono što ti sam zatražiš: „ponovi" i „čitaj poziciju".
 
 Pauza ide kao **zasebna tišina u redu izgovaranja** (`playSilentUtterance`), a ne
 kao interpunkcija — tako njena dužina ne zavisi od toga kako je koji TTS motor
@@ -423,20 +430,31 @@ Uključuje se u Podešavanjima („Bez ekrana → Vežbaj zatvorenih očiju"), z
 u **Dokrajči protivnika**. Tabla se ne crta; ekran je samo površina za dodir:
 
 ```
-┌───────────────┬───────────────┐
-│    PONOVI     │   POZICIJA    │   22%
+┌───────────────────────────────┐
+│           MIKROFON            │   55%
+├───────────────┬───────────────┤
+│    PONOVI     │   POZICIJA    │   25%
 ├───────────────┴───────────────┤
-│           MIKROFON            │   58%
-├───────────────────────────────┤
 │      ODUSTANI (dva puta)      │   20%
 └───────────────────────────────┘
 ```
 
-Zone, a ne dugmad: prst se ne cilja nego spusti. Mikrofon je najveći jer se
-koristi najviše, i dodirom se i pali i gasi. **Svaka zona vibrira drugačije** —
-to je jedina povratna informacija koja stiže pre govora, pa se pogodak zna i pre
-nego što TTS progovori. Odustajanje traži dva dodira, jer je jedino nepovratno;
-prvi dodir kaže „Dodirni ponovo da odustaneš".
+Zone, a ne dugmad: prst se ne cilja nego spusti. Mikrofon je najveći i **gore**,
+jer se najviše koristi i najteže promašuje; dodirom se i pali i gasi.
+
+Pomoćne zone su namerno **ispod njega, a ne na samom vrhu**. Prvo su bile na vrhu
+i sa uređaja je stiglo da se tamo ne pogađa bez gledanja — vrh zauzimaju sat i
+otvor za kameru. Iz istog razloga se poštuju sistemske ivice
+(`WindowInsets.safeDrawing`); bez toga je `enableEdgeToEdge` gurao zonu pod
+statusnu traku.
+
+**Svaka zona vibrira drugačije** — to je jedina povratna informacija koja stiže
+pre govora. Uz to vibrira i **svaki prelazak u slušanje**, ne samo dodir: kad se
+mikrofon upali sam, za drugi deo poteza, dodira nema pa nema ni njegove
+vibracije, a bez znaka se ne zna da je živ.
+
+Odustajanje traži dva dodira, jer je jedino nepovratno; prvi dodir kaže „Dodirni
+ponovo da odustaneš".
 
 **Sve što se ranije samo videlo sada se i čuje** — to je pravilo bez kog režim ne
 postoji:

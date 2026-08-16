@@ -12,8 +12,14 @@ import com.program.blindfoldtrainer.core.chess.Square
  */
 interface Speaker {
 
-    /** Prekida ono što se trenutno izgovara i kaže [text]. */
-    fun say(text: String)
+    /**
+     * Izgovara [text].
+     *
+     * Uz `interrupt = false` **čeka svoj red** umesto da preseče ono što se
+     * upravo govori. Motor ume da odgovori pre nego što se izgovori tvoj potez,
+     * pa bi bez toga potvrda poteza nestala na pola reči.
+     */
+    fun say(text: String, interrupt: Boolean = true)
 
     /**
      * Izgovara polje na jeziku koji je izabran za govor.
@@ -21,12 +27,12 @@ interface Speaker {
      * Formatiranje je ovde, a ne kod pozivaoca, jer zavisi od jezika — a moduli
      * za jezik ne znaju niti treba da znaju.
      */
-    fun say(square: Square)
+    fun say(square: Square, interrupt: Boolean = true)
 
-    fun say(move: Move)
+    fun say(move: Move, interrupt: Boolean = true)
 
     /** Čita celu poziciju: „beli kralj na e2, bela dama na e5…". */
-    fun say(board: Board)
+    fun say(board: Board, interrupt: Boolean = true)
 
     /**
      * Ponavlja poslednje izgovoreno, doslovno.

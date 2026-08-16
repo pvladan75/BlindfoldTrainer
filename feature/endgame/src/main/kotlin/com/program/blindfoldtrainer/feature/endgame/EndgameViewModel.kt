@@ -224,8 +224,9 @@ class EndgameViewModel @Inject constructor(
         playerColor = position.sideToMove
 
         // Pozicija se i pročita, ne samo prikaže: bez toga se modul ne može
-        // odraditi zatvorenih očiju.
-        speaker.say(position.board)
+        // odraditi zatvorenih očiju. Čeka svoj red, da ne preseče izgovor
+        // ishoda prethodne pozicije.
+        speaker.say(position.board, interrupt = false)
 
         _uiState.update {
             it.copy(
@@ -360,7 +361,9 @@ class EndgameViewModel @Inject constructor(
             }
 
             val after = position.applyMove(reply)
-            speaker.say(reply)
+            // Čeka svoj red: motor ume da odgovori pre nego što se dovrši
+            // izgovor tvog poteza, pa bi ga inače presekao.
+            speaker.say(reply, interrupt = false)
 
             _uiState.update {
                 it.copy(
@@ -395,7 +398,7 @@ class EndgameViewModel @Inject constructor(
         if (outcome == EndgameOutcome.MATED) solvedCount++
 
         val message = messageFor(outcome)
-        speaker.say(message)
+        speaker.say(message, interrupt = false)
 
         _uiState.update {
             it.copy(
@@ -453,7 +456,7 @@ class EndgameViewModel @Inject constructor(
         // Kraj se izgovara: bez ekrana se sažetak ne vidi, pa bi sesija prosto
         // utihnula.
         val state = _uiState.value
-        speaker.say("Kraj sesije. Rešeno ${solvedCount} od ${state.puzzleNumber}.")
+        speaker.say("Kraj sesije. Rešeno ${solvedCount} od ${state.puzzleNumber}.", interrupt = false)
         _uiState.update { it.copy(isFinished = true) }
     }
 
