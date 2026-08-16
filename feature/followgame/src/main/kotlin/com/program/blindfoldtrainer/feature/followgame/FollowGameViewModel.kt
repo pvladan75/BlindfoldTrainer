@@ -9,6 +9,7 @@ import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.moduleapi.userReason
 import com.program.blindfoldtrainer.feature.followgame.data.GameCatalog
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -101,9 +102,7 @@ class FollowGameViewModel @Inject constructor(
 
             val games = loaded.getOrDefault(emptyList())
             if (games.isEmpty()) {
-                val reason = failure
-                    ?.let { "\n\n${it::class.java.simpleName}: ${it.message}" }
-                    .orEmpty()
+                val reason = failure?.let { "\n\n${it.userReason()}" }.orEmpty()
                 _uiState.update {
                     it.copy(isLoading = false, infoMessage = "Nema partija u sadržaju.$reason")
                 }

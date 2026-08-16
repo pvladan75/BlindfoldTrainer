@@ -15,6 +15,7 @@ import com.program.blindfoldtrainer.core.engine.ChessEngine
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.moduleapi.userReason
 import com.program.blindfoldtrainer.feature.endgame.data.EndgameCatalog
 import com.program.blindfoldtrainer.feature.endgame.data.EndgamePuzzle
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -132,9 +133,7 @@ class EndgameViewModel @Inject constructor(
             if (available.isEmpty()) {
                 // Razlog ide i na ekran, ne samo u log: bez uređaja na kablu je
                 // poruka jedini trag zašto modul nema nijednu poziciju.
-                val reason = failure
-                    ?.let { "\n\n${it::class.java.simpleName}: ${it.message}" }
-                    .orEmpty()
+                val reason = failure?.let { "\n\n${it.userReason()}" }.orEmpty()
                 _uiState.update {
                     it.copy(isLoading = false, infoMessage = "Nema pozicija za ovu težinu.$reason")
                 }

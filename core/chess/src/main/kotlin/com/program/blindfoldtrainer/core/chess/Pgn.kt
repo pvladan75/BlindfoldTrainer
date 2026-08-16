@@ -107,7 +107,7 @@ object Pgn {
             }
     }
 
-    private val HEADER = Regex("""\[\s*(\w+)\s+"([^"]*)"\s*]""")
+    private val HEADER = Regex("""\[\s*(\w+)\s+"([^"]*)"\s*\]""")
     private val COMMENT = Regex("""\{[^}]*}""")
     private val VARIATION = Regex("""\([^()]*\)""")
     private val RESULTS = setOf("1-0", "0-1", "1/2-1/2", "*")

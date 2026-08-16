@@ -12,6 +12,7 @@ import com.program.blindfoldtrainer.core.designsystem.board.PieceVisibility
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.moduleapi.userReason
 import com.program.blindfoldtrainer.feature.pairs.data.PairsPuzzle
 import com.program.blindfoldtrainer.feature.pairs.data.PuzzleCatalog
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -119,9 +120,7 @@ class PairsViewModel @Inject constructor(
             if (available.isEmpty()) {
                 // Razlog ide i na ekran, ne samo u log: bez uređaja na kablu je
                 // poruka jedini trag zašto modul nema nijednu zagonetku.
-                val reason = failure
-                    ?.let { "\n\n${it::class.java.simpleName}: ${it.message}" }
-                    .orEmpty()
+                val reason = failure?.let { "\n\n${it.userReason()}" }.orEmpty()
                 _uiState.update {
                     it.copy(
                         isLoading = false,
