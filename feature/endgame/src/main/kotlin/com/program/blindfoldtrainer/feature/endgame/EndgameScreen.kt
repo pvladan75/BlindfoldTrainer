@@ -81,6 +81,7 @@ fun EndgameScreen(
             onReadPosition = viewModel::onReadPosition,
             onGiveUpArmed = viewModel::onGiveUpArmed,
             onGiveUp = viewModel::onGiveUp,
+            onUndo = viewModel::onUndo,
             modifier = Modifier.padding(8.dp)
         )
         return
@@ -106,7 +107,8 @@ fun EndgameScreen(
 
         ListenControls(
             onRepeatLast = viewModel::onRepeatLast,
-            onReadPosition = viewModel::onReadPosition
+            onReadPosition = viewModel::onReadPosition,
+            onUndo = viewModel::onUndo
         )
 
         Controls(
@@ -184,10 +186,14 @@ private fun StatusBanner(uiState: EndgameUiState) {
  * nego kao merilo napretka.
  */
 @Composable
-private fun ListenControls(onRepeatLast: () -> Unit, onReadPosition: () -> Unit) {
+private fun ListenControls(
+    onRepeatLast: () -> Unit,
+    onReadPosition: () -> Unit,
+    onUndo: () -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         OutlinedButton(
             onClick = onRepeatLast,
@@ -200,7 +206,14 @@ private fun ListenControls(onRepeatLast: () -> Unit, onReadPosition: () -> Unit)
             onClick = onReadPosition,
             modifier = Modifier.weight(1f).height(48.dp)
         ) {
-            Text("ČITAJ POZICIJU")
+            Text("POZICIJA")
+        }
+
+        OutlinedButton(
+            onClick = onUndo,
+            modifier = Modifier.weight(1f).height(48.dp)
+        ) {
+            Text("PONIŠTI")
         }
     }
 }

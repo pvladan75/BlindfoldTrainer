@@ -454,7 +454,29 @@ mikrofon upali sam, za drugi deo poteza, dodira nema pa nema ni njegove
 vibracije, a bez znaka se ne zna da je živ.
 
 Odustajanje traži dva dodira, jer je jedino nepovratno; prvi dodir kaže „Dodirni
-ponovo da odustaneš".
+ponovo da odustaneš". **Dug pritisak na istu zonu poništava potez** — ista meta,
+drugačiji dodir, pa raspored ostaje isti.
+
+### Poništavanje poteza
+
+Postoji zbog glasovnog unosa: ako te pogrešno razume, odigra se potez koji nisi
+rekao — a bez ekrana se to ni ne vidi. Do sada se moglo samo odustati od cele
+pozicije.
+
+Tri odluke, dogovorene:
+
+- **Vraća oba poteza**, tvoj i odgovor motora. Tvoj potez je taj odgovor i
+  izazvao, pa bi vraćanje samo jednog ostavilo poziciju koja u partiji nije ni
+  postojala.
+- **Ne broji se kao greška** — nije tvoja greška nego njena.
+- **Dug pritisak**, ne peta zona: raspored zona je već podešen prema palcu i ne
+  vredi ga kvariti radi radnje koja se retko koristi.
+
+Poništavanje prekida i motor koji misli i zakazano učitavanje sledeće pozicije,
+pa radi i kad je ishod već objavljen. Posle njega se pozicija ponovo pročita —
+to je ispravka, a ne pomoć, pa se **ne broji** kao čitanje pozicije.
+
+U običnom režimu isto stoji kao dugme **PONIŠTI**, uz PONOVI i POZICIJU.
 
 **Sve što se ranije samo videlo sada se i čuje** — to je pravilo bez kog režim ne
 postoji:

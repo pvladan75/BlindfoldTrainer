@@ -10,8 +10,9 @@ import android.os.VibratorManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -71,6 +72,7 @@ fun EyesFreeControls(
     onReadPosition: () -> Unit,
     onGiveUpArmed: () -> Unit,
     onGiveUp: () -> Unit,
+    onUndo: () -> Unit,
     modifier: Modifier = Modifier,
     voiceState: VoiceState = VoiceState.Idle
 ) {
@@ -157,10 +159,15 @@ fun EyesFreeControls(
         }
 
         Zone(
-            label = "ODUSTANI",
+            label = "ODUSTANI  ·  DUGO: PONIŠTI",
             modifier = Modifier.fillMaxWidth().weight(0.20f),
             color = MaterialTheme.colorScheme.surfaceVariant,
-            fontSize = 18.sp,
+            fontSize = 16.sp,
+            onLongClick = {
+                armedAtMillis = 0
+                buzz(BuzzKind.MEDIUM)
+                onUndo()
+            },
             onClick = {
                 val now = System.currentTimeMillis()
                 if (now - armedAtMillis < ARM_WINDOW_MILLIS) {
@@ -177,19 +184,21 @@ fun EyesFreeControls(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Zone(
     label: String,
     color: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    fontSize: androidx.compose.ui.unit.TextUnit = 20.sp
+    fontSize: androidx.compose.ui.unit.TextUnit = 20.sp,
+    onLongClick: (() -> Unit)? = null
 ) {
     Box(
         modifier = modifier
             .padding(3.dp)
             .background(color, MaterialTheme.shapes.medium)
-            .clickable { onClick() },
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         contentAlignment = Alignment.Center
     ) {
         Text(

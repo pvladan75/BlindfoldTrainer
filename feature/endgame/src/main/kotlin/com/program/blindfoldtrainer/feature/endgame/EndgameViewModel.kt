@@ -82,6 +82,13 @@ data class EndgameUiState(
 
 private data class Setup(val puzzleCount: Int, val engineDepth: Int)
 
+/** Stanje partije pre jednog tvog poteza. */
+private data class UndoPoint(
+    val position: Position,
+    val lastMove: Move?,
+    val statusMessage: String
+)
+
 private fun setupFor(difficulty: Difficulty) = when (difficulty) {
     Difficulty.EASY -> Setup(puzzleCount = 3, engineDepth = 10)
     Difficulty.MEDIUM -> Setup(puzzleCount = 3, engineDepth = 12)
@@ -106,6 +113,45 @@ class EndgameViewModel @Inject constructor(
 
     /** Prekid slušanja na dodir — bez toga se upaljen mikrofon ne može ugasiti. */
     fun onVoiceStop() = voiceInput.stop()
+
+    /**
+     * Poništava tvoj potez i odgovor motora.
+     *
+     * Postoji zbog glasovnog unosa: ako te pogrešno razume, odigra se potez koji
+     * nisi rekao, a bez ekrana se to ni ne vidi. **Ne broji se kao greška** —
+     * nije tvoja.
+     */
+    fun onUndo() {
+        val point = undoStack.removeLastOrNull()
+        if (point == null) {
+            speaker.say("Nema šta da se poništi.")
+            return
+        }
+
+        // Motor možda još misli, a možda je već najavljen ishod i zakazana
+        // sledeća pozicija — oboje se prekida.
+        engineJob?.cancel()
+        outcomeJob?.cancel()
+        voiceInput.stop()
+
+        _uiState.update {
+            it.copy(
+                position = point.position,
+                lastMove = point.lastMove,
+                statusMessage = point.statusMessage,
+                selectedSquare = null,
+                errorSquare = null,
+                outcome = EndgameOutcome.IN_PROGRESS,
+                isEngineThinking = false,
+                visibility = PieceVisibility.None
+            )
+        }
+
+        speaker.say("Poništeno.")
+        // Posle poništavanja se pozicija ponovo čita: to je ispravka, a ne
+        // pomoć, pa se i ne broji.
+        speaker.say(point.position.board, interrupt = false)
+    }
 
     /** Prvi dodir na zonu za odustajanje — traži potvrdu, jer je nepovratno. */
     fun onGiveUpArmed() = speaker.say("Dodirni ponovo da odustaneš.")
@@ -169,9 +215,19 @@ class EndgameViewModel @Inject constructor(
     private var playerColor: Color = Color.WHITE
     private var solvedCount = 0
     private var positionReads = 0
+
+    /**
+     * Stanje pre svakog tvog poteza, za poništavanje.
+     *
+     * Pamti se **pre** poteza, a poništavanje vraća i tvoj potez i odgovor
+     * motora: tvoj potez je taj odgovor i izazvao, pa bi vraćanje samo jednog
+     * ostavilo poziciju koja u partiji nije ni postojala.
+     */
+    private val undoStack = ArrayDeque<UndoPoint>()
     private var startedAtMillis = 0L
     private var timerJob: Job? = null
     private var engineJob: Job? = null
+    private var outcomeJob: Job? = null
     private var isStarted = false
 
     fun startOnce(difficulty: Difficulty) {
@@ -213,6 +269,7 @@ class EndgameViewModel @Inject constructor(
 
     private fun loadPuzzle(index: Int) {
         voiceInput.stop()
+        undoStack.clear()
         val puzzle = puzzles[index]
         val position = Position.fromFen(puzzle.fen)
 
@@ -318,6 +375,15 @@ class EndgameViewModel @Inject constructor(
     }
 
     private fun applyPlayerMove(move: Move) {
+        val before = _uiState.value
+        undoStack.addLast(
+            UndoPoint(
+                position = before.position,
+                lastMove = before.lastMove,
+                statusMessage = before.statusMessage
+            )
+        )
+
         // Izgovara se šta je odigrano: bez ekrana je to jedina potvrda da je
         // prepoznato ono što je i rečeno.
         speaker.say(move)
@@ -409,7 +475,8 @@ class EndgameViewModel @Inject constructor(
             )
         }
 
-        viewModelScope.launch {
+        outcomeJob?.cancel()
+        outcomeJob = viewModelScope.launch {
             delay(OUTCOME_PAUSE_MILLIS)
             onNextPuzzle()
         }
