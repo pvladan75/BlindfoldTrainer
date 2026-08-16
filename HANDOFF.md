@@ -290,9 +290,7 @@ najpotrebnije. Zato sada:
 - **za drugo polje se mikrofon više ne gasi.** Uz „slušaj ceo potez" se ranije
   gasio pa palio posle 250 ms, i tu bi umeo tiho da ne krene: prethodni snimač se
   još zatvara kad se traži novi. Umesto pogađanja te pauze, `listenForSquares`
-  sada **ostaje da sluša** dok modul traži još jedno polje. Pošto tada nema
-  paljenja, nema ni vibracije koja ga prati — pa se izabrano polazno polje
-  **izgovara**, i to je znak da mikrofon još sluša;
+  sada **ostaje da sluša** dok modul traži još jedno polje;
 - slušanje ima rok od 10 sekundi;
 - dugme je dodirljivo **uvek dok sluša**, i onda kad vežba više ne očekuje
   odgovor (`enabled || isListening`);
@@ -303,6 +301,29 @@ najpotrebnije. Zato sada:
 
 Naravoučenije za dalje: **kad dugme ume da radi dve stvari, `enabled` sme da
 gasi samo jednu od njih.**
+
+#### Telefon čuje sam sebe
+
+Dok mikrofon sluša, **aplikacija ne sme da govori**. Uz „slušaj ceo potez" je
+posle izabranog polazišta izgovarana potvrda („e dva") — a mikrofon je tad još
+otvoren, pa je Vosk tu potvrdu prepoznao kao **novo polje**. Sa uzanom
+gramatikom se to i ne može promašiti: sve što zvučnik kaže je iz istog rečnika
+koji se sluša.
+
+Posledica je bila zbunjujuća: prvo polje se „ponavljalo", a drugo nije radilo
+ništa — jer drugo predavanje istog polja poništava izbor figure.
+
+Zato potvrda polazišta ide **samo kad mikrofon nije ostao upaljen**. Uz „slušaj
+ceo potez" se ćuti do kraja poteza, koji se onda izgovori ceo.
+
+Uz to su zatvorena i dva ponavljanja koja ne zavise od zvučnika: `onFinalResult`
+se **ne predaje** (stiže pri gašenju i ponavlja ono što je već stiglo kroz
+`onResult`), a predaja ima i najmanji razmak od pola sekunde — granica je
+ljudska, dva polja se ne izgovore tako brzo.
+
+Pravo rešenje je da prepoznavanje ćuti dok TTS priča (`Speaker` bi morao da javi
+kad govori), ali dok toga nema, **pravilo je da modul ne govori dok je mikrofon
+otvoren.**
 
 Mikrofon je aktivan **samo kad se očekuje odgovor** — u Parovima kad potez
 stigne, u Završnici kad je korisnik na potezu, u Prati partiju kad stoji pitanje.

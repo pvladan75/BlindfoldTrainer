@@ -55,6 +55,10 @@ class VoskVoiceInput @Inject constructor(
      */
     private val isDelivering = AtomicBoolean(false)
 
+    /** Kad je poslednje polje predato — vidi granicu u [deliver]. */
+    @Volatile
+    private var lastDeliveryMillis = 0L
+
     /** Kolona koja čeka svoj red, kad se polje izgovara u dva dela. */
     @Volatile
     private var pendingFile: Char? = null
@@ -184,7 +188,19 @@ class VoskVoiceInput @Inject constructor(
 
     private val listener = object : RecognitionListener {
         override fun onResult(hypothesis: String?) = handle(hypothesis)
-        override fun onFinalResult(hypothesis: String?) = handle(hypothesis)
+
+        /**
+         * Završni rezultat se **ne predaje**.
+         *
+         * Stiže pri gašenju i ponavlja ono što je već stiglo kroz [onResult] —
+         * a drugo predavanje istog polja u Završnici poništava izbor figure, pa
+         * bi sledeće izgovoreno polje palo u prazno. To se i videlo na uređaju:
+         * uz „slušaj ceo potez" se prvo polje ponavljalo, a drugo nije radilo
+         * ništa.
+         */
+        override fun onFinalResult(hypothesis: String?) {
+            Log.d(TAG, "Završni rezultat se preskače: već je predat kroz onResult")
+        }
 
         override fun onPartialResult(hypothesis: String?) {
             // Slušamo samo jedno polje, delimični rezultat nam ne treba.
@@ -231,6 +247,15 @@ class VoskVoiceInput @Inject constructor(
         if (!isDelivering.compareAndSet(false, true)) return
 
         try {
+            val now = System.currentTimeMillis()
+            if (now - lastDeliveryMillis < MIN_GAP_BETWEEN_SQUARES_MILLIS) {
+                // Isti izgovor prijavljen dvaput. Granica je ljudska, ne
+                // biblioteka: dva polja se ne izgovore za pola sekunde.
+                Log.d(TAG, "Polje $square stiglo prebrzo posle prethodnog — preskačem")
+                return
+            }
+            lastDeliveryMillis = now
+
             pendingFile = null
             // Slušanje ostaje upaljeno ako se traži još jedno polje — vidi
             // VoiceInput.listenForSquares.
@@ -267,5 +292,13 @@ class VoskVoiceInput @Inject constructor(
 
         /** Koliko se najduže sluša pre nego što se odustane samo od sebe. */
         const val LISTEN_TIMEOUT_MILLIS = 10_000
+
+        /**
+         * Najmanji razmak između dva predata polja.
+         *
+         * Brava je za istovremenost, ovo je za ponavljanje: isti izgovor ume da
+         * bude prijavljen dvaput, a čovek ne izgovori dva polja za pola sekunde.
+         */
+        const val MIN_GAP_BETWEEN_SQUARES_MILLIS = 500L
     }
 }

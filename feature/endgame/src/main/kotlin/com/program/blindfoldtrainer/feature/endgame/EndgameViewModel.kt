@@ -332,10 +332,15 @@ class EndgameViewModel @Inject constructor(
                 _uiState.update { it.copy(selectedSquare = square, errorSquare = null) }
 
                 // Bez ekrana je izbor figure nevidljiv, a ćutanje ovde znači
-                // promašaj — pa se izabrano polje potvrđuje naglas. Uz „slušaj
-                // ceo potez" je to i jedini znak da mikrofon još sluša, jer se
-                // ne gasi pa ne može ni da vibrira pri paljenju.
-                if (settings.eyesFree) speaker.say(square)
+                // promašaj — pa se izabrano polje potvrđuje naglas.
+                //
+                // Ali **ne dok mikrofon sluša**: uz „slušaj ceo potez" se ne
+                // gasi između dva polja, pa zvučnik izgovori „e dva" i isti taj
+                // mikrofon to prepozna kao novo polje. Predaje se drugi put,
+                // drugo predavanje istog polja poništava izbor, i sledeće
+                // izgovoreno polje pada u prazno. Tako se to i videlo na
+                // uređaju.
+                if (settings.eyesFree && !settings.listenWholeMove) speaker.say(square)
             }
             return
         }
