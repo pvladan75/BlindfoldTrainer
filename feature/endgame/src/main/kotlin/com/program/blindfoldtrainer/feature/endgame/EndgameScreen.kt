@@ -33,6 +33,7 @@ import com.program.blindfoldtrainer.core.audio.Buzz
 import com.program.blindfoldtrainer.core.audio.EyesFreeControls
 import com.program.blindfoldtrainer.core.audio.EyesFreeRow
 import com.program.blindfoldtrainer.core.audio.EyesFreeZone
+import com.program.blindfoldtrainer.core.audio.HELPER_ZONE_WEIGHT
 import com.program.blindfoldtrainer.core.audio.MicrophoneZone
 import com.program.blindfoldtrainer.core.audio.VoiceInputButton
 import com.program.blindfoldtrainer.core.audio.VoiceState
@@ -86,7 +87,7 @@ fun EndgameScreen(
             ),
             rows = listOf(
                 EyesFreeRow(
-                    weight = 0.25f,
+                    weight = HELPER_ZONE_WEIGHT,
                     zones = listOf(
                         EyesFreeZone(
                             label = "PONOVI",
@@ -102,7 +103,7 @@ fun EndgameScreen(
                     )
                 ),
                 EyesFreeRow(
-                    weight = 0.20f,
+                    weight = HELPER_ZONE_WEIGHT,
                     zone = EyesFreeZone(
                         label = "ODUSTANI  ·  DUGO: PONIŠTI",
                         fontSize = 16.sp,

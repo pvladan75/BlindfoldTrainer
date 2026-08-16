@@ -5,9 +5,11 @@ sesiji bez ponovnog objašnjavanja.
 
 **Gde smo stali:** svih šest modula radi na uređaju; napredak, podešavanja i
 glasovni unos rade. Poslednje na čemu se radilo je **režim bez ekrana**, koji je
-sa Završnice proširen na **pet od šest modula**. Ništa od toga još nije viđeno na
-uređaju — ni raniji dodaci Završnici (poništavanje dugim pritiskom, novi raspored
-zona, pauza od 50 ms), ni novi moduli.
+sa Završnice proširen na **pet od šest modula**.
+
+Prva proba na uređaju je prošla — sve radi. Odatle su stigle dve primedbe, obe
+ispravljene: zone su preraspodeljene na **50 / 25 / 25** (donje dve su bile
+pretanke) i **orijentacija je zaključana na portret**. To još nije viđeno.
 
 ---
 
@@ -436,11 +438,13 @@ Uključuje se u Podešavanjima („Bez ekrana → Vežbaj zatvorenih očiju") i 
 
 ```
 ┌───────────────────────────────┐
-│           MIKROFON            │   55%
+│                               │
+│           MIKROFON            │   50%
+│                               │
 ├───────────────┬───────────────┤
 │    PONOVI     │   POZICIJA    │   25%
 ├───────────────┴───────────────┤
-│      ODUSTANI (dva puta)      │   20%
+│      ODUSTANI (dva puta)      │   25%
 └───────────────────────────────┘
 ```
 
@@ -468,9 +472,20 @@ Tri pojasa, uvek istim redom, jer se meta pamti rukom a ne čitanjem:
 
 | pojas | šta stoji | zašto tu |
 |---|---|---|
-| **gore, 55%** | ono što se traži **sad** | najveća meta za radnju koja se najviše koristi |
+| **gore, 50%** | ono što se traži **sad** | najveća meta za radnju koja se najviše koristi |
 | **sredina, 25%** | pomoć: ponavljanje i čitanje stanja | ispod glavne zone, van sata i otvora za kameru |
-| **dole, 20%** | izlaz (dva dodira) | jedino nepovratno, pa najdalje od palca u pokretu |
+| **dole, 25%** | izlaz (dva dodira) | jedino nepovratno, pa najdalje od palca u pokretu |
+
+Prva podela je bila 55 / 25 / 20 i sa uređaja je stiglo da su donje dve pretanke:
+**u njih se prst ne spušta nego cilja**, a to je upravo ono što zone treba da
+uklone. Odnos stoji na jednom mestu (`MAIN_ZONE_WEIGHT`, `HELPER_ZONE_WEIGHT`),
+pa se menja jednom za svih pet modula.
+
+**Orijentacija je zaključana na portret** dok su zone na ekranu. Zone se dele po
+visini, pa bi u pejzažu postale niske trake; uz to bi okretanje telefona usred
+vežbe — a on se u ruci baš tako i drži — premestilo sve mete. Zaključava se u
+`EyesFreeControls`, ne u manifestu: ostatak aplikacije se gleda i sme da se
+okreće, a zatečena vrednost se pamti i vraća pri izlasku.
 
 Šta je „ono što se traži sad" zavisi od modula:
 
@@ -673,11 +688,10 @@ jedno i drugo računa iz istorije.
 
 Svih šest modula postoji i radi na uređaju. Ostalo je:
 
-1. **Probati režim bez ekrana na uređaju — ništa od toga još nije viđeno.**
-   Ni raniji dodaci Završnici (poništavanje dugim pritiskom, novi raspored zona,
-   pauza od 50 ms), ni četiri modula koja su ga upravo dobila. Prvo Geometrija
-   (najjednostavnija, bez mikrofona), pa Putanja skakača (prvi put uopšte
-   prima glas), pa Parovi i Prati partiju.
+1. **Probati novu podelu zona (50/25/25) i zaključan portret.** Prva proba je
+   pokazala da sve radi; ovo su ispravke po primedbama sa uređaja i nisu još
+   viđene. Uz to i dalje nisu probani raniji dodaci Završnici — poništavanje
+   dugim pritiskom i pauza od 50 ms.
 2. **Izlaz iz sažetka sesije bez ekrana** — vidi gore; kraj se čuje, ali se
    dijalog zatvara dugmetom koje se ne vidi.
 3. Dogovoriti brojeve bodovanja i da li rang išta otključava

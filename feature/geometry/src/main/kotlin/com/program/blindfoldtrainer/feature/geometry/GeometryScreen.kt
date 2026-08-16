@@ -31,6 +31,8 @@ import com.program.blindfoldtrainer.core.audio.Buzz
 import com.program.blindfoldtrainer.core.audio.EyesFreeControls
 import com.program.blindfoldtrainer.core.audio.EyesFreeRow
 import com.program.blindfoldtrainer.core.audio.EyesFreeZone
+import com.program.blindfoldtrainer.core.audio.HELPER_ZONE_WEIGHT
+import com.program.blindfoldtrainer.core.audio.MAIN_ZONE_WEIGHT
 import com.program.blindfoldtrainer.core.audio.ZoneTone
 import com.program.blindfoldtrainer.core.designsystem.theme.BoardDark
 import com.program.blindfoldtrainer.core.designsystem.theme.BoardLight
@@ -60,7 +62,7 @@ fun GeometryScreen(
         EyesFreeControls(
             rows = listOf(
                 EyesFreeRow(
-                    weight = 0.55f,
+                    weight = MAIN_ZONE_WEIGHT,
                     zones = listOf(
                         EyesFreeZone(
                             label = "SVETLO",
@@ -78,7 +80,7 @@ fun GeometryScreen(
                     )
                 ),
                 EyesFreeRow(
-                    weight = 0.25f,
+                    weight = HELPER_ZONE_WEIGHT,
                     zone = EyesFreeZone(
                         label = "PONOVI",
                         tone = ZoneTone.SECONDARY,
@@ -86,7 +88,7 @@ fun GeometryScreen(
                     )
                 ),
                 EyesFreeRow(
-                    weight = 0.20f,
+                    weight = HELPER_ZONE_WEIGHT,
                     zone = EyesFreeZone(
                         label = "PREKINI  (dva dodira)",
                         fontSize = 16.sp,

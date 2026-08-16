@@ -2,12 +2,14 @@ package com.program.blindfoldtrainer.core.audio
 
 import android.Manifest
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -25,6 +27,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -93,9 +96,19 @@ data class MicrophoneZone(
     val isListening: Boolean,
     val voiceState: VoiceState,
     val onToggle: () -> Unit,
-    val weight: Float = 0.55f,
+    val weight: Float = MAIN_ZONE_WEIGHT,
     val idleLabel: String = "MIKROFON"
 )
+
+/**
+ * Podela visine ekrana: pola glavnoj zoni, po četvrtina pomoći i izlazu.
+ *
+ * Prva podela je bila 55 / 25 / 20 i sa uređaja je stiglo da su donje dve
+ * pretanke — u njih se bez gledanja ne spušta prst nego se cilja, a to je
+ * upravo ono što zone treba da uklone.
+ */
+const val MAIN_ZONE_WEIGHT = 0.50f
+const val HELPER_ZONE_WEIGHT = 0.25f
 
 /**
  * Upravljanje bez gledanja u ekran.
@@ -105,11 +118,13 @@ data class MicrophoneZone(
  *
  * ```
  * ┌───────────────────────────────┐
- * │           MIKROFON            │
+ * │                               │
+ * │           MIKROFON            │   50%
+ * │                               │
  * ├───────────────┬───────────────┤
- * │    PONOVI     │   POZICIJA    │
+ * │    PONOVI     │   POZICIJA    │   25%
  * ├───────────────┴───────────────┤
- * │      ODUSTANI (dva puta)      │
+ * │      ODUSTANI (dva puta)      │   25%
  * └───────────────────────────────┘
  * ```
  *
@@ -121,6 +136,8 @@ data class MicrophoneZone(
  * Pomoćne zone su namerno **ispod glavne, a ne na samom vrhu** — vrh ekrana
  * zauzimaju sat i otvor za kameru, pa se tamo bez gledanja ne pogađa. Iz istog
  * razloga se poštuju sistemske ivice.
+ *
+ * Dok su zone na ekranu, **orijentacija je zaključana na portret**.
  */
 @Composable
 fun EyesFreeControls(
@@ -130,6 +147,8 @@ fun EyesFreeControls(
 ) {
     val context = LocalContext.current
     val buzz = rememberBuzz()
+
+    LockPortrait()
 
     var hasPermission by remember {
         mutableStateOf(
@@ -211,6 +230,28 @@ fun EyesFreeControls(
                 }
             }
         }
+    }
+}
+
+/**
+ * Drži ekran u portretu dok se vežba zatvorenih očiju.
+ *
+ * Zone su podeljene po **visini**, pa u pejzažu postanu niske trake u koje se
+ * bez gledanja ne pogađa. Uz to bi okretanje telefona u ruci — a on se tako i
+ * drži — usred vežbe premestilo sve mete.
+ *
+ * Zaključava se ovde, a ne u manifestu, jer se odnosi samo na ovaj režim:
+ * ostatak aplikacije se gleda i sme da se okreće. Zatečena vrednost se pamti i
+ * vraća pri izlasku, da modul ne ostavi aplikaciju zaključanu za sobom.
+ */
+@Composable
+private fun LockPortrait() {
+    val activity = LocalActivity.current ?: return
+
+    DisposableEffect(activity) {
+        val previous = activity.requestedOrientation
+        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        onDispose { activity.requestedOrientation = previous }
     }
 }
 

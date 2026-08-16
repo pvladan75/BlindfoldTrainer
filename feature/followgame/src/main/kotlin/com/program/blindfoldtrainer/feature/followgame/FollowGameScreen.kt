@@ -29,6 +29,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.program.blindfoldtrainer.core.audio.EyesFreeControls
 import com.program.blindfoldtrainer.core.audio.EyesFreeRow
 import com.program.blindfoldtrainer.core.audio.EyesFreeZone
+import com.program.blindfoldtrainer.core.audio.HELPER_ZONE_WEIGHT
+import com.program.blindfoldtrainer.core.audio.MAIN_ZONE_WEIGHT
 import com.program.blindfoldtrainer.core.audio.MicrophoneZone
 import com.program.blindfoldtrainer.core.audio.VoiceInputButton
 import com.program.blindfoldtrainer.core.audio.VoiceState
@@ -88,7 +90,7 @@ fun FollowGameScreen(
                 if (uiState.phase != FollowPhase.QUESTION) {
                     add(
                         EyesFreeRow(
-                            weight = 0.55f,
+                            weight = MAIN_ZONE_WEIGHT,
                             zone = EyesFreeZone(
                                 label = "SLEDEĆI POTEZ",
                                 tone = ZoneTone.PRIMARY,
@@ -100,7 +102,7 @@ fun FollowGameScreen(
                 }
                 add(
                     EyesFreeRow(
-                        weight = 0.25f,
+                        weight = HELPER_ZONE_WEIGHT,
                         zone = EyesFreeZone(
                             label = "PONOVI",
                             tone = ZoneTone.SECONDARY,
@@ -110,7 +112,7 @@ fun FollowGameScreen(
                 )
                 add(
                     EyesFreeRow(
-                        weight = 0.20f,
+                        weight = HELPER_ZONE_WEIGHT,
                         zone = EyesFreeZone(
                             label = "PREKINI  (dva dodira)",
                             fontSize = 16.sp,
