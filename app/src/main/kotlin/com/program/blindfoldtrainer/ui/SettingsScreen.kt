@@ -54,6 +54,7 @@ import com.program.blindfoldtrainer.core.audio.ModelState
 import com.program.blindfoldtrainer.core.audio.PHONETIC_FILES
 import com.program.blindfoldtrainer.core.audio.VoiceLanguages
 import com.program.blindfoldtrainer.core.model.Settings
+import com.program.blindfoldtrainer.core.model.SpeechLanguage
 import com.program.blindfoldtrainer.core.model.ThemeChoice
 import com.program.blindfoldtrainer.core.model.VoiceLanguage
 
@@ -194,9 +195,9 @@ private fun SpeechSection(settings: Settings, viewModel: SettingsViewModel) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SpeechLanguagePicker(
-    selected: VoiceLanguage,
-    speakable: Set<VoiceLanguage>,
-    onSelect: (VoiceLanguage) -> Unit
+    selected: SpeechLanguage,
+    speakable: Set<SpeechLanguage>,
+    onSelect: (SpeechLanguage) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     val isMissingVoice = speakable.isNotEmpty() && selected !in speakable
@@ -224,7 +225,7 @@ private fun SpeechLanguagePicker(
         )
 
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            VoiceLanguage.entries.forEach { language ->
+            SpeechLanguage.entries.forEach { language ->
                 // Dok se TTS ne podigne, spisak je prazan i ne zaključavamo ništa.
                 val hasVoice = speakable.isEmpty() || language in speakable
 
@@ -563,6 +564,19 @@ private fun ThemeChoice.labelRes(): Int = when (this) {
     ThemeChoice.SYSTEM -> R.string.settings_theme_system
     ThemeChoice.LIGHT -> R.string.settings_theme_light
     ThemeChoice.DARK -> R.string.settings_theme_dark
+}
+
+private fun SpeechLanguage.labelRes(): Int = when (this) {
+    SpeechLanguage.SERBIAN -> R.string.language_serbian
+    SpeechLanguage.ENGLISH -> R.string.language_english
+    SpeechLanguage.GERMAN -> R.string.language_german
+    SpeechLanguage.RUSSIAN -> R.string.language_russian
+    SpeechLanguage.FRENCH -> R.string.language_french
+    SpeechLanguage.SPANISH -> R.string.language_spanish
+    SpeechLanguage.ITALIAN -> R.string.language_italian
+    SpeechLanguage.POLISH -> R.string.language_polish
+    SpeechLanguage.CZECH -> R.string.language_czech
+    SpeechLanguage.TURKISH -> R.string.language_turkish
 }
 
 private fun VoiceLanguage.labelRes(): Int = when (this) {

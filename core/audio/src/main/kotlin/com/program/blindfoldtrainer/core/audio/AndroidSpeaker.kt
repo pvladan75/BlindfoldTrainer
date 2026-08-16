@@ -3,11 +3,12 @@ package com.program.blindfoldtrainer.core.audio
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.util.Log
+import com.program.blindfoldtrainer.core.chess.Board
 import com.program.blindfoldtrainer.core.chess.Move
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
-import com.program.blindfoldtrainer.core.model.VoiceLanguage
+import com.program.blindfoldtrainer.core.model.SpeechLanguage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,17 +42,21 @@ class AndroidSpeaker @Inject constructor(
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
-    private val _availableLanguages = MutableStateFlow(emptySet<VoiceLanguage>())
+    private val _availableLanguages = MutableStateFlow(emptySet<SpeechLanguage>())
 
     /**
      * Jezici za koje uređaj **zaista ima glas**. Prazan skup dok se TTS ne
      * podigne. Podešavanja odatle znaju šta sme da se ponudi — spisak jezika
      * koje uređaj ne ume da izgovori bio bi obećanje koje se ne održi.
      */
-    val availableLanguages: StateFlow<Set<VoiceLanguage>> = _availableLanguages.asStateFlow()
+    val availableLanguages: StateFlow<Set<SpeechLanguage>> = _availableLanguages.asStateFlow()
 
     @Volatile
     private var settings: Settings = Settings.DEFAULT
+
+    /** Poslednje izgovoreno, za dugme „ponovi". */
+    @Volatile
+    private var lastSpoken: String? = null
 
     init {
         scope.launch {
@@ -73,8 +78,8 @@ class AndroidSpeaker @Inject constructor(
             return
         }
 
-        _availableLanguages.value = VoiceLanguage.entries.filterTo(mutableSetOf()) { language ->
-            tts.isLanguageAvailable(VoiceLanguages.localeFor(language)) >= TextToSpeech.LANG_AVAILABLE
+        _availableLanguages.value = SpeechLanguage.entries.filterTo(mutableSetOf()) { language ->
+            tts.isLanguageAvailable(SpeechLanguages.localeFor(language)) >= TextToSpeech.LANG_AVAILABLE
         }
 
         isReady = true
@@ -95,29 +100,36 @@ class AndroidSpeaker @Inject constructor(
         if (!isReady) return
 
         val wanted = settings.speechLanguage
-        val locale = VoiceLanguages.localeFor(wanted)
+        val result = tts.setLanguage(SpeechLanguages.localeFor(wanted))
 
-        val result = tts.setLanguage(locale)
         if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
             Log.w(TAG, "Glas za ${wanted.code} nije dostupan, vraćam se na engleski")
-            tts.setLanguage(VoiceLanguages.localeFor(VoiceLanguage.ENGLISH))
+            tts.setLanguage(SpeechLanguages.localeFor(SpeechLanguage.ENGLISH))
         }
     }
 
     /** Jezik kojim se zaista govori — izabrani, ili engleski ako glasa nema. */
-    private fun spokenLanguage(): VoiceLanguage {
+    private fun spokenLanguage(): SpeechLanguage {
         val wanted = settings.speechLanguage
         val available = _availableLanguages.value
-        return if (available.isEmpty() || wanted in available) wanted else VoiceLanguage.ENGLISH
+        return if (available.isEmpty() || wanted in available) wanted else SpeechLanguage.ENGLISH
     }
 
     override fun say(square: Square) = say(square.spoken(wordsForSpeech()))
 
     override fun say(move: Move) = say(move.spoken(wordsForSpeech()))
 
-    private fun wordsForSpeech(): VoiceWords = VoiceLanguages.specFor(spokenLanguage()).words
+    override fun say(board: Board) = say(board.spoken(wordsForSpeech()))
+
+    /** Ponavlja doslovno; ako ništa nije rečeno, ćuti umesto da izmišlja. */
+    override fun repeat() {
+        lastSpoken?.let { say(it) }
+    }
+
+    private fun wordsForSpeech(): SpeechWords = SpeechLanguages.wordsFor(spokenLanguage())
 
     override fun say(text: String) {
+        lastSpoken = text
         if (!isReady) {
             // Prvi potez ume da stigne pre nego što se motor podigne;
             // pamtimo ga umesto da ga nečujno progutamo.

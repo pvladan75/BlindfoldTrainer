@@ -12,6 +12,26 @@ enum class ThemeChoice { SYSTEM, LIGHT, DARK }
  * slušaju. **Srpskog nema** — Vosk nema nijedan južnoslovenski model, pa se ovaj
  * spisak završava tamo gde se završava njihova ponuda.
  */
+/**
+ * Jezik kojim **aplikacija govori**.
+ *
+ * Namerno **nije isti skup** kao [VoiceLanguage]: izgovor traži samo TTS glas na
+ * uređaju, a prepoznavanje traži Vosk model. Zato srpski ovde postoji iako za
+ * prepoznavanje ne postoji i neće postojati dok ga Vosk ne objavi.
+ */
+enum class SpeechLanguage(val code: String) {
+    SERBIAN("sr"),
+    ENGLISH("en-us"),
+    GERMAN("de"),
+    RUSSIAN("ru"),
+    FRENCH("fr"),
+    SPANISH("es"),
+    ITALIAN("it"),
+    POLISH("pl"),
+    CZECH("cs"),
+    TURKISH("tr")
+}
+
 enum class VoiceLanguage(val code: String) {
     ENGLISH("en-us"),
     GERMAN("de"),
@@ -43,7 +63,7 @@ data class Settings(
      * Jezik kojim **aplikacija govori tebi**. Odvojen od [voiceLanguage] jer su
      * to dva smera: ovaj zavisi od glasova na uređaju, onaj od preuzetog paketa.
      */
-    val speechLanguage: VoiceLanguage = VoiceLanguage.ENGLISH,
+    val speechLanguage: SpeechLanguage = SpeechLanguage.ENGLISH,
 
     /**
      * Jezik kojim **ti govoriš aplikaciji**. Menja i paket koji se preuzima.

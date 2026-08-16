@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
+import com.program.blindfoldtrainer.core.model.SpeechLanguage
 import com.program.blindfoldtrainer.core.model.ThemeChoice
 import com.program.blindfoldtrainer.core.model.VoiceLanguage
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -59,7 +60,7 @@ class DataStoreSettingsRepository @Inject constructor(
             ?.let { name -> VoiceLanguage.entries.find { it.name == name } }
             ?: Settings.DEFAULT.voiceLanguage,
         speechLanguage = this[SPEECH_LANGUAGE]
-            ?.let { name -> VoiceLanguage.entries.find { it.name == name } }
+            ?.let { name -> SpeechLanguage.entries.find { it.name == name } }
             ?: Settings.DEFAULT.speechLanguage,
         phoneticAlphabet = this[PHONETIC_ALPHABET] ?: Settings.DEFAULT.phoneticAlphabet,
         listenWholeMove = this[LISTEN_WHOLE_MOVE] ?: Settings.DEFAULT.listenWholeMove,

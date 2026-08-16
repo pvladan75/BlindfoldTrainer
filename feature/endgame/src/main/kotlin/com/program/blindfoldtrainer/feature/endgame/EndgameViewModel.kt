@@ -107,6 +107,19 @@ class EndgameViewModel @Inject constructor(
     /** Prekid slušanja na dodir — bez toga se upaljen mikrofon ne može ugasiti. */
     fun onVoiceStop() = voiceInput.stop()
 
+    /** Ponavlja poslednje izgovoreno — nisi dočuo, a ne da ti se slika raspala. */
+    fun onRepeatLast() = speaker.repeat()
+
+    /**
+     * Čita **trenutnu** poziciju. Broji se, jer znači da se slika u glavi
+     * raspala — ali se ne ograničava: kome ide teže, taj sme da pita koliko god
+     * puta treba. Broj stoji u sažetku kao merilo napretka, ne kao prekor.
+     */
+    fun onReadPosition() {
+        positionReads++
+        speaker.say(_uiState.value.position.board)
+    }
+
     private var settings: Settings = Settings.DEFAULT
 
     init {
@@ -144,6 +157,7 @@ class EndgameViewModel @Inject constructor(
     private var puzzles: List<EndgamePuzzle> = emptyList()
     private var playerColor: Color = Color.WHITE
     private var solvedCount = 0
+    private var positionReads = 0
     private var startedAtMillis = 0L
     private var timerJob: Job? = null
     private var engineJob: Job? = null
@@ -197,6 +211,10 @@ class EndgameViewModel @Inject constructor(
         }
 
         playerColor = position.sideToMove
+
+        // Pozicija se i pročita, ne samo prikaže: bez toga se modul ne može
+        // odraditi zatvorenih očiju.
+        speaker.say(position.board)
 
         _uiState.update {
             it.copy(

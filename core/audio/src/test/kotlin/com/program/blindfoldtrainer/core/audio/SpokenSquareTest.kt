@@ -1,6 +1,7 @@
 package com.program.blindfoldtrainer.core.audio
 
 import com.program.blindfoldtrainer.core.chess.Square
+import com.program.blindfoldtrainer.core.model.SpeechLanguage
 import com.program.blindfoldtrainer.core.model.VoiceLanguage
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -34,25 +35,27 @@ class SpokenSquareTest {
 
     @Test
     fun `polje se izgovara slovo pa broj, na jeziku govora`() {
-        val english = VoiceLanguages.specFor(VoiceLanguage.ENGLISH).words
-        val german = VoiceLanguages.specFor(VoiceLanguage.GERMAN).words
+        val square = Square.fromAlgebraic("e4")!!
 
-        assertEquals("e four", Square.fromAlgebraic("e4")!!.spoken(english))
-        assertEquals("e vier", Square.fromAlgebraic("e4")!!.spoken(german))
+        assertEquals("e four", square.spoken(SpeechLanguages.wordsFor(SpeechLanguage.ENGLISH)))
+        assertEquals("e vier", square.spoken(SpeechLanguages.wordsFor(SpeechLanguage.GERMAN)))
+        assertEquals("e četiri", square.spoken(SpeechLanguages.wordsFor(SpeechLanguage.SERBIAN)))
     }
 
     @Test
-    fun `izgovoreno se moze procitati nazad, na svakom jeziku`() {
-        // Ista tabela služi oba smera, pa ovo mora da važi za svako polje i
-        // svaki jezik — inače bi aplikacija govorila ono što sama ne razume.
+    fun `ono sto aplikacija kaze, ona i razume`() {
+        // Govor i prepoznavanje su dve tabele; ovo ih drži usaglašenim. Kad se
+        // razmimoiđu, aplikacija govori polje koje sama ne bi prepoznala.
         VoiceLanguage.entries.forEach { language ->
-            val words = VoiceLanguages.specFor(language).words
+            val speech = SpeechLanguage.entries.first { it.code == language.code }
+            val spokenWords = SpeechLanguages.wordsFor(speech)
+            val heardWords = VoiceLanguages.specFor(language).words
 
             Square.ALL.forEach { square ->
                 assertEquals(
                     "${language.name}, $square",
                     square,
-                    parseSpokenSquare(square.spoken(words), words)
+                    parseSpokenSquare(square.spoken(spokenWords), heardWords)
                 )
             }
         }

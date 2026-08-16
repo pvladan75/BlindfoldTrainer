@@ -25,7 +25,7 @@ te izmene svejedno vredi komitovati da se ne izgube.
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **svih šest** modula za trening. Poslednji
-build je prošao čisto, bez upozorenja. **132 testa, nijedan ne pada.**
+build je prošao čisto, bez upozorenja. **138 testova, nijedan ne pada.**
 
 **Svih šest modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -372,13 +372,45 @@ objavi spisak; Podešavanja iz njega znaju šta sme da se ponudi, a jezici bez
 glasa stoje zatamnjeni sa oznakom „nema glas". Ako izabrani jezik ipak ostane bez
 glasa, čita se **engleski** — bolje razumljiv engleski nego ćutanje.
 
-**Jedna tabela služi oba smera.** Reči iz `VoiceLanguages` su i ono što Vosk
-sluša i ono što TTS čita, pa nemački kaže „e vier", ruski „е четыре". Test to i
-čuva: za svaki jezik i svih 64 polja, ono što se izgovori mora moći da se
-pročita nazad — inače bi aplikacija govorila ono što sama ne razume.
+**Srpski postoji za izgovor, iako za prepoznavanje ne postoji.** Zato su to i
+dva odvojena skupa: `SpeechLanguage` (10, sa srpskim) i `VoiceLanguage` (9, po
+Vosk modelima). Izgovor traži samo glas na uređaju, a glasa za srpski ima na
+mnogim telefonima.
 
-Formatiranje je zato prešlo iz proširenja u `Speaker` (`say(move)`,
-`say(square)`): zavisi od jezika, a moduli za jezik ne znaju niti treba da znaju.
+To usput ispravlja i zatečeni nesklad: modul je oduvek izgovarao srpske rečenice
+(„Mat! Čestitamo.") kroz **engleski** glas, jer drugog nije bilo.
+
+**Dve tabele, ali usaglašene.** `SpeechLanguages` nosi reči za govor,
+`VoiceLanguages` za slušanje. Test ih drži zajedno: za svaki jezik i svih 64
+polja, ono što aplikacija izgovori mora da prođe kroz njeno sopstveno
+prepoznavanje — inače govori polje koje sama ne bi razumela.
+
+Formatiranje je zato prešlo iz proširenja u `Speaker` (`say(move)`, `say(square)`,
+`say(board)`): zavisi od jezika, a moduli za jezik ne znaju niti treba da znaju.
+
+### Čitanje pozicije
+
+`Board.spoken(words)` daje „beli kralj na e dva, bela dama na e pet. crni kralj
+na ha šest" — **beli pa crni, a unutar boje kralj pa dama pa ostalo**. Redosled je
+uvek isti da bi se pozicija pamtila kao niz, a ne kao skup; test to i čuva.
+
+Rod se slaže uz figuru: u srpskom je dama ženskog roda, u ruskom i ladja i
+peška, u francuskom dama i top. `SpeechWords.femininePieces` to nosi po jeziku.
+
+Završnica sada pozicija **i pročita**, ne samo prikaže, i ima dva dugmeta:
+
+- **Ponovi** — doslovno ponavlja poslednje izgovoreno. Stoji u `Speaker`-u, pa
+  radi u svakom modulu bez ijedne izmene u modulu. **Ne broji se** — nisi dočuo,
+  to nije slabost.
+- **Čitaj poziciju** — čita trenutno stanje table. **Broji se**, jer znači da se
+  slika u glavi raspala. Ne kao kazna nego kao merilo: kad taj broj vremenom
+  padne sa pet na nulu, to je dokaz napretka. Namerno je **neograničen** — kome
+  ide teže, taj sme da pita koliko god puta treba.
+
+Ovo je prvi korak ka režimu bez ekrana (dogovor iz sesije): ležiš, žmuriš,
+pozicija ti se pročita, igraš glasom. Ostalo za taj režim: velike zone umesto
+dugmadi, vibracija na dodir, objava ishoda i samo učitavanje sledeće pozicije, i
+odluka oko potvrde prepoznatog poteza.
 
 ### Jezici prepoznavanja
 

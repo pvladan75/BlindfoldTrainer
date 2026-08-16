@@ -84,6 +84,11 @@ fun EndgameScreen(
 
         Spacer(Modifier.weight(1f))
 
+        ListenControls(
+            onRepeatLast = viewModel::onRepeatLast,
+            onReadPosition = viewModel::onReadPosition
+        )
+
         Controls(
             uiState = uiState,
             voiceState = voiceState,
@@ -149,6 +154,35 @@ private fun StatusBanner(uiState: EndgameUiState) {
         textAlign = TextAlign.Center,
         modifier = Modifier.fillMaxWidth()
     )
+}
+
+/**
+ * Slušanje: ponovi poslednje, ili pročitaj celu poziciju.
+ *
+ * Dva različita posla. „Ponovi" je za ono što nisi dočuo i ne broji se; „Čitaj
+ * poziciju" je za kad ti se slika u glavi raspala, i to se broji — ne kao kazna
+ * nego kao merilo napretka.
+ */
+@Composable
+private fun ListenControls(onRepeatLast: () -> Unit, onReadPosition: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        OutlinedButton(
+            onClick = onRepeatLast,
+            modifier = Modifier.weight(1f).height(48.dp)
+        ) {
+            Text("PONOVI")
+        }
+
+        OutlinedButton(
+            onClick = onReadPosition,
+            modifier = Modifier.weight(1f).height(48.dp)
+        ) {
+            Text("ČITAJ POZICIJU")
+        }
+    }
 }
 
 @Composable
