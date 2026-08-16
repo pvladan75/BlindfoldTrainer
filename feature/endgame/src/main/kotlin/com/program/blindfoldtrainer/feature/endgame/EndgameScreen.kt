@@ -29,6 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.program.blindfoldtrainer.core.audio.EyesFreeControls
 import com.program.blindfoldtrainer.core.audio.VoiceInputButton
 import com.program.blindfoldtrainer.core.audio.VoiceState
 import com.program.blindfoldtrainer.core.chess.Square
@@ -46,6 +47,7 @@ fun EndgameScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val voiceState by viewModel.voiceState.collectAsState()
+    val isEyesFree by viewModel.isEyesFree.collectAsState()
 
     LaunchedEffect(difficulty) { viewModel.startOnce(difficulty) }
     LaunchedEffect(uiState.isFinished) {
@@ -63,6 +65,24 @@ fun EndgameScreen(
         Box(Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
             Text(message, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
         }
+        return
+    }
+
+    if (isEyesFree) {
+        // Ekran je samo površina za dodir: tabla se ne crta, jer se i ne gleda.
+        EyesFreeControls(
+            isListening = voiceState == VoiceState.Listening,
+            voiceState = voiceState,
+            onMicrophone = {
+                if (voiceState == VoiceState.Listening) viewModel.onVoiceStop()
+                else viewModel.onVoiceInput()
+            },
+            onRepeat = viewModel::onRepeatLast,
+            onReadPosition = viewModel::onReadPosition,
+            onGiveUpArmed = viewModel::onGiveUpArmed,
+            onGiveUp = viewModel::onGiveUp,
+            modifier = Modifier.padding(8.dp)
+        )
         return
     }
 

@@ -100,6 +100,8 @@ fun SettingsScreen(
         ) {
             ThemeSection(theme = settings.theme, onTheme = viewModel::onTheme)
 
+            EyesFreeSection(enabled = settings.eyesFree, onEnabled = viewModel::onEyesFree)
+
             SpeechSection(settings = settings, viewModel = viewModel)
 
             VoiceSection(settings = settings, viewModel = viewModel)
@@ -139,6 +141,19 @@ private fun ThemeSection(theme: ThemeChoice, onTheme: (ThemeChoice) -> Unit) {
                 }
             }
         }
+    }
+}
+
+/** Vežbanje bez gledanja u ekran. */
+@Composable
+private fun EyesFreeSection(enabled: Boolean, onEnabled: (Boolean) -> Unit) {
+    SettingsCard(stringResource(R.string.settings_eyes_free)) {
+        SwitchRow(
+            title = stringResource(R.string.settings_eyes_free_switch),
+            description = stringResource(R.string.settings_eyes_free_hint),
+            checked = enabled,
+            onCheckedChange = onEnabled
+        )
     }
 }
 

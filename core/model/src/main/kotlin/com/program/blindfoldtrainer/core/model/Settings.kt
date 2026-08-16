@@ -71,6 +71,14 @@ data class Settings(
     val voiceLanguage: VoiceLanguage = VoiceLanguage.ENGLISH,
 
     /**
+     * Umesto table i dugmadi — velike zone koje se pogađaju bez gledanja.
+     *
+     * Za vežbanje sklopljenih očiju: pozicija se pročita, potezi se izgovaraju,
+     * a ekran služi samo kao površina koja se dodiruje.
+     */
+    val eyesFree: Boolean = false,
+
+    /**
      * Kolone se izgovaraju rečima ("bravo" umesto "b"), po fonetskoj abecedi.
      * Pomaže kad model brka slična slova — na engleskom su „b" i „d" najčešća
      * zamena.

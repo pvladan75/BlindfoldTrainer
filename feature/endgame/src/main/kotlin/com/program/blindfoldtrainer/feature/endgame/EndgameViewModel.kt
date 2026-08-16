@@ -107,6 +107,9 @@ class EndgameViewModel @Inject constructor(
     /** Prekid slušanja na dodir — bez toga se upaljen mikrofon ne može ugasiti. */
     fun onVoiceStop() = voiceInput.stop()
 
+    /** Prvi dodir na zonu za odustajanje — traži potvrdu, jer je nepovratno. */
+    fun onGiveUpArmed() = speaker.say("Dodirni ponovo da odustaneš.")
+
     /** Ponavlja poslednje izgovoreno — nisi dočuo, a ne da ti se slika raspala. */
     fun onRepeatLast() = speaker.repeat()
 
@@ -122,9 +125,17 @@ class EndgameViewModel @Inject constructor(
 
     private var settings: Settings = Settings.DEFAULT
 
+    private val _isEyesFree = MutableStateFlow(Settings.DEFAULT.eyesFree)
+
+    /** Da li se vežba bez gledanja u ekran; bira se u Podešavanjima. */
+    val isEyesFree: StateFlow<Boolean> = _isEyesFree.asStateFlow()
+
     init {
         viewModelScope.launch {
-            settingsRepository.settings.collect { settings = it }
+            settingsRepository.settings.collect {
+                settings = it
+                _isEyesFree.value = it.eyesFree
+            }
         }
     }
 
@@ -220,15 +231,17 @@ class EndgameViewModel @Inject constructor(
             it.copy(
                 position = position,
                 // Prvo se pozicija vidi — treba je zapamtiti pre nego što se ugasi.
-                visibility = PieceVisibility.All,
-                isMemorizing = true,
+                // Bez ekrana te faze nema: čitanje pozicije **jeste** pamćenje, a
+                // dugmeta „zapamtio sam" nema, pa bi se u njoj zaglavilo.
+                visibility = if (settings.eyesFree) PieceVisibility.None else PieceVisibility.All,
+                isMemorizing = !settings.eyesFree,
                 selectedSquare = null,
                 lastMove = null,
                 errorSquare = null,
                 puzzleNumber = index + 1,
                 puzzleCount = puzzles.size,
                 outcome = EndgameOutcome.IN_PROGRESS,
-                statusMessage = "Zapamti poziciju, pa igraj",
+                statusMessage = if (settings.eyesFree) "Ti si na potezu" else "Zapamti poziciju, pa igraj",
                 evaluationLabel = puzzle.evaluation,
                 isLoading = false,
                 infoMessage = null
@@ -304,6 +317,10 @@ class EndgameViewModel @Inject constructor(
     }
 
     private fun applyPlayerMove(move: Move) {
+        // Izgovara se šta je odigrano: bez ekrana je to jedina potvrda da je
+        // prepoznato ono što je i rečeno.
+        speaker.say(move)
+
         val next = _uiState.value.position.applyMove(move)
         _uiState.update {
             it.copy(
@@ -377,12 +394,15 @@ class EndgameViewModel @Inject constructor(
 
         if (outcome == EndgameOutcome.MATED) solvedCount++
 
+        val message = messageFor(outcome)
+        speaker.say(message)
+
         _uiState.update {
             it.copy(
                 outcome = outcome,
                 visibility = PieceVisibility.All,
                 isEngineThinking = false,
-                statusMessage = messageFor(outcome)
+                statusMessage = message
             )
         }
 
@@ -408,6 +428,8 @@ class EndgameViewModel @Inject constructor(
         speaker.stop()
         // Mikrofon ne sme da ostane upaljen kad se od korisnika više ništa ne traži.
         voiceInput.stop()
+        speaker.say(messageFor(EndgameOutcome.GAVE_UP))
+
         _uiState.update {
             it.copy(
                 outcome = EndgameOutcome.GAVE_UP,
@@ -426,8 +448,12 @@ class EndgameViewModel @Inject constructor(
     private fun finishSession() {
         timerJob?.cancel()
         engineJob?.cancel()
-        speaker.stop()
         voiceInput.stop()
+
+        // Kraj se izgovara: bez ekrana se sažetak ne vidi, pa bi sesija prosto
+        // utihnula.
+        val state = _uiState.value
+        speaker.say("Kraj sesije. Rešeno ${solvedCount} od ${state.puzzleNumber}.")
         _uiState.update { it.copy(isFinished = true) }
     }
 

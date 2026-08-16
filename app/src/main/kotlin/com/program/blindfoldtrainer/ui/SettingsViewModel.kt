@@ -57,6 +57,8 @@ class SettingsViewModel @Inject constructor(
 
     fun onDelete(language: VoiceLanguage) = modelStore.delete(language)
 
+    fun onEyesFree(enabled: Boolean) = update { it.copy(eyesFree = enabled) }
+
     fun onPhoneticAlphabet(enabled: Boolean) = update { it.copy(phoneticAlphabet = enabled) }
 
     fun onListenWholeMove(enabled: Boolean) = update { it.copy(listenWholeMove = enabled) }

@@ -314,6 +314,7 @@ koja je bolja zavisi od izgovora, a to aplikacija ne može da zna.
 | Podešavanje | Podrazumevano |
 |---|---|
 | Tema: automatski / svetla / tamna | automatski |
+| Bez ekrana (vežbanje zatvorenih očiju) | isključeno |
 | Brzina izgovaranja (0,5–1,5) | 0,85 — kao pre |
 | Jezik izgovora (9 jezika, koliko uređaj ima glasova) | engleski |
 | Jezik prepoznavanja (9 jezika) | engleski |
@@ -416,10 +417,42 @@ Završnica sada pozicija **i pročita**, ne samo prikaže, i ima dva dugmeta:
   padne sa pet na nulu, to je dokaz napretka. Namerno je **neograničen** — kome
   ide teže, taj sme da pita koliko god puta treba.
 
-Ovo je prvi korak ka režimu bez ekrana (dogovor iz sesije): ležiš, žmuriš,
-pozicija ti se pročita, igraš glasom. Ostalo za taj režim: velike zone umesto
-dugmadi, vibracija na dodir, objava ishoda i samo učitavanje sledeće pozicije, i
-odluka oko potvrde prepoznatog poteza.
+### Režim bez ekrana
+
+Uključuje se u Podešavanjima („Bez ekrana → Vežbaj zatvorenih očiju"), zasad radi
+u **Dokrajči protivnika**. Tabla se ne crta; ekran je samo površina za dodir:
+
+```
+┌───────────────┬───────────────┐
+│    PONOVI     │   POZICIJA    │   22%
+├───────────────┴───────────────┤
+│           MIKROFON            │   58%
+├───────────────────────────────┤
+│      ODUSTANI (dva puta)      │   20%
+└───────────────────────────────┘
+```
+
+Zone, a ne dugmad: prst se ne cilja nego spusti. Mikrofon je najveći jer se
+koristi najviše, i dodirom se i pali i gasi. **Svaka zona vibrira drugačije** —
+to je jedina povratna informacija koja stiže pre govora, pa se pogodak zna i pre
+nego što TTS progovori. Odustajanje traži dva dodira, jer je jedino nepovratno;
+prvi dodir kaže „Dodirni ponovo da odustaneš".
+
+**Sve što se ranije samo videlo sada se i čuje** — to je pravilo bez kog režim ne
+postoji:
+
+- odigran potez se izgovara („e dva, e četiri"), jer je bez ekrana to jedina
+  potvrda da je prepoznato ono što je rečeno;
+- ishod se izgovara, ne samo ispisuje;
+- kraj sesije se izgovara sa rezultatom;
+- sledeća pozicija se sama učita i pročita.
+
+Jedna posledica koju build ne hvata: **faze pamćenja u ovom režimu nema.** Ona se
+inače završava dugmetom „zapamtio sam", kog ovde nema — pa bi se u njoj zaglavilo.
+Čitanje pozicije *jeste* pamćenje, pa se kreće odmah na potez.
+
+Ostaje za dalje: režim u ostalim modulima, i odluka oko potvrde prepoznatog
+poteza (sada se potez odigra pa objavi; alternativa je pitati pre poteza).
 
 ### Jezici prepoznavanja
 

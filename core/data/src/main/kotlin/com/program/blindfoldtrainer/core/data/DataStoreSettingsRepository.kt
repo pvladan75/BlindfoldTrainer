@@ -43,6 +43,7 @@ class DataStoreSettingsRepository @Inject constructor(
             preferences[SPEECH_RATE] = updated.speechRate
             preferences[VOICE_LANGUAGE] = updated.voiceLanguage.name
             preferences[SPEECH_LANGUAGE] = updated.speechLanguage.name
+            preferences[EYES_FREE] = updated.eyesFree
             preferences[PHONETIC_ALPHABET] = updated.phoneticAlphabet
             preferences[LISTEN_WHOLE_MOVE] = updated.listenWholeMove
             preferences[SEPARATE_LETTER_AND_NUMBER] = updated.separateLetterAndNumber
@@ -62,6 +63,7 @@ class DataStoreSettingsRepository @Inject constructor(
         speechLanguage = this[SPEECH_LANGUAGE]
             ?.let { name -> SpeechLanguage.entries.find { it.name == name } }
             ?: Settings.DEFAULT.speechLanguage,
+        eyesFree = this[EYES_FREE] ?: Settings.DEFAULT.eyesFree,
         phoneticAlphabet = this[PHONETIC_ALPHABET] ?: Settings.DEFAULT.phoneticAlphabet,
         listenWholeMove = this[LISTEN_WHOLE_MOVE] ?: Settings.DEFAULT.listenWholeMove,
         separateLetterAndNumber = this[SEPARATE_LETTER_AND_NUMBER]
@@ -73,6 +75,7 @@ class DataStoreSettingsRepository @Inject constructor(
         val SPEECH_RATE = floatPreferencesKey("speech_rate")
         val VOICE_LANGUAGE = stringPreferencesKey("voice_language")
         val SPEECH_LANGUAGE = stringPreferencesKey("speech_language")
+        val EYES_FREE = booleanPreferencesKey("eyes_free")
         val PHONETIC_ALPHABET = booleanPreferencesKey("phonetic_alphabet")
         val LISTEN_WHOLE_MOVE = booleanPreferencesKey("listen_whole_move")
         val SEPARATE_LETTER_AND_NUMBER = booleanPreferencesKey("separate_letter_and_number")

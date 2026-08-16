@@ -9,4 +9,8 @@
          dodao 67 MB i onima koji glasovni unos ne koriste. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Vibracija po zoni u režimu bez ekrana: jedina povratna informacija koja
+         stiže pre govora. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
 </manifest>
