@@ -276,7 +276,7 @@ koja je bolja zavisi od izgovora, a to aplikacija ne može da zna.
 | Tema: automatski / svetla / tamna | automatski |
 | Brzina izgovaranja (0,5–1,5) | 0,85 — kao pre |
 | Jezik izgovora (9 jezika) | engleski |
-| NATO abeceda za slova („bravo" umesto „b") | isključeno |
+| Slova kao reči („bravo" umesto „b") | isključeno |
 | Slušaj ceo potez (Završnica, jedan pritisak) | isključeno |
 | Slovo i broj odvojeno („e", pa „four") | isključeno |
 
@@ -285,8 +285,18 @@ ništa ne dira, ništa mu se i ne menja.
 
 Dve stvari koje su usput ispravljene: brzinu govora su ranije zakucavala tri
 ViewModel-a svaki za sebe, a sada je čita `AndroidSpeaker` iz podešavanja; i
-NATO reči ulaze u Vosk rečnik samo kad su izabrane, jer širi rečnik znači i više
-prilika da se pogreši.
+fonetske reči ulaze u Vosk rečnik samo kad su izabrane, jer širi rečnik znači i
+više prilika da se pogreši.
+
+**Fonetska abeceda se ne zove „NATO".** Isti standard se zove i ICAO abeceda i
+međunarodna radio-telefonska abeceda; skraćenica nekome smeta, a ne dodaje
+značenje — pa je i u kodu (`PHONETIC_FILES`, `phoneticAlphabet`) i na ekranu
+naziv opisan.
+
+Uz taj prekidač **stoji i spisak reči** (a — alpha, b — bravo, … h — hotel).
+Bez njega je podešavanje bilo neupotrebljivo: niko ne zna napamet šta zamenjuje
+`f` ili `h`. Reči ostaju engleske i kad je izabran drugi jezik, jer je abeceda
+međunarodna a rečnik se pravi baš od njih.
 
 ### Jezici glasovnog unosa
 

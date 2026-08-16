@@ -37,5 +37,5 @@ interface VoiceInput {
 }
 
 // Čitanje izgovorenog stoji u SpokenInput.kt. Preselilo se odande kad je unos
-// prestao da bude prosto „tekst u polje": uz podešavanja treba da razume i NATO
+// prestao da bude prosto „tekst u polje": uz podešavanja treba da razume i fonetsku
 // abecedu i kolonu bez reda.

@@ -8,7 +8,7 @@ sealed interface SpokenInput {
     /** Celo polje ("e four"). */
     data class Full(val square: Square) : SpokenInput
 
-    /** Samo kolona ("e", ili „echo" po NATO abecedi). */
+    /** Samo kolona ("e", ili „echo" po fonetskoj abecedi). */
     data class File(val file: Char) : SpokenInput
 
     /** Samo red ("four"). */
@@ -19,12 +19,17 @@ sealed interface SpokenInput {
 }
 
 /**
- * NATO abeceda za kolone.
+ * Fonetska abeceda za kolone — ista ona koju koriste piloti i radio-veza.
+ *
+ * Naziv je namerno opisan, a ne „NATO": standard se zove i ICAO abeceda i
+ * međunarodna radio-telefonska abeceda, a skraćenica nekome smeta bez ikakve
+ * dobiti po značenje.
  *
  * Ne zavisi od jezika i zato stoji van tabele jezika: reč od dva sloga se ne
- * meša ni sa čim, pa pomaže svuda gde model brka slična slova.
+ * meša ni sa čim, pa pomaže svuda gde model brka slična slova. Reči su ipak
+ * engleske, pa na modelu drugog jezika možda ne postoje u leksikonu.
  */
-val NATO_FILES: Map<String, Char> = mapOf(
+val PHONETIC_FILES: Map<String, Char> = mapOf(
     "alpha" to 'a',
     "bravo" to 'b',
     "charlie" to 'c',
@@ -73,7 +78,7 @@ private fun normalizeToken(token: String, words: VoiceWords): String {
 
     words.files[clean]?.let { return it.toString() }
     words.ranks[clean]?.let { return it.toString() }
-    NATO_FILES[clean]?.let { return it.toString() }
+    PHONETIC_FILES[clean]?.let { return it.toString() }
 
     // "e4" ili "e" stižu takvi kakvi jesu; sve ostalo se propušta pa otpadne
     // pri čitanju polja.

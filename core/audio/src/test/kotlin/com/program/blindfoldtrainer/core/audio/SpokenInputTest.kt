@@ -21,17 +21,17 @@ class SpokenInputTest {
     }
 
     @Test
-    fun `NATO abeceda daje istu kolonu`() {
+    fun `fonetska abeceda daje istu kolonu`() {
         assertEquals(SpokenInput.Full(square("b2")), parseSpokenInput("bravo two"))
         assertEquals(SpokenInput.Full(square("d4")), parseSpokenInput("delta four"))
         assertEquals(SpokenInput.Full(square("e5")), parseSpokenInput("echo five"))
     }
 
     @Test
-    fun `sve NATO reci pokrivaju kolone a do h`() {
-        assertEquals(('a'..'h').toSet(), NATO_FILES.values.toSet())
+    fun `sve fonetske reci pokrivaju kolone a do h`() {
+        assertEquals(('a'..'h').toSet(), PHONETIC_FILES.values.toSet())
 
-        NATO_FILES.forEach { (word, file) ->
+        PHONETIC_FILES.forEach { (word, file) ->
             assertEquals(
                 "reč $word",
                 SpokenInput.Full(square("${file}3")),

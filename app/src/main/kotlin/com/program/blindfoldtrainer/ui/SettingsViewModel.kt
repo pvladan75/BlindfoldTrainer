@@ -30,7 +30,7 @@ class SettingsViewModel @Inject constructor(
 
     fun onVoiceLanguage(language: VoiceLanguage) = update { it.copy(voiceLanguage = language) }
 
-    fun onNatoAlphabet(enabled: Boolean) = update { it.copy(natoAlphabet = enabled) }
+    fun onPhoneticAlphabet(enabled: Boolean) = update { it.copy(phoneticAlphabet = enabled) }
 
     fun onListenWholeMove(enabled: Boolean) = update { it.copy(listenWholeMove = enabled) }
 

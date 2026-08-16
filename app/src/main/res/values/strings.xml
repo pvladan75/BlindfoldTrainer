@@ -64,8 +64,8 @@
     <string name="language_czech">Češki</string>
     <string name="language_turkish">Turski</string>
 
-    <string name="settings_nato">NATO abeceda za slova</string>
-    <string name="settings_nato_hint">Kolona se kaže rečju: „bravo" umesto „b". Pomaže kad model meša slična slova.</string>
+    <string name="settings_phonetic">Slova kao reči</string>
+    <string name="settings_phonetic_hint">Kolona se kaže rečju: „bravo" umesto „b". Pomaže kad model brka slična slova. Reči su one iste koje koriste piloti i radio-veza, i ostaju engleske i kad je izabran drugi jezik.</string>
     <string name="settings_whole_move">Slušaj ceo potez</string>
     <string name="settings_whole_move_hint">U Završnici jedan pritisak sluša oba polja, umesto pritiska po polju.</string>
     <string name="settings_separate">Slovo i broj odvojeno</string>

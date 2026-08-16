@@ -43,10 +43,11 @@ data class Settings(
     val voiceLanguage: VoiceLanguage = VoiceLanguage.ENGLISH,
 
     /**
-     * Slova se izgovaraju NATO abecedom ("bravo" umesto "b"). Pomaže kad model
-     * meša slična slova — na engleskom su „b" i „d" najčešća zamena.
+     * Kolone se izgovaraju rečima ("bravo" umesto "b"), po fonetskoj abecedi.
+     * Pomaže kad model brka slična slova — na engleskom su „b" i „d" najčešća
+     * zamena.
      */
-    val natoAlphabet: Boolean = false,
+    val phoneticAlphabet: Boolean = false,
 
     /**
      * U Završnici jedan pritisak sluša ceo potez: pošto se prepozna polazno

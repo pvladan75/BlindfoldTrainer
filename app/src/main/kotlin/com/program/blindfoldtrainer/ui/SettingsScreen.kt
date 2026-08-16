@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,10 +40,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.program.blindfoldtrainer.R
+import com.program.blindfoldtrainer.core.audio.PHONETIC_FILES
 import com.program.blindfoldtrainer.core.audio.VoiceLanguages
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.ThemeChoice
@@ -174,11 +177,15 @@ private fun VoiceSection(settings: Settings, viewModel: SettingsViewModel) {
         Spacer(Modifier.height(4.dp))
 
         SwitchRow(
-            title = stringResource(R.string.settings_nato),
-            description = stringResource(R.string.settings_nato_hint),
-            checked = settings.natoAlphabet,
-            onCheckedChange = viewModel::onNatoAlphabet
+            title = stringResource(R.string.settings_phonetic),
+            description = stringResource(R.string.settings_phonetic_hint),
+            checked = settings.phoneticAlphabet,
+            onCheckedChange = viewModel::onPhoneticAlphabet
         )
+
+        // Prekidač bez spiska reči je beskoristan: niko ne zna napamet šta
+        // zamenjuje f ili h.
+        if (settings.phoneticAlphabet) PhoneticWordList()
 
         SwitchRow(
             title = stringResource(R.string.settings_whole_move),
@@ -193,6 +200,44 @@ private fun VoiceSection(settings: Settings, viewModel: SettingsViewModel) {
             checked = settings.separateLetterAndNumber,
             onCheckedChange = viewModel::onSeparateLetterAndNumber
         )
+    }
+}
+
+/**
+ * Koja reč zamenjuje koje slovo.
+ *
+ * Reči su engleske i onda kad je izabran drugi jezik — fonetska abeceda je
+ * međunarodna, a rečnik koji Vosk sluša pravi se od baš ovih reči.
+ */
+@Composable
+private fun PhoneticWordList() {
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            // Sortirano po slovu, da se traži okom a ne pamćenjem.
+            PHONETIC_FILES.entries
+                .sortedBy { it.value }
+                .chunked(4)
+                .forEach { row ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        row.forEach { (word, file) ->
+                            Text(
+                                text = "$file — $word",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontFamily = FontFamily.Monospace,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+        }
     }
 }
 

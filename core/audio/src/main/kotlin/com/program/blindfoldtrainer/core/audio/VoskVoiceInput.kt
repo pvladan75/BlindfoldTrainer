@@ -214,9 +214,9 @@ class VoskVoiceInput @Inject constructor(
         val words = buildList {
             addAll(currentWords().allWords)
 
-            // NATO reči ulaze samo kad su izabrane: širi rečnik znači i više
+            // Fonetske reči ulaze samo kad su izabrane: širi rečnik znači i više
             // prilika da se pogreši, a njih traži samo onaj kome slova ne prolaze.
-            if (settings.natoAlphabet) addAll(NATO_FILES.keys)
+            if (settings.phoneticAlphabet) addAll(PHONETIC_FILES.keys)
 
             add("[unk]")
         }

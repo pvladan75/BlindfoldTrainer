@@ -66,8 +66,8 @@ class VoiceLanguagesTest {
     }
 
     @Test
-    fun `NATO abeceda radi na svakom jeziku`() {
-        // NATO reči ne zavise od jezika i zato prolaze uz bilo koju tabelu.
+    fun `fonetska abeceda radi na svakom jeziku`() {
+        // Fonetske reči ne zavise od jezika i zato prolaze uz bilo koju tabelu.
         VoiceLanguage.entries.forEach { language ->
             val words = VoiceLanguages.specFor(language).words
             val rankWord = words.ranks.entries.first { it.value == '3' }.key
