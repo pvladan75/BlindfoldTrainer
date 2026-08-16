@@ -724,11 +724,29 @@ paletu i ocenjivanje. Razlog nije tehnički:
 „Zapamti poziciju" je bio hibrid: ulaz se **vidi**, izlaz je **dodir**. Sa dva
 čista oblika razdvojena po modulima, svaki ima jednu rečenicu uputstva.
 
+Zadatak ima **dve faze, i tabla postoji samo u drugoj**:
+
+1. **Slušanje** — table nema na ekranu. Dugmad su „ČITAJ PONOVO" i
+   „ZNAM GDE JE ŠTA".
+2. **Slaganje** — tabla i paleta se pojave, čitanje se prekida.
+
+Prva verzija je tablu prikazivala odmah, i sa uređaja je stigla primedba: ne
+treba dozvoliti postavljanje dok čitanje traje. Ispod toga stoji nešto važnije od
+zabrane — **sa praznom tablom pred očima vežba se svede na prepisivanje.** Čuješ
+figuru, spustiš je, čuješ sledeću, spustiš je, i sliku u glavi nikad ne sastaviš.
+A upravo je ona ceo smisao modula.
+
+Zato je granica **potvrda korisnika**, a ne kraj čitanja: „znam gde je šta" je
+odluka koja deli vežbu na pola. Pritisak na to dugme prekida čitanje, pa se
+čitanje i slaganje nikad ne preklapaju sama od sebe — jedino ako se čitanje
+izričito zatraži tokom slaganja, što je onda svesna provera.
+
 **Čitanje je neograničeno i broji se**, po ugledu na „Čitaj poziciju" u
 Završnici — ali za razliku od nje, **broj stoji na ekranu** („Čitanja: 3"). Merilo
 koje se ne vidi ne meri ništa; kad taj broj vremenom padne sa pet na jedno, to je
-i ceo dokaz da vežba radi. Zato je „ČITAJ PONOVO" i **glavno dugme**, a ne
-pomoćno: pozicija se ovde samo čuje, pa je ponovno čitanje jedini put do zadatka.
+i ceo dokaz da vežba radi. Zato je „ČITAJ PONOVO" i **glavno dugme** u fazi
+slaganja: pozicija se ovde samo čuje, pa je ponovno čitanje jedini put do
+zadatka — alat, ne pomoć.
 
 Težina je broj figura — 3 / 5 / 7. **Sata nema**: pritisak vremena bi merio brzinu
 slušanja, a ne to koliko se odjednom drži u glavi.
@@ -877,7 +895,8 @@ jedno i drugo računa iz istorije.
 
 Sedam modula postoji; šest je provereno na uređaju. Ostalo je:
 
-1. **Probati novi modul „Postavi po diktatu"** — nije još viđen na uređaju.
+1. **Probati fazu slušanja u „Postavi po diktatu"** — modul je proveren na
+   uređaju, ali podela na slušanje i slaganje je dodata posle toga.
 2. **Probati zone koje se sad zaista šire po visini**, zaključan portret,
    „slušaj ceo potez" u jednom dahu i potez preko imena figure („rook e two").
    Sve su to ispravke i dodaci po primedbama sa uređaja.

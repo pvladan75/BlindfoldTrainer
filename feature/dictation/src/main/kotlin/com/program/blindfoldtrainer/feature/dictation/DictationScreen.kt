@@ -59,20 +59,26 @@ fun DictationScreen(
 
         PhasePrompt(uiState)
 
-        ChessBoard(
-            board = uiState.visibleBoard,
-            tints = buildTints(uiState),
-            visibility = PieceVisibility.All,
-            onSquareClick = { viewModel.onSquareClicked(it) }
-        )
+        // Dok se sluša, table nema na ekranu. Prazna tabla pred očima vodi na
+        // prepisivanje — čuješ figuru, spustiš je — a slika u glavi se nikad ne
+        // sastavi. Zato se pojavljuje tek kad korisnik kaže da zna gde je šta.
+        if (uiState.phase != DictationPhase.LISTENING) {
+            ChessBoard(
+                board = uiState.visibleBoard,
+                tints = buildTints(uiState),
+                visibility = PieceVisibility.All,
+                onSquareClick = { viewModel.onSquareClicked(it) }
+            )
 
-        Palette(uiState = uiState, onPieceClick = viewModel::onPaletteClicked)
+            Palette(uiState = uiState, onPieceClick = viewModel::onPaletteClicked)
+        }
 
         Spacer(Modifier.weight(1f))
 
         Controls(
             uiState = uiState,
             onReplay = viewModel::onReplay,
+            onReady = viewModel::onReady,
             onCheck = viewModel::onCheck
         )
     }
@@ -122,6 +128,7 @@ private fun PhasePrompt(uiState: DictationUiState) {
     val grade = uiState.grade
 
     val text = when (uiState.phase) {
+        DictationPhase.LISTENING -> "Slušaj poziciju"
         DictationPhase.PLACING -> "Postavi ono što si čuo"
         DictationPhase.REVIEW -> when {
             grade == null -> ""
@@ -192,30 +199,44 @@ private fun Palette(uiState: DictationUiState, onPieceClick: (Int) -> Unit) {
 private fun Controls(
     uiState: DictationUiState,
     onReplay: () -> Unit,
+    onReady: () -> Unit,
     onCheck: () -> Unit
 ) {
-    if (uiState.phase != DictationPhase.PLACING) {
+    when (uiState.phase) {
+        DictationPhase.LISTENING -> Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // `weight` postoji samo unutar reda, pa modifikator mora ovde.
+            val buttonModifier = Modifier.weight(1f).height(52.dp)
+
+            OutlinedButton(onClick = onReplay, modifier = buttonModifier) {
+                Text("ČITAJ PONOVO")
+            }
+
+            // Prekida čitanje i otvara tablu — namerno je ovo glavno dugme,
+            // jer je odluka „znam gde je šta" ceo prelaz u drugu polovinu vežbe.
+            Button(onClick = onReady, modifier = buttonModifier) {
+                Text("ZNAM GDE JE ŠTA", fontWeight = FontWeight.Bold)
+            }
+        }
+
+        DictationPhase.PLACING -> Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            val buttonModifier = Modifier.weight(1f).height(52.dp)
+
+            Button(onClick = onReplay, modifier = buttonModifier) {
+                Text("ČITAJ PONOVO", fontWeight = FontWeight.Bold)
+            }
+
+            OutlinedButton(onClick = onCheck, modifier = buttonModifier) {
+                Text("PROVERI")
+            }
+        }
+
         // Sledeći zadatak stiže sam; dugme bi samo mamilo na dodir.
-        Box(Modifier.fillMaxWidth().height(52.dp))
-        return
-    }
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Button(
-            onClick = onReplay,
-            modifier = Modifier.weight(1f).height(52.dp)
-        ) {
-            Text("ČITAJ PONOVO", fontWeight = FontWeight.Bold)
-        }
-
-        OutlinedButton(
-            onClick = onCheck,
-            modifier = Modifier.weight(1f).height(52.dp)
-        ) {
-            Text("PROVERI")
-        }
+        DictationPhase.REVIEW -> Box(Modifier.fillMaxWidth().height(52.dp))
     }
 }

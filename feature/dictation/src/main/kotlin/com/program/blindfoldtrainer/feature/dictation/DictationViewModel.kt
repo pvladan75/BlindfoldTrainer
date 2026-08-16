@@ -24,7 +24,17 @@ import javax.inject.Inject
 
 /** Faza kroz koju prolazi svaki zadatak. */
 enum class DictationPhase {
-    /** Pozicija je izgovorena; tabla se popunjava iz palete. */
+    /**
+     * Pozicija se čita, a **table nema na ekranu**.
+     *
+     * Ne samo da se ne sme postavljati dok se čita — ne sme se ni videti gde bi
+     * se postavljalo. Sa praznom tablom pred sobom, vežba se svede na
+     * prepisivanje: čuješ figuru, spustiš je, i sliku u glavi nikad ne sastaviš.
+     * Faza se završava tek kad korisnik kaže da zna gde je šta.
+     */
+    LISTENING,
+
+    /** Pozicija je saslušana; tabla se popunjava iz palete. */
     PLACING,
 
     /** Poređenje sa zadatom pozicijom. */
@@ -37,7 +47,7 @@ data class DictationUiState(
     val placed: Map<Square, Piece> = emptyMap(),
     val palette: List<Piece> = emptyList(),
     val selectedIndex: Int? = null,
-    val phase: DictationPhase = DictationPhase.PLACING,
+    val phase: DictationPhase = DictationPhase.LISTENING,
     val grade: ReconstructionGrade? = null,
     val taskNumber: Int = 0,
     val taskCount: Int = 0,
@@ -57,11 +67,11 @@ data class DictationUiState(
      *
      * Dok se slaže, to je **samo ono što je korisnik postavio** — zadata pozicija
      * se u ovom modulu ne vidi nikad pre pregleda, jer bi se time izgubila cela
-     * vežba.
+     * vežba. Dok se sluša, table nema uopšte.
      */
     val visibleBoard: Board
         get() = when (phase) {
-            DictationPhase.PLACING -> Board.of(placed)
+            DictationPhase.LISTENING, DictationPhase.PLACING -> Board.of(placed)
             DictationPhase.REVIEW -> target
         }
 }
@@ -123,10 +133,23 @@ class DictationViewModel @Inject constructor(
      */
     fun onReplay() {
         val state = _uiState.value
-        if (state.phase != DictationPhase.PLACING) return
+        if (state.phase == DictationPhase.REVIEW) return
 
         _uiState.update { it.copy(replays = it.replays + 1) }
         speaker.say(state.target)
+    }
+
+    /**
+     * Korisnik kaže da zna gde je šta — tabla se pojavljuje i slaganje počinje.
+     *
+     * Čitanje se pri tom **prekida**, i to je ono što ispunjava pravilo da se ne
+     * postavlja dok se čita: posle ovoga se čita samo ako se čitanje izričito
+     * zatraži. Dva se nikad ne preklapaju sama od sebe.
+     */
+    fun onReady() {
+        if (_uiState.value.phase != DictationPhase.LISTENING) return
+        speaker.stop()
+        _uiState.update { it.copy(phase = DictationPhase.PLACING) }
     }
 
     fun onPaletteClicked(index: Int) {
@@ -224,7 +247,7 @@ class DictationViewModel @Inject constructor(
                 // izgovorene — inače bi se pozicija složila bez slušanja.
                 palette = target.occupied().map { (_, piece) -> piece }.shuffled(),
                 selectedIndex = null,
-                phase = DictationPhase.PLACING,
+                phase = DictationPhase.LISTENING,
                 grade = null,
                 taskNumber = it.taskNumber + 1
             )
