@@ -1,22 +1,31 @@
 # Dokle smo stigli
 
-Stanje na dan **16. avgust 2026.** Ovaj fajl služi da se rad nastavi u novoj
+Stanje na kraju **16. avgusta 2026.** Ovaj fajl služi da se rad nastavi u novoj
 sesiji bez ponovnog objašnjavanja.
 
-**Gde smo stali:** svih šest modula radi na uređaju; napredak, podešavanja i
-glasovni unos rade. Poslednje na čemu se radilo je **režim bez ekrana**, koji je
-sa Završnice proširen na **pet od šest modula**.
+**Gde smo stali:** aplikacija ima **sedam** modula. Napredak, podešavanja,
+govor i glasovni unos rade. Ova sesija je donela tri celine:
 
-Prva proba na uređaju je prošla — sve radi. Odatle su stigle dve primedbe, obe
-ispravljene: zone su preraspodeljene na **50 / 25 / 25** (donje dve su bile
-pretanke) i **orijentacija je zaključana na portret**. To još nije viđeno.
+1. **Režim bez ekrana** je sa Završnice proširen na **pet od šest** starih
+   modula. Probano na uređaju; po primedbama odatle ispravljeno je da se zone
+   zaista šire po visini, podela je 50 / 25 / 25, a portret je zaključan.
+2. **Glasovni unos je dobio potez, ne samo polje.** Prolaze „e four e two",
+   „rook e two" i cela rečenica „rook from e four to e two" — uporedo, bez
+   biranja režima. Pogrešno ime figure obara potez umesto da ga odigra.
+3. **Nov modul „Postavi po diktatu"** — pozicija se izgovori, ti je složiš na
+   tabli. Jedini modul koji ide od zapisa ka slici u glavi.
+
+**Šta nije viđeno na uređaju:** poslednje dve izmene diktata — podela na
+slušanje i slaganje, i to što se čitanje posle potvrde broji kao propust. Sve
+pre toga je probano.
 
 ---
 
 ## Verzionisanje
 
 Projekat je pod gitom od **15. avgusta 2026**: grana `master`, prvi komit
-`d66a9a6` — 122 fajla, oko 1 MB.
+`d66a9a6` — 122 fajla, oko 1 MB. Objavljen je na
+`github.com/pvladan75/BlindfoldTrainer`.
 
 `.gitignore` drži napolju `_stockfish-odlozeno/` (76 MB), NNUE mreže, `build/`,
 `.gradle/`, `local.properties` i ključeve za potpisivanje. Pre komita je
