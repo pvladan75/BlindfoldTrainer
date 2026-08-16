@@ -39,7 +39,15 @@ data class Settings(
     /** Brzina izgovaranja poteza. 0.1 sporo, 2.0 brzo, 1.0 normalno. */
     val speechRate: Float = DEFAULT_SPEECH_RATE,
 
-    /** Jezik na kom se izgovaraju polja. Menja i model koji se preuzima. */
+    /**
+     * Jezik kojim **aplikacija govori tebi**. Odvojen od [voiceLanguage] jer su
+     * to dva smera: ovaj zavisi od glasova na uređaju, onaj od preuzetog paketa.
+     */
+    val speechLanguage: VoiceLanguage = VoiceLanguage.ENGLISH,
+
+    /**
+     * Jezik kojim **ti govoriš aplikaciji**. Menja i paket koji se preuzima.
+     */
     val voiceLanguage: VoiceLanguage = VoiceLanguage.ENGLISH,
 
     /**

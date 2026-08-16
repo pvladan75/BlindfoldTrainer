@@ -1,6 +1,7 @@
 package com.program.blindfoldtrainer.core.audio
 
 import com.program.blindfoldtrainer.core.model.VoiceLanguage
+import java.util.Locale
 
 /**
  * Reči kojima se na jednom jeziku izgovara polje: kolone a–h i redovi 1–8.
@@ -23,9 +24,11 @@ data class VoiceWords(
     val allWords: List<String> get() = files.keys.toList() + ranks.keys.toList()
 }
 
-/** Model za jedan jezik: šta se preuzima i šta se sluša. */
+/** Jedan jezik: šta se preuzima, šta se sluša, i kojim se glasom čita. */
 data class VoiceModelSpec(
     val archiveName: String,
+    /** Za TTS glas na uređaju. Isti jezik služi i za slušanje i za čitanje. */
+    val locale: Locale,
     /** Veličina preuzimanja, da korisnik zna na šta pristaje. */
     val downloadMegabytes: Int,
     val words: VoiceWords,
@@ -52,6 +55,8 @@ object VoiceLanguages {
 
     fun urlFor(language: VoiceLanguage): String = BASE_URL + specFor(language).archiveName
 
+    fun localeFor(language: VoiceLanguage): Locale = specFor(language).locale
+
     private fun wordsOf(files: List<String>, ranks: List<String>) = VoiceWords(
         files = files.mapIndexed { index, word -> word to ('a' + index) }.toMap(),
         ranks = ranks.mapIndexed { index, word -> word to ('1' + index) }.toMap()
@@ -60,6 +65,7 @@ object VoiceLanguages {
     private val SPECS: Map<VoiceLanguage, VoiceModelSpec> = mapOf(
         VoiceLanguage.ENGLISH to VoiceModelSpec(
             archiveName = "vosk-model-small-en-us-0.15.zip",
+            locale = Locale.US,
             downloadMegabytes = 39,
             words = wordsOf(
                 files = listOf("a", "b", "c", "d", "e", "f", "g", "h"),
@@ -70,6 +76,7 @@ object VoiceLanguages {
 
         VoiceLanguage.GERMAN to VoiceModelSpec(
             archiveName = "vosk-model-small-de-0.15.zip",
+            locale = Locale.GERMAN,
             downloadMegabytes = 44,
             words = wordsOf(
                 files = listOf("a", "be", "ce", "de", "e", "ef", "ge", "ha"),
@@ -79,6 +86,7 @@ object VoiceLanguages {
 
         VoiceLanguage.RUSSIAN to VoiceModelSpec(
             archiveName = "vosk-model-small-ru-0.22.zip",
+            locale = Locale.forLanguageTag("ru"),
             downloadMegabytes = 44,
             words = wordsOf(
                 files = listOf("а", "бэ", "цэ", "дэ", "е", "эф", "жэ", "аш"),
@@ -88,6 +96,7 @@ object VoiceLanguages {
 
         VoiceLanguage.FRENCH to VoiceModelSpec(
             archiveName = "vosk-model-small-fr-0.22.zip",
+            locale = Locale.FRENCH,
             downloadMegabytes = 40,
             words = wordsOf(
                 files = listOf("a", "bé", "cé", "dé", "e", "effe", "gé", "ache"),
@@ -97,6 +106,7 @@ object VoiceLanguages {
 
         VoiceLanguage.SPANISH to VoiceModelSpec(
             archiveName = "vosk-model-small-es-0.42.zip",
+            locale = Locale.forLanguageTag("es"),
             downloadMegabytes = 38,
             words = wordsOf(
                 files = listOf("a", "be", "ce", "de", "e", "efe", "ge", "hache"),
@@ -106,6 +116,7 @@ object VoiceLanguages {
 
         VoiceLanguage.ITALIAN to VoiceModelSpec(
             archiveName = "vosk-model-small-it-0.22.zip",
+            locale = Locale.ITALIAN,
             downloadMegabytes = 47,
             words = wordsOf(
                 files = listOf("a", "bi", "ci", "di", "e", "effe", "gi", "acca"),
@@ -115,6 +126,7 @@ object VoiceLanguages {
 
         VoiceLanguage.POLISH to VoiceModelSpec(
             archiveName = "vosk-model-small-pl-0.22.zip",
+            locale = Locale.forLanguageTag("pl"),
             downloadMegabytes = 51,
             words = wordsOf(
                 files = listOf("a", "be", "ce", "de", "e", "ef", "gie", "ha"),
@@ -124,6 +136,7 @@ object VoiceLanguages {
 
         VoiceLanguage.CZECH to VoiceModelSpec(
             archiveName = "vosk-model-small-cs-0.4-rhasspy.zip",
+            locale = Locale.forLanguageTag("cs"),
             downloadMegabytes = 44,
             words = wordsOf(
                 files = listOf("á", "bé", "cé", "dé", "é", "ef", "gé", "há"),
@@ -133,6 +146,7 @@ object VoiceLanguages {
 
         VoiceLanguage.TURKISH to VoiceModelSpec(
             archiveName = "vosk-model-small-tr-0.3.zip",
+            locale = Locale.forLanguageTag("tr"),
             downloadMegabytes = 35,
             words = wordsOf(
                 files = listOf("a", "be", "ce", "de", "e", "fe", "ge", "he"),

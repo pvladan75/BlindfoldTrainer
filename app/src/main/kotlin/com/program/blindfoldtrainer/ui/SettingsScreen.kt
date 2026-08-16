@@ -99,7 +99,7 @@ fun SettingsScreen(
         ) {
             ThemeSection(theme = settings.theme, onTheme = viewModel::onTheme)
 
-            SpeechSection(rate = settings.speechRate, onRate = viewModel::onSpeechRate)
+            SpeechSection(settings = settings, viewModel = viewModel)
 
             VoiceSection(settings = settings, viewModel = viewModel)
         }
@@ -147,8 +147,11 @@ private fun ThemeSection(theme: ThemeChoice, onTheme: (ThemeChoice) -> Unit) {
  * Odvojeno od prepoznavanja i naslovom i objašnjenjem: dva jezika u istoj
  * aplikaciji lako se pobrkaju, a odnose se na suprotne smerove.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SpeechSection(rate: Float, onRate: (Float) -> Unit) {
+private fun SpeechSection(settings: Settings, viewModel: SettingsViewModel) {
+    val speakable by viewModel.speakableLanguages.collectAsState()
+
     SettingsCard(stringResource(R.string.settings_speech)) {
         Text(
             text = stringResource(R.string.settings_speech_hint),
@@ -158,25 +161,101 @@ private fun SpeechSection(rate: Float, onRate: (Float) -> Unit) {
 
         Spacer(Modifier.height(12.dp))
 
+        // Nudi se samo ono što uređaj ume da izgovori. Jezik bez glasa bi bio
+        // obećanje koje se ne održi — čulo bi se ćutanje ili engleski.
+        SpeechLanguagePicker(
+            selected = settings.speechLanguage,
+            speakable = speakable,
+            onSelect = viewModel::onSpeechLanguage
+        )
+
+        Spacer(Modifier.height(12.dp))
+
         Text(
-            text = stringResource(R.string.settings_speech_rate, rate),
+            text = stringResource(R.string.settings_speech_rate, settings.speechRate),
             style = MaterialTheme.typography.bodyMedium
         )
         Slider(
-            value = rate,
-            onValueChange = onRate,
+            value = settings.speechRate,
+            onValueChange = viewModel::onSpeechRate,
             valueRange = Settings.MIN_SPEECH_RATE..Settings.MAX_SPEECH_RATE,
             // Deset koraka po 0.1 kroz ceo opseg — finije od toga se ne čuje.
             steps = 9
         )
+    }
+}
 
-        // Jezik izgovora se zasad ne bira; da to nigde ne piše, izbor jezika
-        // prepoznavanja bi izgledao kao da menja i ovo.
-        Text(
-            text = stringResource(R.string.settings_speech_language),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+/**
+ * Jezik kojim aplikacija govori.
+ *
+ * Zavisi od glasova **na uređaju**, ne od preuzetog paketa — zato je odvojen od
+ * izbora jezika prepoznavanja i zato spisak ume da bude kraći.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SpeechLanguagePicker(
+    selected: VoiceLanguage,
+    speakable: Set<VoiceLanguage>,
+    onSelect: (VoiceLanguage) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val isMissingVoice = speakable.isNotEmpty() && selected !in speakable
+
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = stringResource(selected.labelRes()),
+            onValueChange = {},
+            readOnly = true,
+            isError = isMissingVoice,
+            label = { Text(stringResource(R.string.settings_speech_language)) },
+            supportingText = {
+                Text(
+                    stringResource(
+                        if (isMissingVoice) {
+                            R.string.settings_speech_language_missing
+                        } else {
+                            R.string.settings_speech_language_hint
+                        }
+                    )
+                )
+            },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth()
         )
+
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            VoiceLanguage.entries.forEach { language ->
+                // Dok se TTS ne podigne, spisak je prazan i ne zaključavamo ništa.
+                val hasVoice = speakable.isEmpty() || language in speakable
+
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = stringResource(language.labelRes()),
+                            color = if (hasVoice) {
+                                MaterialTheme.colorScheme.onSurface
+                            } else {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                            }
+                        )
+                    },
+                    trailingIcon = {
+                        if (!hasVoice) {
+                            Text(
+                                text = stringResource(R.string.settings_speech_no_voice),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    },
+                    enabled = hasVoice,
+                    onClick = {
+                        expanded = false
+                        onSelect(language)
+                    }
+                )
+            }
+        }
     }
 }
 

@@ -3,6 +3,7 @@ package com.program.blindfoldtrainer.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.program.blindfoldtrainer.core.audio.ModelState
+import com.program.blindfoldtrainer.core.audio.AndroidSpeaker
 import com.program.blindfoldtrainer.core.audio.VoskModelStore
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
@@ -18,8 +19,12 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val repository: SettingsRepository,
-    private val modelStore: VoskModelStore
+    private val modelStore: VoskModelStore,
+    speaker: AndroidSpeaker
 ) : ViewModel() {
+
+    /** Jezici za koje uređaj ima TTS glas. Prazno dok se TTS ne podigne. */
+    val speakableLanguages: StateFlow<Set<VoiceLanguage>> = speaker.availableLanguages
 
     val settings: StateFlow<Settings> = repository.settings
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Settings.DEFAULT)
@@ -31,6 +36,8 @@ class SettingsViewModel @Inject constructor(
     val installedLanguages: StateFlow<Set<VoiceLanguage>> = modelStore.installed
 
     fun onTheme(theme: ThemeChoice) = update { it.copy(theme = theme) }
+
+    fun onSpeechLanguage(language: VoiceLanguage) = update { it.copy(speechLanguage = language) }
 
     fun onSpeechRate(rate: Float) = update {
         // Klizač ume da vrati vrednost tik izvan opsega; Settings to inače odbija.

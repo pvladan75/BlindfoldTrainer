@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.program.blindfoldtrainer.core.audio.Speaker
 import com.program.blindfoldtrainer.core.audio.VoiceInput
 import com.program.blindfoldtrainer.core.audio.VoiceState
-import com.program.blindfoldtrainer.core.audio.spoken
 import com.program.blindfoldtrainer.core.chess.Color
 import com.program.blindfoldtrainer.core.chess.Move
 import com.program.blindfoldtrainer.core.chess.PieceType
@@ -326,7 +325,7 @@ class EndgameViewModel @Inject constructor(
             }
 
             val after = position.applyMove(reply)
-            speaker.say(reply.spoken())
+            speaker.say(reply)
 
             _uiState.update {
                 it.copy(

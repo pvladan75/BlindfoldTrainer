@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.program.blindfoldtrainer.core.audio.Speaker
 import com.program.blindfoldtrainer.core.audio.VoiceInput
 import com.program.blindfoldtrainer.core.audio.VoiceState
-import com.program.blindfoldtrainer.core.audio.spoken
 import com.program.blindfoldtrainer.core.chess.Board
 import com.program.blindfoldtrainer.core.chess.Move
 import com.program.blindfoldtrainer.core.chess.Square
@@ -212,7 +211,7 @@ class PairsViewModel @Inject constructor(
         val step = puzzle.solution.getOrNull(state.stepNumber - 1) ?: return
         val from = Square.fromAlgebraic(step.moveNotation.substringBefore('-')) ?: return
         val to = Square.fromAlgebraic(step.moveNotation.substringAfter('-')) ?: return
-        speaker.say(Move(from, to).spoken())
+        speaker.say(Move(from, to))
     }
 
     /** Odustajanje — figure se otkriju, ali zagonetka se ne broji kao rešena. */
@@ -282,7 +281,7 @@ class PairsViewModel @Inject constructor(
             val move = Move(from, to)
             val boardAfter = _uiState.value.board.withPieces(from to null, to to piece)
 
-            speaker.say(move.spoken())
+            speaker.say(move)
 
             _uiState.update {
                 it.copy(

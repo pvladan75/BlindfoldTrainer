@@ -25,7 +25,7 @@ te izmene svejedno vredi komitovati da se ne izgube.
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **svih šest** modula za trening. Poslednji
-build je prošao čisto, bez upozorenja. **131 test, nijedan ne pada.**
+build je prošao čisto, bez upozorenja. **132 testa, nijedan ne pada.**
 
 **Svih šest modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -315,6 +315,7 @@ koja je bolja zavisi od izgovora, a to aplikacija ne može da zna.
 |---|---|
 | Tema: automatski / svetla / tamna | automatski |
 | Brzina izgovaranja (0,5–1,5) | 0,85 — kao pre |
+| Jezik izgovora (9 jezika, koliko uređaj ima glasova) | engleski |
 | Jezik prepoznavanja (9 jezika) | engleski |
 | Slova kao reči („bravo" umesto „b") | isključeno |
 | Slušaj ceo potez (Završnica, jedan pritisak) | isključeno |
@@ -358,17 +359,26 @@ smerove:
 | **Prepoznavanje** | korisnik → aplikaciji | koji se Vosk model preuzima i koje se reči slušaju |
 | **Izgovor** | aplikacija → korisniku | TTS glas kojim se čitaju potezi |
 
-**Izgovor je zasad uvek engleski** (`Locale.US`, „e four"), bez obzira na jezik
-prepoznavanja. To sada i piše na ekranu — ranije nije, pa je izbor jezika
-prepoznavanja izgledao kao da menja i ono što aplikacija govori.
+**Oba se biraju odvojeno**, u dve kartice sa izričitim naslovima: „Izgovor —
+aplikacija govori tebi" i „Prepoznavanje — ti govoriš aplikaciji".
 
-Podešavanja su zato podeljena u dve kartice sa izričitim naslovima:
-„Izgovor — aplikacija govori tebi" i „Prepoznavanje — ti govoriš aplikaciji".
+Zavise od različitih stvari, i to je razlog razdvajanja:
 
-Ako se jednom bude radio i izgovor na drugom jeziku, tabela u `VoiceLanguages`
-već nosi reči za oba smera — iste te reči kojima se sluša mogu i da se čitaju.
-Ostaje da se proveri ima li uređaj TTS glas za taj jezik i da se pada nazad na
-engleski kad ga nema.
+- prepoznavanje traži **preuzet Vosk paket** (~40 MB);
+- izgovor traži **TTS glas na uređaju**, koji se ne preuzima kroz aplikaciju.
+
+`AndroidSpeaker` pri podizanju proveri `isLanguageAvailable` za svaki jezik i
+objavi spisak; Podešavanja iz njega znaju šta sme da se ponudi, a jezici bez
+glasa stoje zatamnjeni sa oznakom „nema glas". Ako izabrani jezik ipak ostane bez
+glasa, čita se **engleski** — bolje razumljiv engleski nego ćutanje.
+
+**Jedna tabela služi oba smera.** Reči iz `VoiceLanguages` su i ono što Vosk
+sluša i ono što TTS čita, pa nemački kaže „e vier", ruski „е четыре". Test to i
+čuva: za svaki jezik i svih 64 polja, ono što se izgovori mora moći da se
+pročita nazad — inače bi aplikacija govorila ono što sama ne razume.
+
+Formatiranje je zato prešlo iz proširenja u `Speaker` (`say(move)`,
+`say(square)`): zavisi od jezika, a moduli za jezik ne znaju niti treba da znaju.
 
 ### Jezici prepoznavanja
 

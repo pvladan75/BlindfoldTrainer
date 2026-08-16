@@ -3,13 +3,19 @@ package com.program.blindfoldtrainer.core.audio
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.util.Log
+import com.program.blindfoldtrainer.core.chess.Move
+import com.program.blindfoldtrainer.core.chess.Square
+import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
+import com.program.blindfoldtrainer.core.model.VoiceLanguage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,11 +41,29 @@ class AndroidSpeaker @Inject constructor(
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
+    private val _availableLanguages = MutableStateFlow(emptySet<VoiceLanguage>())
+
+    /**
+     * Jezici za koje uređaj **zaista ima glas**. Prazan skup dok se TTS ne
+     * podigne. Podešavanja odatle znaju šta sme da se ponudi — spisak jezika
+     * koje uređaj ne ume da izgovori bio bi obećanje koje se ne održi.
+     */
+    val availableLanguages: StateFlow<Set<VoiceLanguage>> = _availableLanguages.asStateFlow()
+
+    @Volatile
+    private var settings: Settings = Settings.DEFAULT
+
     init {
-        // Brzinu bira korisnik. Ranije su je moduli zakucavali svaki za sebe, pa
-        // je izmena tražila diranje tri ViewModel-a.
         scope.launch {
-            settingsRepository.settings.collect { setRate(it.speechRate) }
+            settingsRepository.settings.collect { updated ->
+                val languageChanged = updated.speechLanguage != settings.speechLanguage
+                settings = updated
+
+                // Brzinu i jezik bira korisnik. Ranije su ih moduli zakucavali
+                // svaki za sebe, pa je izmena tražila diranje tri ViewModel-a.
+                setRate(updated.speechRate)
+                if (languageChanged) applyLanguage()
+            }
         }
     }
 
@@ -49,18 +73,49 @@ class AndroidSpeaker @Inject constructor(
             return
         }
 
-        when (tts.setLanguage(Locale.US)) {
-            TextToSpeech.LANG_MISSING_DATA, TextToSpeech.LANG_NOT_SUPPORTED ->
-                Log.e(TAG, "Engleski glas nije dostupan na uređaju")
-            else -> Unit
+        _availableLanguages.value = VoiceLanguage.entries.filterTo(mutableSetOf()) { language ->
+            tts.isLanguageAvailable(VoiceLanguages.localeFor(language)) >= TextToSpeech.LANG_AVAILABLE
         }
 
         isReady = true
+        applyLanguage()
+        setRate(settings.speechRate)
+
         pending?.let { text ->
             pending = null
             say(text)
         }
     }
+
+    /**
+     * Postavlja glas za izabrani jezik, uz **povratak na engleski** kad ga uređaj
+     * nema. Bolje razumljiv engleski nego ćutanje ili nasumičan glas.
+     */
+    private fun applyLanguage() {
+        if (!isReady) return
+
+        val wanted = settings.speechLanguage
+        val locale = VoiceLanguages.localeFor(wanted)
+
+        val result = tts.setLanguage(locale)
+        if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+            Log.w(TAG, "Glas za ${wanted.code} nije dostupan, vraćam se na engleski")
+            tts.setLanguage(VoiceLanguages.localeFor(VoiceLanguage.ENGLISH))
+        }
+    }
+
+    /** Jezik kojim se zaista govori — izabrani, ili engleski ako glasa nema. */
+    private fun spokenLanguage(): VoiceLanguage {
+        val wanted = settings.speechLanguage
+        val available = _availableLanguages.value
+        return if (available.isEmpty() || wanted in available) wanted else VoiceLanguage.ENGLISH
+    }
+
+    override fun say(square: Square) = say(square.spoken(wordsForSpeech()))
+
+    override fun say(move: Move) = say(move.spoken(wordsForSpeech()))
+
+    private fun wordsForSpeech(): VoiceWords = VoiceLanguages.specFor(spokenLanguage()).words
 
     override fun say(text: String) {
         if (!isReady) {

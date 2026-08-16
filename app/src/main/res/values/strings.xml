@@ -45,7 +45,10 @@
     <string name="settings_speech">Izgovor — aplikacija govori tebi</string>
     <string name="settings_speech_hint">Odnosi se na poteze koje aplikacija izgovara u Parovima i Završnici.</string>
     <string name="settings_speech_rate">Brzina izgovaranja: %1$.2f</string>
-    <string name="settings_speech_language">Poteze izgovara na engleskom („e four"), bez obzira na jezik prepoznavanja.</string>
+    <string name="settings_speech_language">Jezik izgovora</string>
+    <string name="settings_speech_language_hint">Jezik kojim aplikacija čita poteze. Nezavisan od jezika prepoznavanja.</string>
+    <string name="settings_speech_language_missing">Uređaj nema glas za ovaj jezik — poteze će čitati na engleskom.</string>
+    <string name="settings_speech_no_voice">nema glas</string>
 
     <string name="settings_voice">Prepoznavanje — ti govoriš aplikaciji</string>
     <string name="settings_voice_hint">Odnosi se na polja koja ti izgovaraš u mikrofon. Nema veze sa jezikom na kom aplikacija govori.</string>
