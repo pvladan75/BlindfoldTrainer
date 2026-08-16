@@ -67,6 +67,22 @@ data class Settings(
         }
     }
 
+    /**
+     * Fonetske reči („alpha", „bravo") su engleske, a Vosk prima samo reči koje
+     * postoje u leksikonu modela — pa uz model drugog jezika ne bi bile
+     * prepoznate. Zato ovo podešavanje postoji samo uz engleski.
+     */
+    val isPhoneticAlphabetAvailable: Boolean
+        get() = voiceLanguage == VoiceLanguage.ENGLISH
+
+    /**
+     * Da li se fonetske reči zaista slušaju. Odvojeno od [phoneticAlphabet] da
+     * promena jezika ne bi nečujno gasila korisnikov izbor — izbor ostaje
+     * upamćen i vraća se sam kad se vrati engleski.
+     */
+    val usesPhoneticAlphabet: Boolean
+        get() = phoneticAlphabet && isPhoneticAlphabetAvailable
+
     companion object {
         const val MIN_SPEECH_RATE = 0.5f
         const val MAX_SPEECH_RATE = 1.5f

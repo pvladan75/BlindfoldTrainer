@@ -178,14 +178,21 @@ private fun VoiceSection(settings: Settings, viewModel: SettingsViewModel) {
 
         SwitchRow(
             title = stringResource(R.string.settings_phonetic),
-            description = stringResource(R.string.settings_phonetic_hint),
-            checked = settings.phoneticAlphabet,
+            description = if (settings.isPhoneticAlphabetAvailable) {
+                stringResource(R.string.settings_phonetic_hint)
+            } else {
+                // Umesto da prekidač nestane, kaže se šta treba uraditi da bi
+                // radio: preuzeti engleski model.
+                stringResource(R.string.settings_phonetic_english_only)
+            },
+            checked = settings.usesPhoneticAlphabet,
+            enabled = settings.isPhoneticAlphabetAvailable,
             onCheckedChange = viewModel::onPhoneticAlphabet
         )
 
         // Prekidač bez spiska reči je beskoristan: niko ne zna napamet šta
         // zamenjuje f ili h.
-        if (settings.phoneticAlphabet) PhoneticWordList()
+        if (settings.usesPhoneticAlphabet) PhoneticWordList()
 
         SwitchRow(
             title = stringResource(R.string.settings_whole_move),
@@ -296,21 +303,30 @@ private fun SwitchRow(
     title: String,
     description: String,
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean = true
 ) {
+    // Nedostupno podešavanje ostaje vidljivo, ali izbledelo — da se vidi da
+    // postoji i da objašnjenje ispod ima kome da se obrati.
+    val alpha = if (enabled) 1f else 0.5f
+
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
-            Text(text = title, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha)
+            )
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
+        Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
     }
 }
 

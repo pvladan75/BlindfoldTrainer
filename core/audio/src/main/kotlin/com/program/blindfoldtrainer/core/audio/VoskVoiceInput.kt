@@ -214,9 +214,10 @@ class VoskVoiceInput @Inject constructor(
         val words = buildList {
             addAll(currentWords().allWords)
 
-            // Fonetske reči ulaze samo kad su izabrane: širi rečnik znači i više
-            // prilika da se pogreši, a njih traži samo onaj kome slova ne prolaze.
-            if (settings.phoneticAlphabet) addAll(PHONETIC_FILES.keys)
+            // Fonetske reči ulaze samo kad su izabrane, i samo uz engleski model:
+            // engleske su, pa ih leksikon drugog jezika nema. Uz to širi rečnik
+            // znači i više prilika da se pogreši.
+            if (settings.usesPhoneticAlphabet) addAll(PHONETIC_FILES.keys)
 
             add("[unk]")
         }

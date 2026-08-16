@@ -25,7 +25,7 @@ te izmene svejedno vredi komitovati da se ne izgube.
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **svih šest** modula za trening. Poslednji
-build je prošao čisto, bez upozorenja. **126 testova, nijedan ne pada.**
+build je prošao čisto, bez upozorenja. **131 test, nijedan ne pada.**
 
 **Svih šest modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -295,8 +295,18 @@ naziv opisan.
 
 Uz taj prekidač **stoji i spisak reči** (a — alpha, b — bravo, … h — hotel).
 Bez njega je podešavanje bilo neupotrebljivo: niko ne zna napamet šta zamenjuje
-`f` ili `h`. Reči ostaju engleske i kad je izabran drugi jezik, jer je abeceda
-međunarodna a rečnik se pravi baš od njih.
+`f` ili `h`.
+
+**Fonetske reči rade samo uz engleski model.** Engleske su, a Vosk prima samo
+reči iz leksikona modela — ćirilični model ih sigurno nema, a za latinične se ne
+zna. Zato je prekidač nedostupan uz drugi jezik, ali **ostaje vidljiv** i kaže
+šta treba uraditi: pređi na engleski model pa probaj sa njim. Zamišljeni tok je
+da korisnik prvo proba polja na svom jeziku, a engleskom se okrene tek ako mu to
+ne prolazi.
+
+Izbor se pri promeni jezika **ne briše** nego samo ne dejstvuje
+(`usesPhoneticAlphabet` naspram `phoneticAlphabet`), pa se vraća sam kad se vrati
+engleski.
 
 ### Jezici glasovnog unosa
 
