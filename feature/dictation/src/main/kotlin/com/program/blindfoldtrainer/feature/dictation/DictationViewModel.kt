@@ -1,7 +1,8 @@
-package com.program.blindfoldtrainer.feature.recall
+package com.program.blindfoldtrainer.feature.dictation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.program.blindfoldtrainer.core.audio.Speaker
 import com.program.blindfoldtrainer.core.chess.Board
 import com.program.blindfoldtrainer.core.chess.Piece
 import com.program.blindfoldtrainer.core.chess.ReconstructionGrade
@@ -22,33 +23,28 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /** Faza kroz koju prolazi svaki zadatak. */
-enum class RecallPhase {
-    /** Pozicija se vidi i uči napamet, sat teče. */
-    MEMORIZE,
-
-    /** Tabla je prazna, figure se vraćaju iz palete. */
+enum class DictationPhase {
+    /** Pozicija je izgovorena; tabla se popunjava iz palete. */
     PLACING,
 
     /** Poređenje sa zadatom pozicijom. */
     REVIEW
 }
 
-data class RecallUiState(
-    /** Pozicija koju treba zapamtiti. */
+data class DictationUiState(
+    /** Pozicija koja je izgovorena. Vidi se tek u pregledu. */
     val target: Board = Board.EMPTY,
-    /** Šta je korisnik dosad postavio. */
     val placed: Map<Square, Piece> = emptyMap(),
-    /** Figure koje još čekaju u paleti. */
     val palette: List<Piece> = emptyList(),
     val selectedIndex: Int? = null,
-    val phase: RecallPhase = RecallPhase.MEMORIZE,
-    val remainingMillis: Long = 0,
-    val memorizeMillis: Long = 0,
+    val phase: DictationPhase = DictationPhase.PLACING,
     val grade: ReconstructionGrade? = null,
     val taskNumber: Int = 0,
     val taskCount: Int = 0,
     val solved: Int = 0,
     val mistakes: Int = 0,
+    /** Koliko je puta pozicija ponovo pročitana. Merilo, ne kazna. */
+    val replays: Int = 0,
     val isFinished: Boolean = false
 ) {
     val selectedPiece: Piece? get() = selectedIndex?.let { palette.getOrNull(it) }
@@ -56,43 +52,54 @@ data class RecallUiState(
     val progress: Float
         get() = if (taskCount == 0) 0f else taskNumber.toFloat() / taskCount
 
-    /** Traka za pamćenje: puna na početku, prazna kad vreme istekne. */
-    val memorizeFraction: Float
-        get() = if (memorizeMillis <= 0) 0f else (remainingMillis.toFloat() / memorizeMillis)
-
-    /** Tabla koja se prikazuje — zadata pozicija ili ono što je korisnik složio. */
+    /**
+     * Tabla koja se prikazuje.
+     *
+     * Dok se slaže, to je **samo ono što je korisnik postavio** — zadata pozicija
+     * se u ovom modulu ne vidi nikad pre pregleda, jer bi se time izgubila cela
+     * vežba.
+     */
     val visibleBoard: Board
         get() = when (phase) {
-            RecallPhase.MEMORIZE, RecallPhase.REVIEW -> target
-            RecallPhase.PLACING -> Board.of(placed)
+            DictationPhase.PLACING -> Board.of(placed)
+            DictationPhase.REVIEW -> target
         }
 }
 
 /**
- * Podešavanja po težini. Raste broj figura, a pada vreme gledanja — teško je
- * prekratko da se pozicija „pročita" polje po polje.
+ * Podešavanja po težini.
+ *
+ * Ovde ne raste pritisak vremena nego **koliko se odjednom drži u glavi**: čitanje
+ * se sme ponoviti koliko god puta, pa je jedina prava težina broj figura.
  */
-private data class Setup(val taskCount: Int, val pieceCount: Int, val memorizeMillis: Long)
+private data class Setup(val taskCount: Int, val pieceCount: Int)
 
 private fun setupFor(difficulty: Difficulty) = when (difficulty) {
-    Difficulty.EASY -> Setup(taskCount = 5, pieceCount = 3, memorizeMillis = 6_000)
-    Difficulty.MEDIUM -> Setup(taskCount = 6, pieceCount = 4, memorizeMillis = 5_000)
-    Difficulty.HARD -> Setup(taskCount = 6, pieceCount = 5, memorizeMillis = 4_000)
+    Difficulty.EASY -> Setup(taskCount = 5, pieceCount = 3)
+    Difficulty.MEDIUM -> Setup(taskCount = 6, pieceCount = 5)
+    Difficulty.HARD -> Setup(taskCount = 6, pieceCount = 7)
 }
 
 private const val REVIEW_PAUSE_MILLIS = 2_600L
-private const val TICK_MILLIS = 100L
 
+/**
+ * Pozicija se čuje, a slaže se na tabli.
+ *
+ * Jedini modul koji ide **od zapisa ka slici u glavi**; ostalih šest idu obrnuto,
+ * od viđene pozicije ka zapisu. Zato je zaseban modul a ne još jedna težina u
+ * „Zapamti poziciju": jedan modul — jedno uputstvo.
+ */
 @HiltViewModel
-class RecallViewModel @Inject constructor() : ViewModel() {
+class DictationViewModel @Inject constructor(
+    private val speaker: Speaker
+) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(RecallUiState())
-    val uiState: StateFlow<RecallUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(DictationUiState())
+    val uiState: StateFlow<DictationUiState> = _uiState.asStateFlow()
 
     private lateinit var setup: Setup
     private var difficulty: Difficulty = Difficulty.EASY
     private var startedAtMillis = 0L
-    private var timerJob: Job? = null
     private var reviewJob: Job? = null
     private var isStarted = false
 
@@ -103,22 +110,28 @@ class RecallViewModel @Inject constructor() : ViewModel() {
         this.difficulty = difficulty
         setup = setupFor(difficulty)
         startedAtMillis = System.currentTimeMillis()
-        _uiState.value = RecallUiState(
-            taskCount = setup.taskCount,
-            memorizeMillis = setup.memorizeMillis
-        )
+        _uiState.value = DictationUiState(taskCount = setup.taskCount)
         nextTask()
     }
 
-    /** Korisnik je zapamtio pre isteka vremena i ne želi da čeka. */
-    fun onReadyToPlace() {
-        if (_uiState.value.phase != RecallPhase.MEMORIZE) return
-        startPlacing()
+    /**
+     * Ponovo čita zadatu poziciju.
+     *
+     * **Neograničeno je namerno.** Kome ide teže, taj sme da pita koliko god
+     * treba; broj čitanja stoji na ekranu kao merilo napretka, ne kao prekor —
+     * kad vremenom padne sa pet na jedno, to je i ceo dokaz da vežba radi.
+     */
+    fun onReplay() {
+        val state = _uiState.value
+        if (state.phase != DictationPhase.PLACING) return
+
+        _uiState.update { it.copy(replays = it.replays + 1) }
+        speaker.say(state.target)
     }
 
     fun onPaletteClicked(index: Int) {
         val state = _uiState.value
-        if (state.phase != RecallPhase.PLACING) return
+        if (state.phase != DictationPhase.PLACING) return
         if (index !in state.palette.indices) return
 
         // Ponovni dodir na izabranu figuru je poništava — inače nema načina da
@@ -128,12 +141,12 @@ class RecallViewModel @Inject constructor() : ViewModel() {
 
     fun onSquareClicked(square: Square) {
         val state = _uiState.value
-        if (state.phase != RecallPhase.PLACING) return
+        if (state.phase != DictationPhase.PLACING) return
 
         val existing = state.placed[square]
         if (existing != null) {
-            // Dodir na zauzeto polje vraća figuru u paletu — ispravka pogrešnog
-            // polja ne sme da traži poništavanje cele rekonstrukcije.
+            // Dodir na zauzeto polje vraća figuru u paletu — ispravka jednog
+            // polja ne sme da traži poništavanje cele pozicije.
             _uiState.update {
                 it.copy(
                     placed = it.placed - square,
@@ -159,25 +172,10 @@ class RecallViewModel @Inject constructor() : ViewModel() {
         if (palette.isEmpty()) finishTask()
     }
 
-    /** Predaja — ono što je postavljeno se ocenjuje kakvo jeste. */
-    fun onGiveUp() {
-        if (_uiState.value.phase != RecallPhase.PLACING) return
+    /** Provera pre nego što je paleta prazna — ono što je postavljeno se ocenjuje. */
+    fun onCheck() {
+        if (_uiState.value.phase != DictationPhase.PLACING) return
         finishTask()
-    }
-
-    private fun startPlacing() {
-        timerJob?.cancel()
-        _uiState.update {
-            it.copy(
-                phase = RecallPhase.PLACING,
-                remainingMillis = 0,
-                // Paleta se meša da redosled ne oda kojim su redom figure
-                // postavljene na tablu.
-                palette = it.target.occupied().map { (_, piece) -> piece }.shuffled(),
-                placed = emptyMap(),
-                selectedIndex = null
-            )
-        }
     }
 
     private fun finishTask() {
@@ -186,7 +184,7 @@ class RecallViewModel @Inject constructor() : ViewModel() {
 
         _uiState.update {
             it.copy(
-                phase = RecallPhase.REVIEW,
+                phase = DictationPhase.REVIEW,
                 grade = grade,
                 selectedIndex = null,
                 solved = it.solved + if (grade.isPerfect) 1 else 0,
@@ -194,6 +192,15 @@ class RecallViewModel @Inject constructor() : ViewModel() {
                 mistakes = it.mistakes + grade.wrong.size + grade.missed.size
             )
         }
+
+        // Ishod se i izgovara: u modulu koji se sluša, oko je zauzeto tablom.
+        speaker.say(
+            if (grade.isPerfect) {
+                "Sve tačno."
+            } else {
+                "Tačno ${grade.correct.size} od ${grade.correct.size + grade.missed.size}."
+            }
+        )
 
         reviewJob?.cancel()
         reviewJob = viewModelScope.launch {
@@ -213,32 +220,25 @@ class RecallViewModel @Inject constructor() : ViewModel() {
             it.copy(
                 target = target,
                 placed = emptyMap(),
-                palette = emptyList(),
+                // Paleta se meša da redosled ne oda kojim su redom figure
+                // izgovorene — inače bi se pozicija složila bez slušanja.
+                palette = target.occupied().map { (_, piece) -> piece }.shuffled(),
                 selectedIndex = null,
-                phase = RecallPhase.MEMORIZE,
-                remainingMillis = setup.memorizeMillis,
+                phase = DictationPhase.PLACING,
                 grade = null,
                 taskNumber = it.taskNumber + 1
             )
         }
 
-        timerJob?.cancel()
-        timerJob = viewModelScope.launch {
-            var remaining = setup.memorizeMillis
-            while (remaining > 0) {
-                delay(TICK_MILLIS)
-                remaining -= TICK_MILLIS
-                _uiState.update { it.copy(remainingMillis = remaining.coerceAtLeast(0)) }
-            }
-            startPlacing()
-        }
+        // Čeka svoj red, da ne preseče izgovor ishoda prethodnog zadatka.
+        speaker.say(target, interrupt = false)
     }
 
     /** Ishod sesije — jedini kanal kojim rezultat stiže do bodovanja. */
     fun buildResult(): SessionResult {
         val state = _uiState.value
         return SessionResult(
-            moduleId = ModuleId.RECALL,
+            moduleId = ModuleId.DICTATION,
             difficulty = difficulty,
             // Ako je korisnik prekinuo, broji se samo dokle je stigao.
             attempted = state.taskNumber,
@@ -251,7 +251,7 @@ class RecallViewModel @Inject constructor() : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        timerJob?.cancel()
         reviewJob?.cancel()
+        speaker.stop()
     }
 }

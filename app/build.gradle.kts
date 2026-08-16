@@ -63,6 +63,7 @@ dependencies {
     implementation(project(":feature:knightpath"))
     implementation(project(":feature:recall"))
     implementation(project(":feature:followgame"))
+    implementation(project(":feature:dictation"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

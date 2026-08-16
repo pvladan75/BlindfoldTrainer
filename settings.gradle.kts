@@ -43,5 +43,6 @@ include(":feature:endgame")
 include(":feature:knightpath")
 include(":feature:recall")
 include(":feature:followgame")
+include(":feature:dictation")
 
 include(":app")

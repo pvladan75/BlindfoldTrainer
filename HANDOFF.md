@@ -31,12 +31,13 @@ blindfold animacija i raspakivanje ViewModel-a. Stari projekat se odatle napušt
 
 ## Šta radi
 
-Aplikacija se gradi, pokreće, i ima **svih šest** modula za trening. Poslednji
-build je prošao čisto, bez upozorenja. **140 testova, nijedan ne pada.**
+Aplikacija se gradi, pokreće, i ima **sedam** modula za trening. Poslednji build
+je prošao čisto, bez upozorenja. **148 testova, nijedan ne pada.**
 
-**Svih šest modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
-rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
-iste porodice: prevede se čisto, pukne tek na telefonu.
+**Šest modula je prošlo na uređaju**, zajedno sa napretkom, poenima i rangovima.
+Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz iste
+porodice: prevede se čisto, pukne tek na telefonu. Sedmi, „Postavi po diktatu",
+je nov i još nije viđen na uređaju.
 
 ```bash
 cd C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer && ./gradlew :app:assembleDebug test
@@ -50,11 +51,11 @@ adb install -r C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer\app\build\o
 
 | Modul | Sadržaj | Testovi |
 |---|---|---|
-| `:core:model` | `ModuleId`, `Difficulty`, `Capability`, `SessionResult` | — |
-| `:core:chess` | `Board`, `Position`, `MoveGenerator`, `Attacks`, `Fen`, `Search`, `KnightPath`, `San`, `Pgn` | **64** |
+| `:core:model` | `ModuleId`, `Difficulty`, `Capability`, `SessionResult` | **5** |
+| `:core:chess` | `Board`, `Position`, `MoveGenerator`, `Attacks`, `Fen`, `Search`, `KnightPath`, `San`, `Pgn`, `Reconstruction` | **70** |
 | `:core:moduleapi` | ugovor `TrainingModule` | — |
 | `:core:designsystem` | tema, `ChessBoard`, `PieceVisibility`, sličice figura | — |
-| `:core:audio` | `Speaker` (TTS), `VoiceInput` (Vosk) | **5** |
+| `:core:audio` | `Speaker` (TTS), `VoiceInput` (Vosk), zone bez ekrana | **41** |
 | `:core:engine` | `ChessEngine` interfejs, `LocalEngine` | — |
 | `:core:progress` | `Xp`, `Rank`, `Achievement`, `ProgressSnapshot`, `ProgressRepository` | **27** |
 | `:core:data` | Room istorija sesija, DataStore podešavanja | — |
@@ -62,8 +63,9 @@ adb install -r C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer\app\build\o
 | `:feature:pairs` | Interaktivni parovi | — |
 | `:feature:endgame` | Dokrajči protivnika | — |
 | `:feature:knightpath` | Putanja skakača | — |
-| `:feature:recall` | Zapamti poziciju | **6** |
+| `:feature:recall` | Zapamti poziciju | — |
 | `:feature:followgame` | Prati partiju | **5** |
+| `:feature:dictation` | Postavi po diktatu | — |
 | `:app` | registar, navigacija, meni, sažetak sesije | — |
 
 `:core:model`, `:core:chess` i `:core:progress` su **čist Kotlin, bez Androida** —
@@ -702,20 +704,50 @@ Ovo je izvodljivije nego kad je prvi put odbijeno, iz dva razloga:
 Ostaje da se reši samo kraj: kad se zna da je korisnik završio. Najčistije je po
 broju figura — zna ga i aplikacija i korisnik, jer je pozicija upravo pročitana.
 
-**Ideja 2 — čuje se, namešta se na tabli.** Aplikacija izdiktira poziciju, a ti
-je složiš od figura iz palete. **Nije režim bez ekrana** — tabla je ovde nužna,
-pa ide kao zaseban modul (ili kao vrsta zadatka u ovom).
+**Ideja 2 — čuje se, namešta se na tabli. Urađena je**, kao sedmi modul
+„Postavi po diktatu" (`:feature:dictation`) — vidi niže. Ideja 1 je i dalje samo
+zabeležena.
 
-Ovo je verovatno **najjeftinije od svega što je ostalo**: faza slaganja već
-postoji i ne dira se, paleta i ocenjivanje takođe, a menja se samo faza pamćenja
-— umesto da se pozicija prikaže, ona se pročita. Glasovni unos nije potreban
-uopšte, pa ne traži ni Vosk paket.
+### Postavi po diktatu
 
-Vredi i sama po sebi: gradnja slike u glavi **iz zapisa** je baš ono što
-blindfold traži, a nijedan modul to zasad ne uvežbava u tom smeru.
+Pozicija se **izgovori**, tabla je prazna, a ti je složiš od figura iz palete.
+Jedini modul koji ide **od zapisa ka slici u glavi** — ostalih šest idu obrnuto,
+od viđene pozicije ka zapisu, pa je baš ovaj smer do sada nedostajao iako je on
+ono što blindfold i traži.
 
-Obe su **zabeležene, nisu dogovorene** — ni koja ide prva, ni da li je druga nov
-modul ili nova težina postojećeg.
+**Zaseban modul, a ne još jedna težina u „Zapamti poziciju"**, iako dele tablu,
+paletu i ocenjivanje. Razlog nije tehnički:
+
+> Jedan modul — jedno uputstvo. Modul koji ume dve različite stvari mora obe da
+> objasni, a korisnik pri ulasku mora da se seti u kojoj je varijanti.
+
+„Zapamti poziciju" je bio hibrid: ulaz se **vidi**, izlaz je **dodir**. Sa dva
+čista oblika razdvojena po modulima, svaki ima jednu rečenicu uputstva.
+
+**Čitanje je neograničeno i broji se**, po ugledu na „Čitaj poziciju" u
+Završnici — ali za razliku od nje, **broj stoji na ekranu** („Čitanja: 3"). Merilo
+koje se ne vidi ne meri ništa; kad taj broj vremenom padne sa pet na jedno, to je
+i ceo dokaz da vežba radi. Zato je „ČITAJ PONOVO" i **glavno dugme**, a ne
+pomoćno: pozicija se ovde samo čuje, pa je ponovno čitanje jedini put do zadatka.
+
+Težina je broj figura — 3 / 5 / 7. **Sata nema**: pritisak vremena bi merio brzinu
+slušanja, a ne to koliko se odjednom drži u glavi.
+
+**Paleta se meša**, kao i u „Zapamti poziciju" — inače bi redosled figura odao
+redosled kojim su izgovorene, pa bi se pozicija složila bez slušanja.
+
+Glasovni unos modulu ne treba uopšte, pa ne traži ni Vosk paket od 40 MB.
+
+#### Šta je podeljeno umesto prepisano
+
+Ocenjivanje i pravljenje nasumične pozicije su preseljeni iz `:feature:recall` u
+`:core:chess` (`Reconstruction.kt`), pod imenima koja ne pominju nijedan modul:
+`ReconstructionGrade`, `gradeReconstruction`, `randomSparsePosition`.
+
+Vežbe se razlikuju po tome **odakle pozicija stiže** — vidi se ili čuje — ali je
+posao isti: složiti je, pa uporediti sa zadatom. Dve kopije istog pravila u dva
+modula bi se pre ili kasnije razišle. Testovi su otišli sa kodom, pa se sada vrte
+u čistom Kotlinu.
 
 ### Poništavanje poteza
 
@@ -843,25 +875,24 @@ jedno i drugo računa iz istorije.
 
 ## Predlog redosleda za nastavak
 
-Svih šest modula postoji i radi na uređaju. Ostalo je:
+Sedam modula postoji; šest je provereno na uređaju. Ostalo je:
 
-1. **Probati zone koje se sad zaista šire po visini**, zaključan portret i
-   „slušaj ceo potez" bez gašenja mikrofona. Sve troje su ispravke po primedbama
-   sa uređaja i nisu još viđene.
-2. **Izlaz iz sažetka sesije bez ekrana** — vidi gore; kraj se čuje, ali se
+1. **Probati novi modul „Postavi po diktatu"** — nije još viđen na uređaju.
+2. **Probati zone koje se sad zaista šire po visini**, zaključan portret,
+   „slušaj ceo potez" u jednom dahu i potez preko imena figure („rook e two").
+   Sve su to ispravke i dodaci po primedbama sa uređaja.
+3. **Izlaz iz sažetka sesije bez ekrana** — vidi gore; kraj se čuje, ali se
    dijalog zatvara dugmetom koje se ne vidi.
-3. Dogovoriti brojeve bodovanja i da li rang išta otključava
-4. Ekran sa spiskom dostignuća
-5. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
-6. Težine u Geometriji (vidi gore) — odloženo dogovorom
-7. Ako se proba neki jezik osim engleskog, upisati `isVerified` u
+4. Dogovoriti brojeve bodovanja i da li rang išta otključava
+5. Ekran sa spiskom dostignuća
+6. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
+7. Težine u Geometriji (vidi gore) — odloženo dogovorom
+8. Ako se proba neki jezik osim engleskog, upisati `isVerified` u
    `VoiceLanguages` odnosno `SpeechLanguages`; imena figura postoje samo na
    engleskom i dopunjuju se istim putem
-8. **Zapamti poziciju — dva čista oblika** (vidi gore). Ideja 2 („čuje se,
-   namešta se na tabli") je najjeftinija: faza slaganja i ocenjivanje već
-   postoje, menja se samo faza pamćenja i ne traži glasovni unos. Ideja 1
-   („čuje se, izgovara se") je režim bez ekrana i traži još samo dve reči po
-   jeziku — imena boja
+9. **Zapamti poziciju bez ekrana** — ideja 1 („čuje se, izgovara se"). Traži još
+   samo dve reči po jeziku, imena boja; ocenjivanje je već zajedničko i poredi
+   skupove, pa redosled ne mora da se pamti
 
 **Otvoreno pitanje koje se nije zatvorilo:** da li potvrđivati prepoznat potez
 pre nego što se odigra. Sada se odigra pa objavi, uz poništavanje — zaključeno

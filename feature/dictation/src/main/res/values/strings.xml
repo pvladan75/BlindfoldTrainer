@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dictation_title">Postavi po diktatu</string>
+    <string name="dictation_description">Pozicija se izgovara, tabla je prazna. Postavi figure onako kako si ih čuo — vežba ide od zapisa ka slici, obrnuto od ostalih.</string>
+</resources>

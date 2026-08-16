@@ -13,7 +13,7 @@ tablu, glas, zvuk, podešavanja i napredak; modul nosi samo svoju vežbu.
 
 ```
 :core:model         ModuleId, Difficulty, SessionResult, Capability
-:core:chess         čist Kotlin — Board, Position, MoveGenerator, Attacks, Fen, Search, KnightPath, San, Pgn
+:core:chess         čist Kotlin — Board, Position, MoveGenerator, Attacks, Fen, Search, KnightPath, San, Pgn, Reconstruction
 :core:moduleapi     ugovor TrainingModule
 :core:engine        ChessEngine interfejs + LocalEngine (ugrađena pretraga)
 :core:audio         Speaker (TTS), VoiceInput (Vosk) i zone za režim bez ekrana
@@ -26,8 +26,15 @@ tablu, glas, zvuk, podešavanja i napredak; modul nosi samo svoju vežbu.
 :feature:knightpath Putanja skakača
 :feature:recall     Zapamti poziciju
 :feature:followgame Prati partiju
+:feature:dictation  Postavi po diktatu
 :app                navigacija iz registra, DI, glavni meni
 ```
+
+**Jedan modul — jedno uputstvo.** „Postavi po diktatu" je zaseban modul, a ne još
+jedna težina u „Zapamti poziciju", iako dele i tablu i paletu i ocenjivanje.
+Razlog nije tehnički: vežbe se razlikuju po tome **šta se od korisnika traži**, a
+modul koji ume dve različite stvari mora obe da objasni. Ono što im je zajedničko
+stoji u `:core:chess` (`Reconstruction.kt`) i deli se odatle.
 
 Dostignuća postoje u `:core:progress`, ali još nemaju svoj ekran.
 

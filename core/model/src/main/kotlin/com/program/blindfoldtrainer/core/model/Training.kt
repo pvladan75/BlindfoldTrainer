@@ -24,7 +24,13 @@ enum class ModuleId(val key: String) {
     KNIGHT_PATH("knight_path"),
 
     /** Potezi majstorske partije stižu jedan po jedan, uz povremena pitanja. */
-    FOLLOW_GAME("follow_game");
+    FOLLOW_GAME("follow_game"),
+
+    /**
+     * Pozicija se izgovara, a slaže se na tabli. Jedini modul koji ide **od
+     * zapisa ka slici u glavi**; ostali idu obrnuto.
+     */
+    DICTATION("dictation");
 
     companion object {
         fun fromKey(key: String): ModuleId? = entries.find { it.key == key }
