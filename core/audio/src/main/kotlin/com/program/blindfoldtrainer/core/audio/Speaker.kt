@@ -61,6 +61,30 @@ interface Speaker {
 }
 
 /**
+ * Sklanja tačku koja stoji **odmah iza cifre**.
+ *
+ * „Rešeno 1 od 4." se izgovara kao **„Rešeno jedan od četvrti"** — u srpskom je
+ * broj sa tačkom redni broj, i TTS to pravilo poštuje doslovno. Isto važi za
+ * nemački („4." → „vierte") i još pokoji jezik; engleskom ne smeta.
+ *
+ * Tačka se ne briše nego **postaje zarez** kad rečenica ide dalje: pauza je bila
+ * i namena te tačke, a zarez je daje bez rednog broja. Na samom kraju se briše —
+ * izgovor se ionako tu završava.
+ *
+ * Stoji na jednom mestu, u [AndroidSpeaker], jer pravilo ne zna nijedan modul a
+ * važi za svaki: kraj sesije se u pet modula izgovara rečenicom koja se završava
+ * brojem. Sa uređaja je i prijavljeno baš tako — „Rešeno jedan od četvrti".
+ *
+ * Decimale se ne diraju: tačka između dve cifre nije kraj rečenice.
+ */
+fun withoutOrdinalPeriod(text: String): String = text
+    .replace(DIGIT_BEFORE_PAUSE, "$1,$2")
+    .replace(DIGIT_AT_END, "$1")
+
+private val DIGIT_BEFORE_PAUSE = Regex("""(\d)\.(\s)""")
+private val DIGIT_AT_END = Regex("""(\d)\.$""")
+
+/**
  * Polje kao izgovorene reči ("e four", „e vier", „е четыре").
  *
  * Slovo pa broj, jer TTS „e4" pročita kao jednu reč i teško se razaznaje.

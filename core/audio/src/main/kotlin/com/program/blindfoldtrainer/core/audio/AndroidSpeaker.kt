@@ -142,7 +142,9 @@ class AndroidSpeaker @Inject constructor(
     override fun say(text: String, interrupt: Boolean) = sayParts(listOf(text), interrupt)
 
     private fun sayParts(parts: List<String>, interrupt: Boolean = true) {
-        val spoken = parts.filter { it.isNotBlank() }
+        // Tačka iza cifre ovde otpada, pre svega ostalog: „4." bi se pročitalo
+        // kao „četvrti". Vidi [withoutOrdinalPeriod].
+        val spoken = parts.filter { it.isNotBlank() }.map(::withoutOrdinalPeriod)
         if (spoken.isEmpty()) return
 
         lastSpoken = spoken

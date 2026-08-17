@@ -20,6 +20,14 @@
     <string name="summary_rank_up">Novi rang: %1$s</string>
     <string name="summary_achievement">Dostignuće: %1$s</string>
 
+    <!-- Sažetak bez ekrana: natpisi na zonama i ono što se izgovara. -->
+    <string name="summary_zone_again">JOŠ JEDNOM</string>
+    <string name="summary_zone_result">REZULTAT  %1$d/%2$d</string>
+    <string name="summary_zone_menu">MENI</string>
+    <string name="summary_eyes_free_zones">Gore još jednom, u sredini rezultat, dole meni.</string>
+    <string name="summary_speech_result">Rešeno %1$d od %2$d. Grešaka %3$d.</string>
+    <string name="summary_speech_xp">Osvojeno %1$d poena.</string>
+
     <string name="menu_xp">%1$d XP</string>
     <string name="menu_rank_next">Još %1$d XP do ranga %2$s</string>
     <string name="menu_rank_top">Vrh lestvice — nema višeg ranga.</string>

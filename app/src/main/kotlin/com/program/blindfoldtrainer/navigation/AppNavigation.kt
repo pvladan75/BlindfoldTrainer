@@ -19,8 +19,10 @@ import com.program.blindfoldtrainer.core.moduleapi.ModuleArgs
 import com.program.blindfoldtrainer.ui.MainMenuScreen
 import com.program.blindfoldtrainer.ui.ProgressViewModel
 import com.program.blindfoldtrainer.ui.SessionSummaryDialog
+import com.program.blindfoldtrainer.ui.SessionSummaryEyesFree
 import com.program.blindfoldtrainer.ui.SettingsScreen
 import com.program.blindfoldtrainer.ui.SettingsViewModel
+import com.program.blindfoldtrainer.ui.SummaryViewModel
 
 private const val ROUTE_MENU = "menu"
 private const val ROUTE_SETTINGS = "settings"
@@ -45,6 +47,12 @@ fun AppNavigation(registry: ModuleRegistry) {
     // napredak preživljava prelaz iz modula nazad u meni.
     val progressViewModel: ProgressViewModel = hiltViewModel()
     val progress by progressViewModel.snapshot.collectAsState()
+
+    // I ovaj stoji izvan NavHost-a, ali iz drugog razloga: podešavanje mora biti
+    // pročitano **pre** nego što sažetak zatreba. Da se traži tek uz sažetak,
+    // prvi kadar bi dobio zatečenu vrednost i bez ekrana bi bljesnuo dijalog.
+    val summaryViewModel: SummaryViewModel = hiltViewModel()
+    val eyesFree by summaryViewModel.eyesFree.collectAsState()
 
     NavHost(navController = navController, startDestination = ROUTE_MENU) {
 
@@ -101,22 +109,40 @@ fun AppNavigation(registry: ModuleRegistry) {
             result?.let { finished ->
                 val reward by progressViewModel.lastReward.collectAsState()
 
-                SessionSummaryDialog(
-                    result = finished,
-                    reward = reward,
-                    onRepeat = {
-                        result = null
-                        progressViewModel.onSummaryClosed()
-                        navController.navigate(moduleRoute(module.id.key, difficulty)) {
-                            popUpTo(ROUTE_MENU) { inclusive = false }
-                        }
-                    },
-                    onBackToMenu = {
-                        result = null
-                        progressViewModel.onSummaryClosed()
-                        navController.popBackStack(ROUTE_MENU, inclusive = false)
+                val repeatSession = {
+                    result = null
+                    progressViewModel.onSummaryClosed()
+                    navController.navigate(moduleRoute(module.id.key, difficulty)) {
+                        popUpTo(ROUTE_MENU) { inclusive = false }
                     }
-                )
+                }
+                val backToMenu = {
+                    result = null
+                    progressViewModel.onSummaryClosed()
+                    navController.popBackStack(ROUTE_MENU, inclusive = false)
+                    Unit
+                }
+
+                // Isti ishod, dva oblika: dijalog za onoga ko gleda, zone za
+                // onoga ko ne gleda. Ishod i napredak su već upisani — ovo je
+                // samo način da se do njih dođe.
+                if (eyesFree) {
+                    SessionSummaryEyesFree(
+                        result = finished,
+                        reward = reward,
+                        onAnnounce = summaryViewModel::announce,
+                        onSay = summaryViewModel::sayNow,
+                        onRepeat = repeatSession,
+                        onBackToMenu = backToMenu
+                    )
+                } else {
+                    SessionSummaryDialog(
+                        result = finished,
+                        reward = reward,
+                        onRepeat = repeatSession,
+                        onBackToMenu = backToMenu
+                    )
+                }
             }
         }
     }

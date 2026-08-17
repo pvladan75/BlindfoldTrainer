@@ -17,7 +17,11 @@ govor i glasovni unos rade. Ova sesija je donela tri celine:
 
 **Sve tri celine su viđene na uređaju**, zaključno sa **17. avgustom 2026**:
 diktat u konačnom obliku, izgovaranje celog poteza u jednom dahu, i izgovor
-poteza sa imenom figure. Ostalo je još nekoliko provera, spisak je na dnu.
+poteza sa imenom figure. Te provere su zatvorile i poslednju rupu u režimu bez
+ekrana — sažetak sesije sada ima zone i izgovara šta se sad može.
+
+**Šta nije viđeno na uređaju:** baš ta izmena sažetka, jer je napisana posle
+poslednjeg probanja.
 
 ---
 
@@ -41,7 +45,7 @@ blindfold animacija i raspakivanje ViewModel-a. Stari projekat se odatle napušt
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **sedam** modula za trening. Poslednji build
-je prošao čisto, bez upozorenja. **148 testova, nijedan ne pada.**
+je prošao čisto, bez upozorenja. **153 testa, nijedan ne pada.**
 
 **Svih sedam modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -63,7 +67,7 @@ adb install -r C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer\app\build\o
 | `:core:chess` | `Board`, `Position`, `MoveGenerator`, `Attacks`, `Fen`, `Search`, `KnightPath`, `San`, `Pgn`, `Reconstruction` | **70** |
 | `:core:moduleapi` | ugovor `TrainingModule` | — |
 | `:core:designsystem` | tema, `ChessBoard`, `PieceVisibility`, sličice figura | — |
-| `:core:audio` | `Speaker` (TTS), `VoiceInput` (Vosk), zone bez ekrana | **41** |
+| `:core:audio` | `Speaker` (TTS), `VoiceInput` (Vosk), zone bez ekrana | **46** |
 | `:core:engine` | `ChessEngine` interfejs, `LocalEngine` | — |
 | `:core:progress` | `Xp`, `Rank`, `Achievement`, `ProgressSnapshot`, `ProgressRepository` | **27** |
 | `:core:data` | Room istorija sesija, DataStore podešavanja | — |
@@ -847,16 +851,73 @@ Parovima, gde se pozicija sad pročita pa se odmah pušta prvi potez.
 
 Ostaje za dalje:
 
-- **Sažetak sesije je i dalje samo vizuelni dijalog.** Provereno na uređaju
-  17. avgusta 2026, i ispalo je manje nego što je pisalo: **izlaz postoji, samo
-  se ne može znati da postoji.** Dodir van dijaloga i sistemsko dugme nazad
-  vraćaju u meni (`onDismissRequest` u `AppNavigation`), a poeni se upišu **pre**
-  nego što se dijalog pojavi, pa se izlaskom naslepo ništa ne gubi. Ostaje dvoje:
-  ništa ne kaže da se tako izlazi, i **„Ponovi" je nedostižno** — sesija se bez
-  otvaranja očiju ne može ponoviti, a to je baš ono što se posle jedne sesije
-  najčešće hoće. Popravka je govor, ne raspored: izgovoriti šta se sad može.
 - Odluka oko potvrde prepoznatog poteza (sada se potez odigra pa objavi;
   alternativa je pitati pre poteza).
+
+### Sažetak sesije bez ekrana
+
+Poslednja rupa u režimu, i sad je zatvorena. Do 17. avgusta 2026 je kraj sesije
+otvarao **vizuelni dijalog**: rezultat se izgovarao, ali se dalje išlo dugmetom
+koje se ne vidi.
+
+Provera na uređaju je pokazala da je problem manji nego što je pisalo — i to je
+promenilo ispravku. **Izlaz je postojao**: dodir van dijaloga i sistemsko dugme
+nazad vraćaju u meni, a poeni se upišu **pre** nego što se dijalog pojavi, pa se
+izlaskom naslepo ništa nije ni gubilo. Falilo je dvoje: da se **zna** da izlaz
+postoji, i „Još jednom", koje se nije moglo dohvatiti nikako. A posle jedne
+vežbe se najčešće hoće još jedna — bez toga se režim završavao na kraju prve
+sesije.
+
+Sažetak zato ima dva oblika, kao i sve ostalo: dijalog za onoga ko gleda, zone
+za onoga ko ne gleda (`SessionSummaryEyesFree`).
+
+```
+┌───────────────────────────────┐
+│          JOŠ JEDNOM           │   50%
+├───────────────────────────────┤
+│        REZULTAT  8/10         │   25%
+├───────────────────────────────┤
+│             MENI              │   25%
+└───────────────────────────────┘
+```
+
+Isti raspored kao u vežbama, pa se meta pamti rukom: gore ono što se najčešće
+hoće, u sredini pomoć, dole izlaz. Pri pojavljivanju se izgovori **šta se sad
+može** — „Gore još jednom, u sredini rezultat, dole meni" — jer se za zone
+drugačije ne može ni saznati. Čeka svoj red iza modulovog „Kraj sesije".
+
+Dve stvari koje odatle slede:
+
+- **Izlaz ovde ne traži dva dodira**, iako ga traži u vežbi. Dva dodira postoje
+  zbog nepovratnog, a ovde je sesija gotova i upisana — potvrda bi bila obred
+  bez razloga.
+- **Poeni, rang i dostignuća se sada i čuju.** Postojali su samo u dijalogu, pa
+  ko vežba zatvorenih očiju za njih nije ni znao. Srednja zona ih izgovara na
+  zahtev, i preseca — jer ono što se izričito traži ne treba da čeka.
+
+#### Broj sa tačkom je redni broj
+
+Prva proba na uređaju je odmah donela grešku koju nijedan build ne hvata:
+„Rešeno 1 od 4." je izgovoreno kao **„Rešeno jedan od četvrti"**.
+
+U srpskom je broj sa tačkom redni broj, i TTS to pravilo poštuje doslovno. Isto
+važi za nemački („4." → „vierte"); engleskom ne smeta, pa se na engleskom ovo ne
+bi ni primetilo.
+
+Nije bilo u sažetku nego **u pet modula**: svaki kraj sesije se izgovara
+rečenicom koja se završava brojem. Zato je ispravka na jednom mestu, u
+`AndroidSpeaker.sayParts` (`withoutOrdinalPeriod`), a ne pet puta u tekstu:
+pravilo ne zna nijedan modul a važi za svaki, i sledeća takva rečenica je
+pokrivena unapred.
+
+Tačka se ne briše nego **postaje zarez** kad rečenica ide dalje — pauza je bila
+i njena namena. Na kraju izgovora se briše. Decimale se ne diraju, jer tačka
+između dve cifre nije kraj rečenice. Pokriveno sa pet testova
+(`OrdinalPeriodTest`), u čistom Kotlinu.
+
+> Pouka je ista kao kod regularnog izraza koji radi na JVM-u a puca na Androidu:
+> **govor ima pravila koja prevodilac ne vidi.** Jedini način da se nađu je
+> pustiti ih naglas.
 
 ### Jezici prepoznavanja
 
@@ -950,23 +1011,23 @@ Svih sedam modula je provereno na uređaju. Provereno je 17. avgusta i ovo:
 - **potez preko imena figure** — „rook e two", i pogrešno ime koje obara potez;
 - **zone bez ekrana i zaključan portret** — slika sa Završnice pokazuje sva tri
   pojasa u odnosu 50 / 25 / 25, popunjena po visini, i ekran se ne okreće;
-- **sažetak sesije bez ekrana** — ponaša se tačno kako je opisano gore.
+- **sažetak sesije bez ekrana** — provereno kako se stari dijalog ponaša
+  naslepo, i baš je ta provera odredila kako izgleda ispravka.
 
-**Time je spisak provera na uređaju prazan.** Sve što je ova sesija donela je
-viđeno na telefonu. Ostalo je pisanje:
+**Time je spisak provera na uređaju prazan** — i poslednja rupa u režimu bez
+ekrana je zatvorena istog dana: sažetak sesije je dobio zone i izgovara šta se
+sad može (vidi „Sažetak sesije bez ekrana"). **To još nije viđeno na uređaju.**
 
-1. **Izgovoriti izlaz iz sažetka sesije.** Jedina poznata rupa u režimu bez
-   ekrana i jedino što je nedovršeno, a ne samo nedogovoreno. Vidi gore šta se
-   tačno dešava: izlaz radi, ali se za njega ne zna, a „Ponovi" se ne može
-   dohvatiti.
-2. Dogovoriti brojeve bodovanja i da li rang išta otključava
-3. Ekran sa spiskom dostignuća
-4. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
-5. Težine u Geometriji (vidi gore) — odloženo dogovorom
-6. Ako se proba neki jezik osim engleskog, upisati `isVerified` u
+Ostalo je samo ono što nije pisanje nego dogovor:
+
+1. Dogovoriti brojeve bodovanja i da li rang išta otključava
+2. Ekran sa spiskom dostignuća
+3. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
+4. Težine u Geometriji (vidi gore) — odloženo dogovorom
+5. Ako se proba neki jezik osim engleskog, upisati `isVerified` u
    `VoiceLanguages` odnosno `SpeechLanguages`; imena figura postoje samo na
    engleskom i dopunjuju se istim putem
-7. **Zapamti poziciju bez ekrana** — ideja 1 („čuje se, izgovara se"). Traži još
+6. **Zapamti poziciju bez ekrana** — ideja 1 („čuje se, izgovara se"). Traži još
    samo dve reči po jeziku, imena boja; ocenjivanje je već zajedničko i poredi
    skupove, pa redosled ne mora da se pamti
 
