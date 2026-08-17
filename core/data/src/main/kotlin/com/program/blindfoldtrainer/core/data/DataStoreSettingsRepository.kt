@@ -10,9 +10,8 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
-import com.program.blindfoldtrainer.core.model.SpeechLanguage
+import com.program.blindfoldtrainer.core.model.Language
 import com.program.blindfoldtrainer.core.model.ThemeChoice
-import com.program.blindfoldtrainer.core.model.VoiceLanguage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -41,8 +40,7 @@ class DataStoreSettingsRepository @Inject constructor(
             val updated = transform(preferences.toSettings())
             preferences[THEME] = updated.theme.name
             preferences[SPEECH_RATE] = updated.speechRate
-            preferences[VOICE_LANGUAGE] = updated.voiceLanguage.name
-            preferences[SPEECH_LANGUAGE] = updated.speechLanguage.name
+            preferences[LANGUAGE] = updated.language.name
             preferences[EYES_FREE] = updated.eyesFree
             preferences[PHONETIC_ALPHABET] = updated.phoneticAlphabet
             preferences[LISTEN_WHOLE_MOVE] = updated.listenWholeMove
@@ -57,12 +55,14 @@ class DataStoreSettingsRepository @Inject constructor(
         speechRate = this[SPEECH_RATE]
             ?.coerceIn(Settings.MIN_SPEECH_RATE, Settings.MAX_SPEECH_RATE)
             ?: Settings.DEFAULT.speechRate,
-        voiceLanguage = this[VOICE_LANGUAGE]
-            ?.let { name -> VoiceLanguage.entries.find { it.name == name } }
-            ?: Settings.DEFAULT.voiceLanguage,
-        speechLanguage = this[SPEECH_LANGUAGE]
-            ?.let { name -> SpeechLanguage.entries.find { it.name == name } }
-            ?: Settings.DEFAULT.speechLanguage,
+        // Ranije su ovde stajala dva jezika. Nasledje se cita iz starog kljuca
+        // za izgovor, jer je on jedini imao i srpski — ko je slusao srpski,
+        // nastavlja da ga slusa.
+        language = this[LANGUAGE]
+            ?.let { name -> Language.entries.find { it.name == name } }
+            ?: this[SPEECH_LANGUAGE]
+                ?.let { name -> Language.entries.find { it.name == name } }
+            ?: Settings.DEFAULT.language,
         eyesFree = this[EYES_FREE] ?: Settings.DEFAULT.eyesFree,
         phoneticAlphabet = this[PHONETIC_ALPHABET] ?: Settings.DEFAULT.phoneticAlphabet,
         listenWholeMove = this[LISTEN_WHOLE_MOVE] ?: Settings.DEFAULT.listenWholeMove,
@@ -73,7 +73,9 @@ class DataStoreSettingsRepository @Inject constructor(
     private companion object {
         val THEME = stringPreferencesKey("theme")
         val SPEECH_RATE = floatPreferencesKey("speech_rate")
-        val VOICE_LANGUAGE = stringPreferencesKey("voice_language")
+        val LANGUAGE = stringPreferencesKey("language")
+
+        /** Samo za citanje: podesavanja upisana pre spajanja dva jezika u jedan. */
         val SPEECH_LANGUAGE = stringPreferencesKey("speech_language")
         val EYES_FREE = booleanPreferencesKey("eyes_free")
         val PHONETIC_ALPHABET = booleanPreferencesKey("phonetic_alphabet")

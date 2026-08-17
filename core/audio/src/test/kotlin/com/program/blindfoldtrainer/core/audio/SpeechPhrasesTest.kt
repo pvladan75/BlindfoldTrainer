@@ -1,7 +1,7 @@
 package com.program.blindfoldtrainer.core.audio
 
 import com.program.blindfoldtrainer.core.chess.PieceType
-import com.program.blindfoldtrainer.core.model.SpeechLanguage
+import com.program.blindfoldtrainer.core.model.Language
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertSame
@@ -20,7 +20,7 @@ class SpeechPhrasesTest {
      */
     @Test
     fun `nijedna recenica nije prazna ni na jednom jeziku`() {
-        for (language in SpeechLanguage.entries) {
+        for (language in Language.entries) {
             val voice = voiceFor(language)
 
             for (member in SpeechPhrases::class.java.methods) {
@@ -34,39 +34,50 @@ class SpeechPhrasesTest {
         }
     }
 
+    /**
+     * Jezik bez rečenica dobija engleske. Danas su svi takvi osim engleskog —
+     * i to je stanje koje test drži vidljivim, da se ne zaboravi da osam
+     * jezika čeka prevod.
+     */
     @Test
-    fun `srpski ima svoje recenice, ostali dobijaju engleske`() {
-        assertSame(SerbianPhrases, phrasesFor(SpeechLanguage.SERBIAN))
-        assertSame(EnglishPhrases, phrasesFor(SpeechLanguage.ENGLISH))
+    fun `jezik bez recenica dobija engleske`() {
+        assertSame(EnglishPhrases, phrasesFor(Language.ENGLISH))
 
-        for (language in SpeechLanguage.entries - SpeechLanguage.SERBIAN) {
+        for (language in Language.entries) {
             assertSame(language.name, EnglishPhrases, phrasesFor(language))
         }
     }
 
+    /**
+     * **Jedan izabran jezik, jedan jezik u ušima.**
+     *
+     * Prvo je bilo obrnuto — imena po jeziku, rečenice na zameni — i sa uređaja
+     * je stiglo „pola na engleskom, pola na nemačkom". Jezik bez rečenica se
+     * zato ceo prebacuje na engleski, i imena sa njim.
+     */
     @Test
-    fun `srpski i engleski se zaista razlikuju`() {
-        assertNotEquals(SerbianPhrases.correct, EnglishPhrases.correct)
-        assertNotEquals(
-            SerbianPhrases.sessionEndSolved(1, 4),
-            EnglishPhrases.sessionEndSolved(1, 4)
+    fun `jezik bez recenica se ceo prebacuje na engleski`() {
+        val german = voiceFor(Language.GERMAN)
+
+        assertEquals(EnglishPhrases.correct, german.correct)
+        assertEquals(
+            SpeechLanguages.wordsFor(Language.ENGLISH).pieces.getValue(PieceType.ROOK),
+            german.nameOf(PieceType.ROOK)
         )
     }
 
-    /**
-     * Imena figura prate **jezik**, a rečenice zamenu — pa poljski dobija
-     * poljska imena u engleskim rečenicama. To je namerno i vredi da padne ako
-     * se ikad promeni.
-     */
+    /** Prevedeni jezik dobija i svoje rečenice i svoja imena. */
     @Test
-    fun `ime figure prati jezik i kad recenice ne prate`() {
-        val polish = voiceFor(SpeechLanguage.POLISH)
-
-        assertEquals(
-            SpeechLanguages.wordsFor(SpeechLanguage.POLISH).pieces.getValue(PieceType.ROOK),
-            polish.nameOf(PieceType.ROOK)
-        )
-        assertEquals(EnglishPhrases.correct, polish.correct)
+    fun `preveden jezik govori sam sebe`() {
+        for (language in TRANSLATED_LANGUAGES) {
+            val voice = voiceFor(language)
+            assertEquals(language.name, phrasesFor(language).correct, voice.correct)
+            assertEquals(
+                language.name,
+                SpeechLanguages.wordsFor(language).pieces.getValue(PieceType.ROOK),
+                voice.nameOf(PieceType.ROOK)
+            )
+        }
     }
 
     /** Množina se ne lomi na jedinici — „in 1 move", ne „in 1 moves". */
@@ -83,7 +94,7 @@ class SpeechPhrasesTest {
      */
     @Test
     fun `recenica sa brojem na kraju nema tacku`() {
-        for (language in SpeechLanguage.entries) {
+        for (language in Language.entries) {
             val phrases = phrasesFor(language)
             assertTrue(language.name, !phrases.sessionEndSolved(1, 4).endsWith("."))
             assertTrue(language.name, !phrases.sessionEndCorrect(1, 4).endsWith("."))

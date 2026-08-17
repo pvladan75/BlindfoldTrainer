@@ -9,7 +9,7 @@ import com.program.blindfoldtrainer.core.chess.PieceType
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
-import com.program.blindfoldtrainer.core.model.SpeechLanguage
+import com.program.blindfoldtrainer.core.model.Language
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -43,14 +43,14 @@ class AndroidSpeaker @Inject constructor(
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
-    private val _availableLanguages = MutableStateFlow(emptySet<SpeechLanguage>())
+    private val _availableLanguages = MutableStateFlow(emptySet<Language>())
 
     /**
      * Jezici za koje uređaj **zaista ima glas**. Prazan skup dok se TTS ne
      * podigne. Podešavanja odatle znaju šta sme da se ponudi — spisak jezika
      * koje uređaj ne ume da izgovori bio bi obećanje koje se ne održi.
      */
-    val availableLanguages: StateFlow<Set<SpeechLanguage>> = _availableLanguages.asStateFlow()
+    val availableLanguages: StateFlow<Set<Language>> = _availableLanguages.asStateFlow()
 
     @Volatile
     private var settings: Settings = Settings.DEFAULT
@@ -62,7 +62,7 @@ class AndroidSpeaker @Inject constructor(
     init {
         scope.launch {
             settingsRepository.settings.collect { updated ->
-                val languageChanged = updated.speechLanguage != settings.speechLanguage
+                val languageChanged = updated.language != settings.language
                 settings = updated
 
                 // Brzinu i jezik bira korisnik. Ranije su ih moduli zakucavali
@@ -79,7 +79,7 @@ class AndroidSpeaker @Inject constructor(
             return
         }
 
-        _availableLanguages.value = SpeechLanguage.entries.filterTo(mutableSetOf()) { language ->
+        _availableLanguages.value = Language.entries.filterTo(mutableSetOf()) { language ->
             tts.isLanguageAvailable(SpeechLanguages.localeFor(language)) >= TextToSpeech.LANG_AVAILABLE
         }
 
@@ -100,20 +100,28 @@ class AndroidSpeaker @Inject constructor(
     private fun applyLanguage() {
         if (!isReady) return
 
-        val wanted = settings.speechLanguage
+        val wanted = settings.language
         val result = tts.setLanguage(SpeechLanguages.localeFor(wanted))
 
         if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
             Log.w(TAG, "Glas za ${wanted.code} nije dostupan, vraćam se na engleski")
-            tts.setLanguage(SpeechLanguages.localeFor(SpeechLanguage.ENGLISH))
+            tts.setLanguage(SpeechLanguages.localeFor(Language.ENGLISH))
         }
     }
 
-    /** Jezik kojim se zaista govori — izabrani, ili engleski ako glasa nema. */
-    private fun spokenLanguage(): SpeechLanguage {
-        val wanted = settings.speechLanguage
+    /**
+     * Jezik kojim se **zaista** govori.
+     *
+     * Dva razloga da to ne bude izabrani jezik, i oba vode na engleski:
+     * uređaj nema glas za njega, ili rečenice još nisu prevedene. Odluka je na
+     * jednom mestu zato što važi i za polja i za rečenice — inače bi se čula
+     * mešavina, engleska rečenica sa nemačkim imenom figure u sredini.
+     */
+    private fun spokenLanguage(): Language {
+        val wanted = settings.language
         val available = _availableLanguages.value
-        return if (available.isEmpty() || wanted in available) wanted else SpeechLanguage.ENGLISH
+        val hasVoice = available.isEmpty() || wanted in available
+        return if (hasVoice && wanted in TRANSLATED_LANGUAGES) wanted else Language.ENGLISH
     }
 
     override fun say(square: Square, interrupt: Boolean) =

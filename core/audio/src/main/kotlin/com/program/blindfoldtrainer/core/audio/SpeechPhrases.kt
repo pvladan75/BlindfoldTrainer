@@ -2,7 +2,7 @@ package com.program.blindfoldtrainer.core.audio
 
 import com.program.blindfoldtrainer.core.chess.Piece
 import com.program.blindfoldtrainer.core.chess.PieceType
-import com.program.blindfoldtrainer.core.model.SpeechLanguage
+import com.program.blindfoldtrainer.core.model.Language
 
 /**
  * Rečenice koje aplikacija izgovara.
@@ -176,95 +176,33 @@ private class Voice(
 }
 
 /**
- * Glas za jezik: rečenice po [phrasesFor], imena figura iz [SpeechWords].
+ * Jezici koji se **smeju izabrati** — oni koji imaju rečenice.
  *
- * Ta dva ne moraju biti isti jezik i to je namerno. Imena figura postoje za svih
- * deset jezika, a rečenice zasad za dva — pa ko govori poljski dobija poljska
- * imena u engleskim rečenicama. Bolje nego da mu se cela vežba prebaci na jezik
- * koji nije tražio.
+ * Reči za polja i imena figura postoje za svih devet jezika, ali jezik bez
+ * rečenica nije pola-jezik nego mešavina. Sa uređaja, uz nemački: „pola na
+ * engleskom, pola na nemačkom" — engleska rečenica sa nemačkim imenom figure u
+ * sredini.
+ *
+ * Zato je prevod **uslov**, a ne dodatak: jezik se pojavljuje u Podešavanjima
+ * tek kad dobije rečenice. Osam jezika ih čeka; niko od nas ne može da proveri
+ * prevod koji ne govori, pa se ne izmišljaju — isto pravilo po kom reči za polja
+ * nose `isVerified`.
  */
-internal fun voiceFor(language: SpeechLanguage): SpeechVoice =
-    Voice(phrasesFor(language), SpeechLanguages.wordsFor(language))
+val TRANSLATED_LANGUAGES: Set<Language> = setOf(Language.ENGLISH)
 
-/** Prvi jezik — na njemu su rečenice i pisane. */
-internal object SerbianPhrases : SpeechPhrases {
-
-    override val confirmGiveUp = "Dodirni ponovo da odustaneš."
-    override val confirmStop = "Dodirni ponovo da prekineš."
-    override val correct = "Tačno."
-
-    override fun sessionEndSolved(solved: Int, total: Int) =
-        "Kraj sesije. Rešeno $solved od $total"
-
-    override fun sessionEndCorrect(correct: Int, total: Int) =
-        "Kraj sesije. Tačno $correct od $total"
-
-    override val nothingToUndo = "Nema šta da se poništi."
-    override val undone = "Poništeno."
-    override val movingToNextPosition = "Prelazim na sledeću poziciju."
-    override val onSquare = "Na"
-
-    override fun pieceMismatch(named: String, actual: String) = "nije $named nego $actual"
-
-    override val noPieceThere = "nema figure"
-
-    override fun noneCanReach(piece: String) = "Nijedan $piece ne može na"
-
-    override fun twoCanReach(piece: String) = "Dva puta $piece može na"
-
-    override val sayOriginToo = "reci i polazno polje"
-
-    override val outcomeMated = "Mat! Pozicija je privedena kraju."
-    override val outcomeLost = "Matiran si — u dobijenoj poziciji."
-    override val outcomeStalemate = "Pat — dobijena pozicija je prokockana u remi."
-    override val outcomeFiftyMoves = "Pedeset poteza bez napretka."
-    override val outcomeGaveUp = "Figure su otkrivene."
-
-    override val notThat = "Nije to."
-    override val gaveUpMovingOn = "Odustao si. Prelazim na sledeću."
-    override val puzzleSolved = "Zagonetka rešena."
-
-    override val knightIsOn = "Skakač je na"
-    override val goal = "cilj"
-
-    override fun movesLeft(moves: Int) = "preostalo poteza $moves"
-
-    override val notKnightMove = "Nije potez skakača."
-
-    override fun correctInMoves(moves: Int) = "Tačno, u $moves poteza."
-
-    override val shortestGoesLikeThis = "Nije uspelo. Najkraće ide ovako:"
-    override val knightFrom = "Skakač sa"
-    override val toSquare = "na"
-
-    override fun inMoves(moves: Int) = "u $moves poteza"
-
-    override val gameReady = "Partija je spremna. Dodirni za prvi potez."
-
-    override fun wrongPieceIsOn(piece: String) = "Nije. $piece je na"
-
-    override fun whereIsPiece(piece: String) = "Gde stoji $piece?"
-
-    override val lightSquare = "svetlo"
-    override val darkSquare = "tamno"
-
-    override fun wrongSquareIs(color: String) = "Nije, polje je $color."
-
-    override fun timeoutSquareIs(color: String) = "Isteklo je vreme, polje je $color."
-
-    override val allCorrect = "Sve tačno."
-
-    override fun correctOutOf(correct: Int, total: Int) = "Tačno $correct od $total"
-
-    override val summaryZones = "Gore još jednom, u sredini rezultat, dole meni."
-
-    override fun summaryResult(solved: Int, attempted: Int, mistakes: Int) =
-        "Rešeno $solved od $attempted. Grešaka $mistakes"
-
-    override fun summaryXp(xp: Int) = "Osvojeno $xp poena."
-
-    override val summaryRankUp = "Novi rang."
-    override val summaryAchievement = "Novo dostignuće."
+/**
+ * Glas za jezik — rečenice **i** imena, uvek iz istog jezika.
+ *
+ * Jezik bez rečenica se ovde ceo prebacuje na engleski. Prvo je bilo obrnuto:
+ * imena su pratila izabrani jezik, a rečenice zamenu. Na papiru je delovalo kao
+ * da se čuva ono što jezik ima; u ušima je to bila mešavina dva jezika u istoj
+ * rečenici, i sa uređaja je odmah prijavljeno kao zbunjujuće.
+ *
+ * > Korisnik je izabrao **jedan** jezik i to je ono što mora da čuje.
+ */
+internal fun voiceFor(language: Language): SpeechVoice {
+    val spoken = if (language in TRANSLATED_LANGUAGES) language else Language.ENGLISH
+    return Voice(phrasesFor(spoken), SpeechLanguages.wordsFor(spoken))
 }
 
 /**
@@ -360,12 +298,10 @@ internal object EnglishPhrases : SpeechPhrases {
 /**
  * Rečenice za jezik.
  *
- * Jezik koji ih još nema dobija **engleske**, a ne prazne ili srpske: prazne bi
- * ćutale, a srpske bi ga terale da izgovara reči koje ne ume. Isto pravilo po
- * kom imena polja nose `isVerified` — bolje poznata zamena nego izmišljen
- * prevod koji niko od nas ne može da proveri.
+ * Jezik koji ih još nema dobija **engleske**. To je poslednja mreža — takav
+ * jezik se u Podešavanjima i ne nudi, pa se ovde stiže samo sa izborom koji je
+ * zapamćen ranije ili sa jezikom za koji uređaj nema glas.
  */
-fun phrasesFor(language: SpeechLanguage): SpeechPhrases = when (language) {
-    SpeechLanguage.SERBIAN -> SerbianPhrases
+fun phrasesFor(language: Language): SpeechPhrases = when (language) {
     else -> EnglishPhrases
 }

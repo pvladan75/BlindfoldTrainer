@@ -52,27 +52,25 @@
     <string name="settings_eyes_free_switch">Vežbaj zatvorenih očiju</string>
     <string name="settings_eyes_free_hint">Umesto table i dugmadi — velike zone koje se pogađaju bez gledanja, svaka sa svojom vibracijom. Pozicija se pročita, potezi se izgovaraju. Radi u pet modula; Zapamti poziciju traži tablu i ostaje na ekranu.</string>
 
-    <string name="settings_speech">Izgovor — aplikacija govori tebi</string>
-    <string name="settings_speech_hint">Odnosi se na sve što aplikacija izgovara: poteze, pozicije i ishode.</string>
+    <string name="settings_language_title">Jezik</string>
+    <string name="settings_language_title_hint">Isti jezik za oba smera: i za ono što ti aplikacija govori i za ono što ti govoriš njoj. Nude se jezici koje aplikacija ume da izgovori i za koje uređaj ima glas.</string>
     <string name="settings_speech_rate">Brzina izgovaranja: %1$.2f</string>
     <string name="settings_speech_language">Jezik izgovora</string>
     <string name="settings_speech_language_hint">Jezik kojim aplikacija čita poteze. Nezavisan od jezika prepoznavanja.</string>
     <string name="settings_speech_language_missing">Uređaj nema glas za ovaj jezik — poteze će čitati na engleskom.</string>
     <string name="settings_speech_no_voice">nema glas</string>
+    <string name="settings_speech_not_translated">nije preveden</string>
 
-    <string name="settings_voice">Prepoznavanje — ti govoriš aplikaciji</string>
-    <string name="settings_voice_hint">Odnosi se na polja koja ti izgovaraš u mikrofon. Nema veze sa jezikom na kom aplikacija govori.</string>
-    <string name="settings_language">Jezik prepoznavanja</string>
-    <string name="settings_language_hint">Jezik na kom ti izgovaraš polja.</string>
+    <string name="settings_voice">Glasovni unos</string>
+    <string name="settings_voice_hint">Kako izgovaraš polja u mikrofon. Jezik se ne bira ovde — isti je kao gore.</string>
+    <string name="settings_voice_package">Paket za slušanje</string>
+    <string name="settings_voice_no_model">Za ovaj jezik ne postoji prepoznavanje govora, pa glasovni unos ne radi — sve ostalo radi. Vosk nema nijedan južnoslovenski model. Kome treba mikrofon, bira jezik koji ume oboje.</string>
     <string name="settings_language_item">%1$s (%2$d MB)</string>
     <string name="settings_language_install">INSTALIRAJ PAKET</string>
     <string name="settings_language_installed">Instaliran</string>
-    <string name="settings_language_use">KORISTI JEZIK</string>
-    <string name="settings_language_in_use">U upotrebi</string>
     <string name="settings_language_downloading">Paket se preuzima…</string>
     <string name="settings_language_unpacking">Paket se raspakuje…</string>
 
-    <string name="language_serbian">Srpski</string>
     <string name="language_english">Engleski</string>
     <string name="language_german">Nemački</string>
     <string name="language_russian">Ruski</string>

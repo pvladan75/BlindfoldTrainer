@@ -4,7 +4,7 @@ import android.util.Log
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
-import com.program.blindfoldtrainer.core.model.VoiceLanguage
+import com.program.blindfoldtrainer.core.model.Language
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -77,7 +77,7 @@ class VoskVoiceInput @Inject constructor(
                 modelStore.state
             ) { settings, installed, modelState -> Triple(settings, installed, modelState) }
                 .collect { (updated, installed, modelState) ->
-                    val languageChanged = updated.voiceLanguage != settings.voiceLanguage
+                    val languageChanged = updated.language != settings.language
                     settings = updated
 
                     // Paket je vezan za jezik: kad se jezik promeni, stari se pušta.
@@ -88,8 +88,9 @@ class VoskVoiceInput @Inject constructor(
         }
     }
 
-    private fun applyState(installed: Set<VoiceLanguage>, modelState: ModelState) {
-        val language = settings.voiceLanguage
+    private fun applyState(installed: Set<Language>, modelState: ModelState) {
+        val language = settings.language
+
         val isBusyWithThisLanguage = when (modelState) {
             is ModelState.Downloading -> modelState.language == language
             is ModelState.Unpacking -> modelState.language == language
@@ -111,7 +112,7 @@ class VoskVoiceInput @Inject constructor(
         }
     }
 
-    private fun loadModel(language: VoiceLanguage) {
+    private fun loadModel(language: Language) {
         if (model != null) return
         _state.value = VoiceState.Preparing
 
@@ -289,7 +290,7 @@ class VoskVoiceInput @Inject constructor(
     }
 
     private fun currentWords(): VoiceWords =
-        VoiceLanguages.specFor(settings.voiceLanguage).words
+        VoiceLanguages.specFor(settings.language).words
 
     private companion object {
         const val TAG = "VoskVoiceInput"

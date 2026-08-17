@@ -5,7 +5,7 @@ import com.program.blindfoldtrainer.core.chess.Color
 import com.program.blindfoldtrainer.core.chess.Piece
 import com.program.blindfoldtrainer.core.chess.PieceType
 import com.program.blindfoldtrainer.core.chess.Square
-import com.program.blindfoldtrainer.core.model.SpeechLanguage
+import com.program.blindfoldtrainer.core.model.Language
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -14,7 +14,9 @@ class SpokenBoardTest {
 
     private fun square(notation: String) = requireNotNull(Square.fromAlgebraic(notation))
 
-    private val serbian = SpeechLanguages.wordsFor(SpeechLanguage.SERBIAN)
+    // Nemački, otkad je srpski izašao iz ponude: i on slaže rod uz figuru
+    // („weiße Dame" naspram „weißer König"), pa test i dalje meri isto.
+    private val german = SpeechLanguages.wordsFor(Language.GERMAN)
 
     /** Pozicija iz korisnikovog primera. */
     private val position = Board.of(
@@ -28,50 +30,50 @@ class SpokenBoardTest {
     @Test
     fun `pozicija se cita beli pa crni, kralj pa dama`() {
         assertEquals(
-            "beli kralj na e dva, bela dama na e pet. crni kralj na ha šest",
-            position.spoken(serbian)
+            "weißer König auf e zwei, weiße Dame auf e fünf. schwarzer König auf ha sechs",
+            position.spoken(german)
         )
     }
 
     @Test
     fun `rod se slaze uz figuru`() {
-        // Dama je jedina ženskog roda u srpskom — otud „bela", a ne „beli".
-        val text = position.spoken(serbian)
-        assertTrue(text, "bela dama" in text)
-        assertTrue(text, "beli kralj" in text)
+        // Dame je ženskog roda — otud „weiße", a ne „weißer".
+        val text = position.spoken(german)
+        assertTrue(text, "weiße Dame" in text)
+        assertTrue(text, "weißer König" in text)
     }
 
     @Test
     fun `figura i polje su odvojeni delovi, zbog pauze`() {
         assertEquals(
             listOf(
-                "beli kralj na", "e dva,",
-                "bela dama na", "e pet.",
-                "crni kralj na", "ha šest"
+                "weißer König auf", "e zwei,",
+                "weiße Dame auf", "e fünf.",
+                "schwarzer König auf", "ha sechs"
             ),
-            position.spokenParts(serbian)
+            position.spokenParts(german)
         )
     }
 
     @Test
     fun `spojeno i po delovima daju isti tekst`() {
-        assertEquals(position.spoken(serbian), position.spokenParts(serbian).joinToString(" "))
+        assertEquals(position.spoken(german), position.spokenParts(german).joinToString(" "))
     }
 
     @Test
     fun `prazna tabla se ne izgovara`() {
-        assertEquals("", Board.EMPTY.spoken(serbian))
+        assertEquals("", Board.EMPTY.spoken(german))
     }
 
     @Test
     fun `strana bez figura se preskace`() {
         val onlyWhite = Board.of(mapOf(square("a1") to Piece(PieceType.KING, Color.WHITE)))
-        assertEquals("beli kralj na a jedan", onlyWhite.spoken(serbian))
+        assertEquals("weißer König auf a eins", onlyWhite.spoken(german))
     }
 
     @Test
     fun `svaki jezik ume da izgovori svaku figuru i boju`() {
-        SpeechLanguage.entries.forEach { language ->
+        Language.entries.forEach { language ->
             val words = SpeechLanguages.wordsFor(language)
 
             PieceType.entries.forEach { type ->
@@ -94,6 +96,6 @@ class SpokenBoardTest {
             )
         )
 
-        assertEquals(position.spoken(serbian), shuffled.spoken(serbian))
+        assertEquals(position.spoken(german), shuffled.spoken(german))
     }
 }

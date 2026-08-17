@@ -6,33 +6,20 @@ import kotlinx.coroutines.flow.Flow
 enum class ThemeChoice { SYSTEM, LIGHT, DARK }
 
 /**
- * Jezik glasovnog unosa.
+ * Jezik na kom aplikacija radi.
  *
- * Vosk ima model po jeziku, pa jezik određuje i šta se preuzima i koje se reči
- * slušaju. **Srpskog nema** — Vosk nema nijedan južnoslovenski model, pa se ovaj
- * spisak završava tamo gde se završava njihova ponuda.
- */
-/**
- * Jezik kojim **aplikacija govori**.
+ * **Jedan spisak za sve tri stvari** koje jezik dodiruje: reči kojima se čitaju
+ * polja, rečenice koje se izgovaraju, i model kojim se sluša. Ranije su
+ * postojala dva enuma — jedan za izgovor, jedan za prepoznavanje — jer je
+ * izgovor imao i srpski, a Vosk nema nijedan južnoslovenski model.
  *
- * Namerno **nije isti skup** kao [VoiceLanguage]: izgovor traži samo TTS glas na
- * uređaju, a prepoznavanje traži Vosk model. Zato srpski ovde postoji iako za
- * prepoznavanje ne postoji i neće postojati dok ga Vosk ne objavi.
+ * Kad je srpski izašao iz ponude, ta dva spiska su postala isti spisak, a dva
+ * imena za istu stvar se pre ili kasnije raziđu.
+ *
+ * Dodavanje jezika je jedan unos ovde, jedan u `VoiceLanguages`, jedan u
+ * `SpeechLanguages` i jedan `SpeechPhrases`. Dok rečenica nema, jezik se ne nudi.
  */
-enum class SpeechLanguage(val code: String) {
-    SERBIAN("sr"),
-    ENGLISH("en-us"),
-    GERMAN("de"),
-    RUSSIAN("ru"),
-    FRENCH("fr"),
-    SPANISH("es"),
-    ITALIAN("it"),
-    POLISH("pl"),
-    CZECH("cs"),
-    TURKISH("tr")
-}
-
-enum class VoiceLanguage(val code: String) {
+enum class Language(val code: String) {
     ENGLISH("en-us"),
     GERMAN("de"),
     RUSSIAN("ru"),
@@ -60,15 +47,15 @@ data class Settings(
     val speechRate: Float = DEFAULT_SPEECH_RATE,
 
     /**
-     * Jezik kojim **aplikacija govori tebi**. Odvojen od [voiceLanguage] jer su
-     * to dva smera: ovaj zavisi od glasova na uređaju, onaj od preuzetog paketa.
+     * Jezik na kom aplikacija govori **i** sluša.
+     *
+     * Dugo su to bila dva odvojena podešavanja, jer zavise od različitih stvari
+     * — glas na uređaju naspram preuzetog paketa. Spojena su zato što se od
+     * korisnika tražilo previše: ko vežba zatvorenih očiju i sklapa tablu u
+     * glavi ne sme uz to da pamti da sluša jedan jezik a govori drugi. Sam
+     * autor je nekoliko puta ostao u nedoumici šta je gde podesio.
      */
-    val speechLanguage: SpeechLanguage = SpeechLanguage.ENGLISH,
-
-    /**
-     * Jezik kojim **ti govoriš aplikaciji**. Menja i paket koji se preuzima.
-     */
-    val voiceLanguage: VoiceLanguage = VoiceLanguage.ENGLISH,
+    val language: Language = Language.ENGLISH,
 
     /**
      * Umesto table i dugmadi — velike zone koje se pogađaju bez gledanja.
@@ -109,7 +96,7 @@ data class Settings(
      * prepoznate. Zato ovo podešavanje postoji samo uz engleski.
      */
     val isPhoneticAlphabetAvailable: Boolean
-        get() = voiceLanguage == VoiceLanguage.ENGLISH
+        get() = language == Language.ENGLISH
 
     /**
      * Da li se fonetske reči zaista slušaju. Odvojeno od [phoneticAlphabet] da

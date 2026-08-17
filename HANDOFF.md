@@ -458,8 +458,7 @@ koja je bolja zavisi od izgovora, a to aplikacija ne može da zna.
 | Tema: automatski / svetla / tamna | automatski |
 | Bez ekrana (vežbanje zatvorenih očiju) | isključeno |
 | Brzina izgovaranja (0,5–1,5) | 0,85 — kao pre |
-| Jezik izgovora (9 jezika, koliko uređaj ima glasova) | engleski |
-| Jezik prepoznavanja (9 jezika) | engleski |
+| Jezik — i za govor i za slušanje | engleski (jedini prevedeni) |
 | Slova kao reči („bravo" umesto „b") | isključeno |
 | Izgovori ceo potez odjednom (Završnica, jedan pritisak) | isključeno |
 | Slovo i broj odvojeno („e", pa „four") | isključeno |
@@ -492,44 +491,71 @@ Izbor se pri promeni jezika **ne briše** nego samo ne dejstvuje
 (`usesPhoneticAlphabet` naspram `phoneticAlphabet`), pa se vraća sam kad se vrati
 engleski.
 
-### Dva jezika, dva smera — ne mešati
+### Jedan jezik, jedan spisak
 
-U aplikaciji postoje **dva jezika i lako se brkaju**, jer se odnose na suprotne
-smerove:
+Do 18. avgusta 2026 su postojala **dva odvojena izbora jezika** — izgovor
+(aplikacija govori tebi) i prepoznavanje (ti govoriš aplikaciji) — i **dva
+enuma**, `SpeechLanguage` sa deset jezika i `VoiceLanguage` sa devet. Razlog je
+bio tačan: izgovor traži TTS glas na uređaju, prepoznavanje traži preuzet Vosk
+paket, a srpski postoji samo za prvo.
 
-| | ko govori | šta određuje |
-|---|---|---|
-| **Prepoznavanje** | korisnik → aplikaciji | koji se Vosk model preuzima i koje se reči slušaju |
-| **Izgovor** | aplikacija → korisniku | TTS glas kojim se čitaju potezi |
+Danas je to **jedan izbor i jedan `Language`**, sa devet jezika.
 
-**Oba se biraju odvojeno**, u dve kartice sa izričitim naslovima: „Izgovor —
-aplikacija govori tebi" i „Prepoznavanje — ti govoriš aplikaciji".
+#### Zašto je izbor spojen
 
-Zavise od različitih stvari, i to je razlog razdvajanja:
+Povod je bio nalaz sa uređaja: uz nemački se čulo „pola na engleskom, pola na
+nemačkom". Ta mešavina je popravljena odvojeno (vidi „Izgovorene rečenice"), ali
+je otvorila veće pitanje — a odgovor na njega nije tehnički:
 
-- prepoznavanje traži **preuzet Vosk paket** (~40 MB);
-- izgovor traži **TTS glas na uređaju**, koji se ne preuzima kroz aplikaciju.
+> Ko vežba zatvorenih očiju, leži i sklapa tablu u glavi, pritiskajući ekran koji
+> ne vidi — taj ne sme uz to da pamti da **sluša jedan jezik a govori drugi**.
+> Ko to ume, taj je genije, a takvih nema mnogo.
 
-`AndroidSpeaker` pri podizanju proveri `isLanguageAvailable` za svaki jezik i
-objavi spisak; Podešavanja iz njega znaju šta sme da se ponudi, a jezici bez
-glasa stoje zatamnjeni sa oznakom „nema glas". Ako izabrani jezik ipak ostane bez
-glasa, čita se **engleski** — bolje razumljiv engleski nego ćutanje.
+Uz to je stiglo i merilo koje vredi više od svake teorije: **sam autor je
+nekoliko puta ostao u nedoumici šta je gde podesio.** Podešavanje koje ni onaj ko
+ga je napravio ne drži u glavi nije podešavanje nego zamka.
 
-**Srpski postoji za izgovor, iako za prepoznavanje ne postoji.** Zato su to i
-dva odvojena skupa: `SpeechLanguage` (10, sa srpskim) i `VoiceLanguage` (9, po
-Vosk modelima). Izgovor traži samo glas na uređaju, a glasa za srpski ima na
-mnogim telefonima.
+#### Zašto je srpski izašao
 
-To usput ispravlja i zatečeni nesklad: modul je oduvek izgovarao srpske rečenice
-(„Mat! Čestitamo.") kroz **engleski** glas, jer drugog nije bilo.
+Prvo je ostao u spisku, uz napomenu da glasovnog unosa nema. Onda je pao i taj
+kompromis, i to sa punim razlogom: **srpski neće biti ni jezik aplikacije kad
+dođe prevod.** Jezik koji ne može da bude izabran nema šta da radi u spisku.
 
-**Dve tabele, ali usaglašene.** `SpeechLanguages` nosi reči za govor,
+Odatle je došlo i čišćenje koje se samo ponudilo: bez srpskog su dva enuma
+postala **isti spisak od devet jezika**, a dva imena za istu stvar se pre ili
+kasnije raziđu. `SpeechLanguage` i `VoiceLanguage` su zato jedan `Language`.
+
+Sa njim je nestao i `voiceModel` — izvedeni model prepoznavanja, koji je postojao
+samo zbog srpskog — i grana koja je javljala da prepoznavanja za izabrani jezik
+nema. Nema više takvog jezika.
+
+#### Šta je ostalo od izbora
+
+**Engleski je jedini jezik sa rečenicama**, pa je jedini koji se nudi; ostalih
+osam stoji zatamnjeno sa oznakom **„nije preveden"**, uz „nema glas" za one
+kojima uređaj nema TTS. Vidljivo i sa razlogom, ne skriveno.
+
+Prevodi se ne izmišljaju: osam prevoda koje niko od nas ne može da proveri bilo
+bi osam tihih grešaka umesto jedne poznate. Isto pravilo po kom reči za polja
+nose `isVerified`.
+
+**Dodavanje jezika je time jedan potez sa četiri unosa:** `Language`,
+`SpeechLanguages` (reči za govor), `VoiceLanguages` (Vosk paket) i
+`SpeechPhrases` (rečenice). Dok rečenica nema, jezik se ne nudi.
+
+Nasleđe se čita iz starog ključa za izgovor (`speech_language`); ko je imao
+srpski, dobija engleski, jer srpskog više nema.
+
+`AndroidSpeaker` i dalje proverava `isLanguageAvailable`; ako izabrani jezik
+ostane bez glasa, čita se **engleski** — bolje razumljiv engleski nego ćutanje.
+
+**Dve tabele su ostale, ali usaglašene.** `SpeechLanguages` nosi reči za govor,
 `VoiceLanguages` za slušanje. Test ih drži zajedno: za svaki jezik i svih 64
 polja, ono što aplikacija izgovori mora da prođe kroz njeno sopstveno
 prepoznavanje — inače govori polje koje sama ne bi razumela.
 
-Formatiranje je zato prešlo iz proširenja u `Speaker` (`say(move)`, `say(square)`,
-`say(board)`): zavisi od jezika, a moduli za jezik ne znaju niti treba da znaju.
+Formatiranje je zato u `Speaker`-u (`say(move)`, `say(square)`, `say(board)`):
+zavisi od jezika, a moduli za jezik ne znaju niti treba da znaju.
 
 ### Izgovorene rečenice prate jezik govora
 
@@ -537,7 +563,9 @@ Prijavljeno sa uređaja 17. avgusta 2026: kad se za izgovor izabere **engleski**
 čuo se engleski glas kako **čita srpske reči**. Polja i imena figura su jezik
 odavno pratili; rečenice oko njih su stajale kao literali u modulima.
 
-Urađeno 18. avgusta: `SpeechPhrases` u `:core:audio`, sa **srpskim i engleskim**.
+Urađeno 18. avgusta: `SpeechPhrases` u `:core:audio`. Pisane su na srpskom pa
+prevedene na engleski; kad je srpski izašao iz jezika, ostao je **engleski kao
+jedini prevod**. Osam jezika ga čeka — vidi „Jedan jezik, jedan spisak“.
 
 #### Dve ose, i ne mešaju se
 
@@ -986,11 +1014,16 @@ između dve cifre nije kraj rečenice. Pokriveno sa pet testova
 
 ### Jezici prepoznavanja
 
-**Srpskog nema i neće ga biti dok ga Vosk ne objavi.** Provereno na spisku od 76
-modela: nema nijedan južnoslovenski jezik — ni srpski, ni hrvatski, bosanski,
-slovenački ni makedonski. Jedini put do srpskog bi bio Android-ov
-`SpeechRecognizer` iza istog `VoiceInput` interfejsa, uz internet u toku vežbe i
-bez uskog rečnika. Odloženo dogovorom.
+**Srpskog nema i to je na kraju odlučilo i sudbinu srpskog u celoj aplikaciji.**
+Provereno na spisku od 76 Vosk modela: nema nijedan južnoslovenski jezik — ni
+srpski, ni hrvatski, bosanski, slovenački ni makedonski. Jedini put bi bio
+Android-ov `SpeechRecognizer` iza istog `VoiceInput` interfejsa, uz internet u
+toku vežbe i bez uskog rečnika; odloženo dogovorom, a onda i nepotrebno, jer
+srpski nije jezik aplikacije (vidi „Jedan jezik, jedan spisak“).
+
+Tekst **na ekranu** je i dalje srpski, ali kao radni jezik razvoja, ne kao
+ponuđen jezik. Menja se kad dođe prevod ekranskog teksta — prva stavka na
+spisku za nastavak.
 
 Podržano je devet jezika: engleski, nemački, ruski, francuski, španski,
 italijanski, poljski, češki, turski. Svaki ima svoj folder pod

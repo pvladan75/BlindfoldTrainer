@@ -12,7 +12,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -51,12 +50,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.program.blindfoldtrainer.R
 import com.program.blindfoldtrainer.core.audio.ModelState
+import com.program.blindfoldtrainer.core.audio.TRANSLATED_LANGUAGES
 import com.program.blindfoldtrainer.core.audio.PHONETIC_FILES
 import com.program.blindfoldtrainer.core.audio.VoiceLanguages
 import com.program.blindfoldtrainer.core.model.Settings
-import com.program.blindfoldtrainer.core.model.SpeechLanguage
+import com.program.blindfoldtrainer.core.model.Language
 import com.program.blindfoldtrainer.core.model.ThemeChoice
-import com.program.blindfoldtrainer.core.model.VoiceLanguage
 
 /**
  * Podešavanja.
@@ -102,9 +101,9 @@ fun SettingsScreen(
 
             EyesFreeSection(enabled = settings.eyesFree, onEnabled = viewModel::onEyesFree)
 
-            SpeechSection(settings = settings, viewModel = viewModel)
+            LanguageSection(settings = settings, viewModel = viewModel)
 
-            VoiceSection(settings = settings, viewModel = viewModel)
+            VoiceInputSection(settings = settings, viewModel = viewModel)
         }
     }
 }
@@ -158,31 +157,34 @@ private fun EyesFreeSection(enabled: Boolean, onEnabled: (Boolean) -> Unit) {
 }
 
 /**
- * Ono što **aplikacija govori tebi**.
+ * **Jedan jezik za sve** — i za ono što aplikacija govori tebi i za ono što ti
+ * govoriš njoj.
  *
- * Odvojeno od prepoznavanja i naslovom i objašnjenjem: dva jezika u istoj
- * aplikaciji lako se pobrkaju, a odnose se na suprotne smerove.
+ * Dugo su to bila dva odvojena izbora, jer zavise od različitih stvari: glas na
+ * uređaju naspram preuzetog paketa. Sa uređaja je stiglo da je to previše: ko
+ * vežba zatvorenih očiju i sklapa tablu u glavi ne sme uz to da pamti da sluša
+ * jedan jezik a govori drugi, a i sam autor je gubio trag šta je gde podesio.
+ *
+ * Nudi se jezik koji ima **rečenice** i **glas na uređaju**; paket za slušanje
+ * stoji uz njega, jer se preuzima a ne bira. Šta nedostaje piše uz sam jezik.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SpeechSection(settings: Settings, viewModel: SettingsViewModel) {
+private fun LanguageSection(settings: Settings, viewModel: SettingsViewModel) {
     val speakable by viewModel.speakableLanguages.collectAsState()
 
-    SettingsCard(stringResource(R.string.settings_speech)) {
+    SettingsCard(stringResource(R.string.settings_language_title)) {
         Text(
-            text = stringResource(R.string.settings_speech_hint),
+            text = stringResource(R.string.settings_language_title_hint),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(Modifier.height(12.dp))
 
-        // Nudi se samo ono što uređaj ume da izgovori. Jezik bez glasa bi bio
-        // obećanje koje se ne održi — čulo bi se ćutanje ili engleski.
         SpeechLanguagePicker(
-            selected = settings.speechLanguage,
+            selected = settings.language,
             speakable = speakable,
-            onSelect = viewModel::onSpeechLanguage
+            onSelect = viewModel::onLanguage
         )
 
         Spacer(Modifier.height(12.dp))
@@ -198,6 +200,10 @@ private fun SpeechSection(settings: Settings, viewModel: SettingsViewModel) {
             // Deset koraka po 0.1 kroz ceo opseg — finije od toga se ne čuje.
             steps = 9
         )
+
+        Spacer(Modifier.height(12.dp))
+
+        VoicePackage(language = settings.language, viewModel = viewModel)
     }
 }
 
@@ -210,9 +216,9 @@ private fun SpeechSection(settings: Settings, viewModel: SettingsViewModel) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SpeechLanguagePicker(
-    selected: SpeechLanguage,
-    speakable: Set<SpeechLanguage>,
-    onSelect: (SpeechLanguage) -> Unit
+    selected: Language,
+    speakable: Set<Language>,
+    onSelect: (Language) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     val isMissingVoice = speakable.isNotEmpty() && selected !in speakable
@@ -240,15 +246,20 @@ private fun SpeechLanguagePicker(
         )
 
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            SpeechLanguage.entries.forEach { language ->
+            Language.entries.forEach { language ->
                 // Dok se TTS ne podigne, spisak je prazan i ne zaključavamo ništa.
                 val hasVoice = speakable.isEmpty() || language in speakable
+
+                // Jezik bez rečenica nije pola-jezik nego mešavina: engleska
+                // rečenica sa tuđim imenom figure u sredini. Zato se ne nudi.
+                val isTranslated = language in TRANSLATED_LANGUAGES
+                val isOffered = hasVoice && isTranslated
 
                 DropdownMenuItem(
                     text = {
                         Text(
                             text = stringResource(language.labelRes()),
-                            color = if (hasVoice) {
+                            color = if (isOffered) {
                                 MaterialTheme.colorScheme.onSurface
                             } else {
                                 MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
@@ -256,15 +267,23 @@ private fun SpeechLanguagePicker(
                         )
                     },
                     trailingIcon = {
-                        if (!hasVoice) {
+                        // Uvek se kaže **šta** nedostaje. Zatamnjen jezik bez
+                        // objašnjenja je nemi otkaz, a njih je ovaj projekat
+                        // već skupo platio.
+                        val missing = when {
+                            !isTranslated -> R.string.settings_speech_not_translated
+                            !hasVoice -> R.string.settings_speech_no_voice
+                            else -> null
+                        }
+                        missing?.let {
                             Text(
-                                text = stringResource(R.string.settings_speech_no_voice),
+                                text = stringResource(it),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     },
-                    enabled = hasVoice,
+                    enabled = isOffered,
                     onClick = {
                         expanded = false
                         onSelect(language)
@@ -275,8 +294,9 @@ private fun SpeechLanguagePicker(
     }
 }
 
+/** Kako se govori aplikaciji. Jezik se ovde više ne bira — bira se gore. */
 @Composable
-private fun VoiceSection(settings: Settings, viewModel: SettingsViewModel) {
+private fun VoiceInputSection(settings: Settings, viewModel: SettingsViewModel) {
     SettingsCard(stringResource(R.string.settings_voice)) {
         Text(
             text = stringResource(R.string.settings_voice_hint),
@@ -285,10 +305,6 @@ private fun VoiceSection(settings: Settings, viewModel: SettingsViewModel) {
         )
 
         Spacer(Modifier.height(10.dp))
-
-        LanguageSection(settings = settings, viewModel = viewModel)
-
-        Spacer(Modifier.height(4.dp))
 
         SwitchRow(
             title = stringResource(R.string.settings_phonetic),
@@ -346,30 +362,27 @@ private fun Notice(title: String, text: String) {
 }
 
 /**
- * Izbor jezika i paket koji uz njega ide.
+ * Paket za slušanje, uz jezik koji je već izabran.
  *
- * Izbor iz spiska **ne menja jezik odmah**. Jezik bez paketa bi ugasio glasovni
- * unos, a korisnik ne bi znao zašto — zato se prvo bira, pa instalira, pa tek
- * onda koristi. „Koristi jezik" stoji nedostupno dok paketa nema.
+ * Ranije se ovde birao i jezik, pa je postojao korak „Koristi jezik" — jer bi
+ * prelazak na jezik bez paketa nečujno ugasio mikrofon. Sad je jezik jedan i
+ * bira se gore, pa je ostalo samo preuzimanje: bez paketa se ne gubi vežba nego
+ * samo glasovni unos, i to piše.
  */
 @Composable
-private fun LanguageSection(settings: Settings, viewModel: SettingsViewModel) {
+private fun VoicePackage(language: Language, viewModel: SettingsViewModel) {
     val installed by viewModel.installedLanguages.collectAsState()
     val modelState by viewModel.modelState.collectAsState()
 
-    // Šta je izabrano u spisku; počinje od jezika koji je u upotrebi.
-    var candidate by remember(settings.voiceLanguage) { mutableStateOf(settings.voiceLanguage) }
-
+    val candidate = language
     val isCandidateInstalled = candidate in installed
-    val isInUse = candidate == settings.voiceLanguage
     val busy = modelState as? ModelState.Downloading
     val unpacking = modelState as? ModelState.Unpacking
     val failure = (modelState as? ModelState.Failed)?.takeIf { it.language == candidate }
 
-    LanguagePicker(
-        selected = candidate,
-        installed = installed,
-        onSelect = { candidate = it }
+    Text(
+        text = stringResource(R.string.settings_voice_package),
+        style = MaterialTheme.typography.bodyLarge
     )
 
     Spacer(Modifier.height(8.dp))
@@ -415,41 +428,25 @@ private fun LanguageSection(settings: Settings, viewModel: SettingsViewModel) {
                 Spacer(Modifier.height(6.dp))
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilledTonalButton(
-                    onClick = { viewModel.onInstall(candidate) },
-                    enabled = !isCandidateInstalled
-                ) {
-                    Text(
-                        stringResource(
-                            if (isCandidateInstalled) {
-                                R.string.settings_language_installed
-                            } else {
-                                R.string.settings_language_install
-                            }
-                        )
-                    )
-                }
-
-                FilledTonalButton(
-                    onClick = { viewModel.onVoiceLanguage(candidate) },
-                    enabled = isCandidateInstalled && !isInUse
-                ) {
-                    Text(
-                        stringResource(
-                            if (isInUse) {
-                                R.string.settings_language_in_use
-                            } else {
-                                R.string.settings_language_use
-                            }
-                        )
-                    )
-                }
-            }
-
-            if (isCandidateInstalled && !isInUse) {
+            if (isCandidateInstalled) {
+                Text(
+                    text = stringResource(R.string.settings_language_installed),
+                    style = MaterialTheme.typography.bodySmall
+                )
                 TextButton(onClick = { viewModel.onDelete(candidate) }) {
                     Text(stringResource(R.string.voice_delete))
+                }
+            } else {
+                // Veličina stoji pre dodira, a ne posle: preuzimanje od četrdesetak
+                // megabajta nije nešto što se sazna kad već krene.
+                FilledTonalButton(onClick = { viewModel.onInstall(candidate) }) {
+                    Text(
+                        stringResource(
+                            R.string.settings_language_item,
+                            stringResource(R.string.settings_language_install),
+                            VoiceLanguages.specFor(candidate).downloadMegabytes
+                        )
+                    )
                 }
             }
         }
@@ -494,76 +491,6 @@ private fun PhoneticWordList() {
     }
 }
 
-/**
- * Jezik glasovnog unosa.
- *
- * Uz jezik stoji i veličina preuzimanja, jer promena jezika znači nov model —
- * to je podatak koji treba da se vidi **pre** dodira, a ne posle.
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun LanguagePicker(
-    selected: VoiceLanguage,
-    installed: Set<VoiceLanguage>,
-    onSelect: (VoiceLanguage) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = it }
-    ) {
-        OutlinedTextField(
-            value = stringResource(selected.labelRes()),
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(stringResource(R.string.settings_language)) },
-            supportingText = { Text(stringResource(R.string.settings_language_hint)) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth()
-        )
-
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            VoiceLanguage.entries.forEach { language ->
-                val name = stringResource(language.labelRes())
-
-                DropdownMenuItem(
-                    text = {
-                        // Veličina stoji samo uz jezik koji nije instaliran —
-                        // kod već preuzetog nema šta da se preuzima, pa bi broj
-                        // samo zbunjivao.
-                        Text(
-                            if (language in installed) {
-                                name
-                            } else {
-                                stringResource(
-                                    R.string.settings_language_item,
-                                    name,
-                                    VoiceLanguages.specFor(language).downloadMegabytes
-                                )
-                            }
-                        )
-                    },
-                    trailingIcon = {
-                        if (language in installed) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = stringResource(
-                                    R.string.settings_language_installed
-                                )
-                            )
-                        }
-                    },
-                    onClick = {
-                        expanded = false
-                        onSelect(language)
-                    }
-                )
-            }
-        }
-    }
-}
-
 @Composable
 private fun SwitchRow(
     title: String,
@@ -602,27 +529,14 @@ private fun ThemeChoice.labelRes(): Int = when (this) {
     ThemeChoice.DARK -> R.string.settings_theme_dark
 }
 
-private fun SpeechLanguage.labelRes(): Int = when (this) {
-    SpeechLanguage.SERBIAN -> R.string.language_serbian
-    SpeechLanguage.ENGLISH -> R.string.language_english
-    SpeechLanguage.GERMAN -> R.string.language_german
-    SpeechLanguage.RUSSIAN -> R.string.language_russian
-    SpeechLanguage.FRENCH -> R.string.language_french
-    SpeechLanguage.SPANISH -> R.string.language_spanish
-    SpeechLanguage.ITALIAN -> R.string.language_italian
-    SpeechLanguage.POLISH -> R.string.language_polish
-    SpeechLanguage.CZECH -> R.string.language_czech
-    SpeechLanguage.TURKISH -> R.string.language_turkish
-}
-
-private fun VoiceLanguage.labelRes(): Int = when (this) {
-    VoiceLanguage.ENGLISH -> R.string.language_english
-    VoiceLanguage.GERMAN -> R.string.language_german
-    VoiceLanguage.RUSSIAN -> R.string.language_russian
-    VoiceLanguage.FRENCH -> R.string.language_french
-    VoiceLanguage.SPANISH -> R.string.language_spanish
-    VoiceLanguage.ITALIAN -> R.string.language_italian
-    VoiceLanguage.POLISH -> R.string.language_polish
-    VoiceLanguage.CZECH -> R.string.language_czech
-    VoiceLanguage.TURKISH -> R.string.language_turkish
+private fun Language.labelRes(): Int = when (this) {
+    Language.ENGLISH -> R.string.language_english
+    Language.GERMAN -> R.string.language_german
+    Language.RUSSIAN -> R.string.language_russian
+    Language.FRENCH -> R.string.language_french
+    Language.SPANISH -> R.string.language_spanish
+    Language.ITALIAN -> R.string.language_italian
+    Language.POLISH -> R.string.language_polish
+    Language.CZECH -> R.string.language_czech
+    Language.TURKISH -> R.string.language_turkish
 }

@@ -2,7 +2,7 @@ package com.program.blindfoldtrainer.core.audio
 
 import com.program.blindfoldtrainer.core.chess.PieceType
 import com.program.blindfoldtrainer.core.chess.Square
-import com.program.blindfoldtrainer.core.model.VoiceLanguage
+import com.program.blindfoldtrainer.core.model.Language
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -11,7 +11,7 @@ class VoiceLanguagesTest {
 
     @Test
     fun `svaki jezik ima svoj model`() {
-        VoiceLanguage.entries.forEach { language ->
+        Language.entries.forEach { language ->
             val spec = VoiceLanguages.specFor(language)
 
             assertTrue("${language.name}: nema arhive", spec.archiveName.endsWith(".zip"))
@@ -25,7 +25,7 @@ class VoiceLanguagesTest {
 
     @Test
     fun `svaki jezik pokriva svih 64 polja`() {
-        VoiceLanguage.entries.forEach { language ->
+        Language.entries.forEach { language ->
             val words = VoiceLanguages.specFor(language).words
 
             words.files.forEach { (fileWord, file) ->
@@ -43,7 +43,7 @@ class VoiceLanguagesTest {
 
     @Test
     fun `rec se ne ponavlja unutar jezika`() {
-        VoiceLanguage.entries.forEach { language ->
+        Language.entries.forEach { language ->
             val words = VoiceLanguages.specFor(language).words
             val all = words.allWords
 
@@ -57,7 +57,7 @@ class VoiceLanguagesTest {
 
     @Test
     fun `polja se izgovaraju sa tacno sesnaest reci`() {
-        VoiceLanguage.entries.forEach { language ->
+        Language.entries.forEach { language ->
             assertEquals(
                 language.name,
                 16,
@@ -73,7 +73,7 @@ class VoiceLanguagesTest {
      */
     @Test
     fun `imena figura su ili sva ili nijedno`() {
-        VoiceLanguage.entries.forEach { language ->
+        Language.entries.forEach { language ->
             val pieces = VoiceLanguages.specFor(language).words.pieces
             assertTrue(
                 "${language.name}: ${pieces.size} imena figura",
@@ -84,7 +84,7 @@ class VoiceLanguagesTest {
 
     @Test
     fun `engleski razume figuru i odrediste`() {
-        val words = VoiceLanguages.specFor(VoiceLanguage.ENGLISH).words
+        val words = VoiceLanguages.specFor(Language.ENGLISH).words
 
         assertEquals(
             SpokenInput.PieceMove(PieceType.ROOK, requireNotNull(Square.fromAlgebraic("e2"))),
@@ -95,7 +95,7 @@ class VoiceLanguagesTest {
     @Test
     fun `fonetska abeceda radi na svakom jeziku`() {
         // Fonetske reči ne zavise od jezika i zato prolaze uz bilo koju tabelu.
-        VoiceLanguage.entries.forEach { language ->
+        Language.entries.forEach { language ->
             val words = VoiceLanguages.specFor(language).words
             val rankWord = words.ranks.entries.first { it.value == '3' }.key
 
@@ -111,8 +111,8 @@ class VoiceLanguagesTest {
     fun `samo engleski je proveren na uredjaju`() {
         // Reči za ostale jezike su upisane po pravopisu, ne po sluhu. Kad se koji
         // proveri, oznaka se menja ovde i test prati stvarnost.
-        val verified = VoiceLanguage.entries.filter { VoiceLanguages.specFor(it).isVerified }
+        val verified = Language.entries.filter { VoiceLanguages.specFor(it).isVerified }
 
-        assertEquals(listOf(VoiceLanguage.ENGLISH), verified)
+        assertEquals(listOf(Language.ENGLISH), verified)
     }
 }

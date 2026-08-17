@@ -13,7 +13,7 @@ class SettingsTest {
         val settings = Settings.DEFAULT
 
         assertEquals(ThemeChoice.SYSTEM, settings.theme)
-        assertEquals(VoiceLanguage.ENGLISH, settings.voiceLanguage)
+        assertEquals(Language.ENGLISH, settings.language)
         assertFalse(settings.phoneticAlphabet)
         assertFalse(settings.listenWholeMove)
         assertFalse(settings.separateLetterAndNumber)
@@ -23,11 +23,11 @@ class SettingsTest {
     fun `fonetska abeceda postoji samo uz engleski`() {
         assertTrue(Settings.DEFAULT.isPhoneticAlphabetAvailable)
 
-        VoiceLanguage.entries
-            .filterNot { it == VoiceLanguage.ENGLISH }
+        Language.entries
+            .filterNot { it == Language.ENGLISH }
             .forEach { language ->
                 assertFalse(
-                    Settings.DEFAULT.copy(voiceLanguage = language).isPhoneticAlphabetAvailable,
+                    Settings.DEFAULT.copy(language = language).isPhoneticAlphabetAvailable,
                     language.name
                 )
             }
@@ -38,12 +38,12 @@ class SettingsTest {
         val onEnglish = Settings.DEFAULT.copy(phoneticAlphabet = true)
         assertTrue(onEnglish.usesPhoneticAlphabet)
 
-        val onGerman = onEnglish.copy(voiceLanguage = VoiceLanguage.GERMAN)
+        val onGerman = onEnglish.copy(language = Language.GERMAN)
         assertFalse(onGerman.usesPhoneticAlphabet, "reči se ne smeju slušati")
         assertTrue(onGerman.phoneticAlphabet, "izbor mora ostati upamćen")
 
         // Povratak na engleski vraća i izbor, bez ponovnog uključivanja.
-        assertTrue(onGerman.copy(voiceLanguage = VoiceLanguage.ENGLISH).usesPhoneticAlphabet)
+        assertTrue(onGerman.copy(language = Language.ENGLISH).usesPhoneticAlphabet)
     }
 
     @Test
@@ -54,7 +54,8 @@ class SettingsTest {
 
     @Test
     fun `svaki jezik ima svoj kod`() {
-        val codes = VoiceLanguage.entries.map { it.code }
+        val codes = Language.entries.map { it.code }
         assertEquals(codes.size, codes.toSet().size)
     }
+
 }

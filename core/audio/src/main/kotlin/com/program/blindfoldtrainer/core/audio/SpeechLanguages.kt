@@ -3,7 +3,7 @@ package com.program.blindfoldtrainer.core.audio
 import com.program.blindfoldtrainer.core.chess.Color
 import com.program.blindfoldtrainer.core.chess.Piece
 import com.program.blindfoldtrainer.core.chess.PieceType
-import com.program.blindfoldtrainer.core.model.SpeechLanguage
+import com.program.blindfoldtrainer.core.model.Language
 import java.util.Locale
 
 /**
@@ -84,11 +84,11 @@ data class SpeechSpec(
  */
 object SpeechLanguages {
 
-    fun specFor(language: SpeechLanguage): SpeechSpec = SPECS.getValue(language)
+    fun specFor(language: Language): SpeechSpec = SPECS.getValue(language)
 
-    fun wordsFor(language: SpeechLanguage): SpeechWords = specFor(language).words
+    fun wordsFor(language: Language): SpeechWords = specFor(language).words
 
-    fun localeFor(language: SpeechLanguage): Locale = specFor(language).locale
+    fun localeFor(language: Language): Locale = specFor(language).locale
 
     private fun filesOf(vararg words: String): Map<Char, String> =
         words.mapIndexed { index, word -> ('a' + index) to word }.toMap()
@@ -112,23 +112,8 @@ object SpeechLanguages {
         PieceType.PAWN to pawn
     )
 
-    private val SPECS: Map<SpeechLanguage, SpeechSpec> = mapOf(
-        SpeechLanguage.SERBIAN to SpeechSpec(
-            locale = Locale.forLanguageTag("sr"),
-            words = SpeechWords(
-                files = filesOf("a", "be", "ce", "de", "e", "ef", "ge", "ha"),
-                ranks = ranksOf("jedan", "dva", "tri", "četiri", "pet", "šest", "sedam", "osam"),
-                pieces = piecesOf("kralj", "dama", "top", "lovac", "skakač", "pešak"),
-                white = "beli",
-                black = "crni",
-                whiteFeminine = "bela",
-                blackFeminine = "crna",
-                femininePieces = setOf(PieceType.QUEEN),
-                on = "na"
-            )
-        ),
-
-        SpeechLanguage.ENGLISH to SpeechSpec(
+    private val SPECS: Map<Language, SpeechSpec> = mapOf(
+        Language.ENGLISH to SpeechSpec(
             locale = Locale.US,
             words = SpeechWords(
                 files = filesOf("a", "b", "c", "d", "e", "f", "g", "h"),
@@ -141,7 +126,7 @@ object SpeechLanguages {
             isVerified = true
         ),
 
-        SpeechLanguage.GERMAN to SpeechSpec(
+        Language.GERMAN to SpeechSpec(
             locale = Locale.GERMAN,
             words = SpeechWords(
                 files = filesOf("a", "be", "ce", "de", "e", "ef", "ge", "ha"),
@@ -156,7 +141,7 @@ object SpeechLanguages {
             )
         ),
 
-        SpeechLanguage.RUSSIAN to SpeechSpec(
+        Language.RUSSIAN to SpeechSpec(
             locale = Locale.forLanguageTag("ru"),
             words = SpeechWords(
                 files = filesOf("а", "бэ", "цэ", "дэ", "е", "эф", "жэ", "аш"),
@@ -171,7 +156,7 @@ object SpeechLanguages {
             )
         ),
 
-        SpeechLanguage.FRENCH to SpeechSpec(
+        Language.FRENCH to SpeechSpec(
             locale = Locale.FRENCH,
             words = SpeechWords(
                 files = filesOf("a", "bé", "cé", "dé", "e", "effe", "gé", "ache"),
@@ -186,7 +171,7 @@ object SpeechLanguages {
             )
         ),
 
-        SpeechLanguage.SPANISH to SpeechSpec(
+        Language.SPANISH to SpeechSpec(
             locale = Locale.forLanguageTag("es"),
             words = SpeechWords(
                 files = filesOf("a", "be", "ce", "de", "e", "efe", "ge", "hache"),
@@ -201,7 +186,7 @@ object SpeechLanguages {
             )
         ),
 
-        SpeechLanguage.ITALIAN to SpeechSpec(
+        Language.ITALIAN to SpeechSpec(
             locale = Locale.ITALIAN,
             words = SpeechWords(
                 files = filesOf("a", "bi", "ci", "di", "e", "effe", "gi", "acca"),
@@ -216,7 +201,7 @@ object SpeechLanguages {
             )
         ),
 
-        SpeechLanguage.POLISH to SpeechSpec(
+        Language.POLISH to SpeechSpec(
             locale = Locale.forLanguageTag("pl"),
             words = SpeechWords(
                 files = filesOf("a", "be", "ce", "de", "e", "ef", "gie", "ha"),
@@ -231,7 +216,7 @@ object SpeechLanguages {
             )
         ),
 
-        SpeechLanguage.CZECH to SpeechSpec(
+        Language.CZECH to SpeechSpec(
             locale = Locale.forLanguageTag("cs"),
             words = SpeechWords(
                 files = filesOf("á", "bé", "cé", "dé", "é", "ef", "gé", "há"),
@@ -246,7 +231,7 @@ object SpeechLanguages {
             )
         ),
 
-        SpeechLanguage.TURKISH to SpeechSpec(
+        Language.TURKISH to SpeechSpec(
             locale = Locale.forLanguageTag("tr"),
             words = SpeechWords(
                 files = filesOf("a", "be", "ce", "de", "e", "fe", "ge", "he"),

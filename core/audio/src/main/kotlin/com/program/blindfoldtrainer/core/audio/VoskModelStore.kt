@@ -2,7 +2,7 @@ package com.program.blindfoldtrainer.core.audio
 
 import android.content.Context
 import android.util.Log
-import com.program.blindfoldtrainer.core.model.VoiceLanguage
+import com.program.blindfoldtrainer.core.model.Language
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -26,11 +26,11 @@ sealed interface ModelState {
     data object Idle : ModelState
 
     /** [fraction] je `null` dok se ne zna ukupna veličina. */
-    data class Downloading(val language: VoiceLanguage, val fraction: Float?) : ModelState
+    data class Downloading(val language: Language, val fraction: Float?) : ModelState
 
-    data class Unpacking(val language: VoiceLanguage) : ModelState
+    data class Unpacking(val language: Language) : ModelState
 
-    data class Failed(val language: VoiceLanguage, val reason: String) : ModelState
+    data class Failed(val language: Language, val reason: String) : ModelState
 }
 
 /**
@@ -57,19 +57,19 @@ class VoskModelStore @Inject constructor(
     private val _installed = MutableStateFlow(scanInstalled())
 
     /** Jezici čiji je paket na uređaju i upotrebljiv. */
-    val installed: StateFlow<Set<VoiceLanguage>> = _installed.asStateFlow()
+    val installed: StateFlow<Set<Language>> = _installed.asStateFlow()
 
     private var downloadJob: Job? = null
 
     /** Folder sa paketom; put koji se prosleđuje Vosk-u. */
-    fun directoryFor(language: VoiceLanguage): File =
+    fun directoryFor(language: Language): File =
         File(File(context.filesDir, DIRECTORY), language.code)
 
-    fun isInstalled(language: VoiceLanguage): Boolean =
+    fun isInstalled(language: Language): Boolean =
         ModelArchive.isComplete(directoryFor(language))
 
     /** Bezbedno je zvati više puta — dok jedno preuzimanje traje, drugo se ne počinje. */
-    fun download(language: VoiceLanguage) {
+    fun download(language: Language) {
         if (_state.value is ModelState.Downloading || _state.value is ModelState.Unpacking) return
         if (isInstalled(language)) return
 
@@ -110,7 +110,7 @@ class VoskModelStore @Inject constructor(
     }
 
     /** Briše paket sa uređaja i vraća 60–70 MB prostora. */
-    fun delete(language: VoiceLanguage) {
+    fun delete(language: Language) {
         scope.launch {
             cleanUp(language)
             _installed.value = scanInstalled()
@@ -120,10 +120,10 @@ class VoskModelStore @Inject constructor(
         }
     }
 
-    private fun scanInstalled(): Set<VoiceLanguage> =
-        VoiceLanguage.entries.filterTo(mutableSetOf()) { isInstalled(it) }
+    private fun scanInstalled(): Set<Language> =
+        Language.entries.filterTo(mutableSetOf()) { isInstalled(it) }
 
-    private suspend fun fetchArchive(language: VoiceLanguage): File = withContext(Dispatchers.IO) {
+    private suspend fun fetchArchive(language: Language): File = withContext(Dispatchers.IO) {
         val archive = File(context.cacheDir, ARCHIVE_NAME)
         archive.delete()
 
@@ -164,14 +164,14 @@ class VoskModelStore @Inject constructor(
         }
     }
 
-    private suspend fun unpack(language: VoiceLanguage, archive: File) = withContext(Dispatchers.IO) {
+    private suspend fun unpack(language: Language, archive: File) = withContext(Dispatchers.IO) {
         val directory = directoryFor(language)
         directory.deleteRecursively()
         archive.inputStream().use { ModelArchive.unpack(it, directory) }
         archive.delete()
     }
 
-    private fun cleanUp(language: VoiceLanguage) {
+    private fun cleanUp(language: Language) {
         File(context.cacheDir, ARCHIVE_NAME).delete()
         directoryFor(language).deleteRecursively()
     }

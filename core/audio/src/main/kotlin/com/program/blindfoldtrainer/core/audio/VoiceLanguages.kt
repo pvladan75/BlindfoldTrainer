@@ -1,7 +1,7 @@
 package com.program.blindfoldtrainer.core.audio
 
 import com.program.blindfoldtrainer.core.chess.PieceType
-import com.program.blindfoldtrainer.core.model.VoiceLanguage
+import com.program.blindfoldtrainer.core.model.Language
 import java.util.Locale
 
 /**
@@ -67,11 +67,11 @@ object VoiceLanguages {
 
     const val BASE_URL = "https://alphacephei.com/vosk/models/"
 
-    fun specFor(language: VoiceLanguage): VoiceModelSpec = SPECS.getValue(language)
+    fun specFor(language: Language): VoiceModelSpec = SPECS.getValue(language)
 
-    fun urlFor(language: VoiceLanguage): String = BASE_URL + specFor(language).archiveName
+    fun urlFor(language: Language): String = BASE_URL + specFor(language).archiveName
 
-    fun localeFor(language: VoiceLanguage): Locale = specFor(language).locale
+    fun localeFor(language: Language): Locale = specFor(language).locale
 
     /**
      * [pieces] ide redom: kralj, dama, top, lovac, skakač, pešak. Izostavlja se
@@ -96,8 +96,8 @@ object VoiceLanguages {
         PieceType.PAWN
     )
 
-    private val SPECS: Map<VoiceLanguage, VoiceModelSpec> = mapOf(
-        VoiceLanguage.ENGLISH to VoiceModelSpec(
+    private val SPECS: Map<Language, VoiceModelSpec> = mapOf(
+        Language.ENGLISH to VoiceModelSpec(
             archiveName = "vosk-model-small-en-us-0.15.zip",
             locale = Locale.US,
             downloadMegabytes = 39,
@@ -109,7 +109,7 @@ object VoiceLanguages {
             isVerified = true
         ),
 
-        VoiceLanguage.GERMAN to VoiceModelSpec(
+        Language.GERMAN to VoiceModelSpec(
             archiveName = "vosk-model-small-de-0.15.zip",
             locale = Locale.GERMAN,
             downloadMegabytes = 44,
@@ -119,7 +119,7 @@ object VoiceLanguages {
             )
         ),
 
-        VoiceLanguage.RUSSIAN to VoiceModelSpec(
+        Language.RUSSIAN to VoiceModelSpec(
             archiveName = "vosk-model-small-ru-0.22.zip",
             locale = Locale.forLanguageTag("ru"),
             downloadMegabytes = 44,
@@ -129,7 +129,7 @@ object VoiceLanguages {
             )
         ),
 
-        VoiceLanguage.FRENCH to VoiceModelSpec(
+        Language.FRENCH to VoiceModelSpec(
             archiveName = "vosk-model-small-fr-0.22.zip",
             locale = Locale.FRENCH,
             downloadMegabytes = 40,
@@ -139,7 +139,7 @@ object VoiceLanguages {
             )
         ),
 
-        VoiceLanguage.SPANISH to VoiceModelSpec(
+        Language.SPANISH to VoiceModelSpec(
             archiveName = "vosk-model-small-es-0.42.zip",
             locale = Locale.forLanguageTag("es"),
             downloadMegabytes = 38,
@@ -149,7 +149,7 @@ object VoiceLanguages {
             )
         ),
 
-        VoiceLanguage.ITALIAN to VoiceModelSpec(
+        Language.ITALIAN to VoiceModelSpec(
             archiveName = "vosk-model-small-it-0.22.zip",
             locale = Locale.ITALIAN,
             downloadMegabytes = 47,
@@ -159,7 +159,7 @@ object VoiceLanguages {
             )
         ),
 
-        VoiceLanguage.POLISH to VoiceModelSpec(
+        Language.POLISH to VoiceModelSpec(
             archiveName = "vosk-model-small-pl-0.22.zip",
             locale = Locale.forLanguageTag("pl"),
             downloadMegabytes = 51,
@@ -169,7 +169,7 @@ object VoiceLanguages {
             )
         ),
 
-        VoiceLanguage.CZECH to VoiceModelSpec(
+        Language.CZECH to VoiceModelSpec(
             archiveName = "vosk-model-small-cs-0.4-rhasspy.zip",
             locale = Locale.forLanguageTag("cs"),
             downloadMegabytes = 44,
@@ -179,7 +179,7 @@ object VoiceLanguages {
             )
         ),
 
-        VoiceLanguage.TURKISH to VoiceModelSpec(
+        Language.TURKISH to VoiceModelSpec(
             archiveName = "vosk-model-small-tr-0.3.zip",
             locale = Locale.forLanguageTag("tr"),
             downloadMegabytes = 35,

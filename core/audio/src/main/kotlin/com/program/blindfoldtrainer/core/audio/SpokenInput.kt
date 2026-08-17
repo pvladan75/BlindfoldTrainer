@@ -2,7 +2,7 @@ package com.program.blindfoldtrainer.core.audio
 
 import com.program.blindfoldtrainer.core.chess.PieceType
 import com.program.blindfoldtrainer.core.chess.Square
-import com.program.blindfoldtrainer.core.model.VoiceLanguage
+import com.program.blindfoldtrainer.core.model.Language
 
 /** Šta je prepoznato iz jednog izgovora. */
 sealed interface SpokenInput {
@@ -100,7 +100,7 @@ private sealed interface Symbol {
  */
 fun parseSpokenInput(
     text: String,
-    words: VoiceWords = VoiceLanguages.specFor(VoiceLanguage.ENGLISH).words
+    words: VoiceWords = VoiceLanguages.specFor(Language.ENGLISH).words
 ): SpokenInput {
     val tokens = text.lowercase()
         .split(' ', '\t', '\n')
@@ -149,7 +149,7 @@ fun parseSpokenInput(
 /** Zadržano zbog mesta koja traže samo celo polje. */
 fun parseSpokenSquare(
     text: String,
-    words: VoiceWords = VoiceLanguages.specFor(VoiceLanguage.ENGLISH).words
+    words: VoiceWords = VoiceLanguages.specFor(Language.ENGLISH).words
 ): Square? = (parseSpokenInput(text, words) as? SpokenInput.Full)?.square
 
 private fun symbolOf(token: String, words: VoiceWords): Symbol? {
