@@ -1034,6 +1034,62 @@ jedno i drugo računa iz istorije.
 
 ---
 
+## Šta bi aplikacija još mogla da bude
+
+Zapisano **18. avgusta 2026** kao mogućnost, ne kao plan. Ništa od ovoga nije
+početo; ovde stoji da se ne bi ponovo smišljalo od nule.
+
+### Profili — više korisnika na istom uređaju
+
+Povod je stvaran: **otac i sin koriste istu aplikaciju**, i svako hoće da vidi
+svoj napredak, a ne njihov zbir. Danas bi im se sesije mešale u jednu istoriju,
+pa bi obojica gledala broj koji ne opisuje nijednog od njih.
+
+**Bez lozinke.** Podaci su na uređaju; ko ima uređaj ima i njih, pa lozinka ne
+bi štitila nego se pretvarala da štiti. Ono što ovde treba nije zaštita nego
+**razdvajanje napretka** — biranje profila pri ulasku, kao na televizoru. Ako se
+ikad ukaže potreba da dete ne uđe u tuđi profil, PIN od četiri cifre je iskren
+obim; puna prijava nije.
+
+**Ovo dira temelje, i zato ide pre svega što se na napredak oslanja:**
+
+- `SessionEntity` nema nijednu kolonu o korisniku;
+- podešavanja su **jedan** DataStore za ceo uređaj — a bez ekrana, brzina govora
+  i jezik su baš ono što se razlikuje od oca do sina.
+
+Ako se prvo naprave ekran napretka i podsetnici pa se profil uvede posle,
+prepravlja se sve iznad: upit koji sabira istoriju, snimak, pravilo podsetnika i
+ekran. Ako profil ide prvi, ostalo se piše jednom.
+
+### Ekran napretka i dostignuća
+
+Napredak **postoji ceo** — poeni, rangovi, deset dostignuća, napredak po modulu,
+besprekorni nizovi — ali se vidi samo kao brojač u meniju. Fali prikaz, ne
+pravilo.
+
+Uz njega ide i pojam koji **još ne postoji nigde**: šta znači da je modul
+**savladan** na nekoj težini. Predlog je tri uzastopne sesije preko 90%
+tačnosti, ali je to prvi predlog, kao i brojevi bodovanja. Bez te definicije
+nema ni stranice „šta sam savladao" ni pametnog podsetnika, jer oba pitaju isto.
+
+### Podsetnici — mogućnost, ne obaveza
+
+„Nova vežba je spremna" — obaveštenje koje predlaže šta da se vežba.
+
+**Odlučeno o tome kako se traži dozvola:** ništa se ne pita unapred. Podsetnici
+su **izbor korisnika**; tek kad ih u Podešavanjima uključi i kaže koliko često,
+onda se traži i dozvola za obaveštenja. Pitati pre toga znači tražiti nešto što
+korisnik nije ni poželeo — a odbijena dozvola se teško vraća.
+
+Ako se pravi, najjeftinije pravilo koje stvarno ispunjava obećanje: modul koji
+se **najduže nije radio**, a među takvima onaj sa **najnižom tačnošću**. Oba
+podatka već postoje (`byModule`, `finishedAtMillis`).
+
+Šta se očekuje na uređaju, a ne vidi se u emulatoru: `POST_NOTIFICATIONS` je
+dozvola od Androida 13, zakazivanje ide kroz `WorkManager`, a proizvođači —
+Honor među prvima — umeju da uspavaju aplikaciju koja nije izuzeta iz štednje
+baterije. Isti soj problema kao i dosad: prevede se čisto, ćuti na telefonu.
+
 ## Predlog redosleda za nastavak
 
 Svih sedam modula je provereno na uređaju. Provereno je 17. avgusta i ovo:
@@ -1058,16 +1114,20 @@ Ostalo je:
    na engleski — vidi gore). Jedina prava rupa koja je ostala, i jedina stavka
    sa ovog spiska koja je posao a ne dogovor. Sve dok stoji, izbor jezika
    izgovora vredi samo za polja i figure.
-2. Dogovoriti brojeve bodovanja i da li rang išta otključava
-3. Ekran sa spiskom dostignuća
-4. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
-5. Težine u Geometriji (vidi gore) — odloženo dogovorom
-6. Ako se proba neki jezik osim engleskog, upisati `isVerified` u
+2. **Profili**, ako se prihvate — pre svega što se oslanja na napredak, jer im
+   je mesto u bazi a ne u prikazu (vidi „Šta bi aplikacija još mogla da bude")
+3. Dogovoriti brojeve bodovanja, šta znači „savladan modul", i da li rang išta
+   otključava
+4. **Ekran napretka i dostignuća** — podaci postoje, prikaza nema
+5. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
+6. Težine u Geometriji (vidi gore) — odloženo dogovorom
+7. Ako se proba neki jezik osim engleskog, upisati `isVerified` u
    `VoiceLanguages` odnosno `SpeechLanguages`; imena figura postoje samo na
    engleskom i dopunjuju se istim putem
-7. **Zapamti poziciju bez ekrana** — ideja 1 („čuje se, izgovara se"). Traži još
+8. **Zapamti poziciju bez ekrana** — ideja 1 („čuje se, izgovara se"). Traži još
    samo dve reči po jeziku, imena boja; ocenjivanje je već zajedničko i poredi
    skupove, pa redosled ne mora da se pamti
+9. **Podsetnici**, ako se prihvate — poslednji, jer se oslanjaju na sve iznad
 
 **Otvoreno pitanje koje se nije zatvorilo:** da li potvrđivati prepoznat potez
 pre nego što se odigra. Sada se odigra pa objavi, uz poništavanje — zaključeno
