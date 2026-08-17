@@ -1,6 +1,6 @@
 # Dokle smo stigli
 
-Stanje na kraju **16. avgusta 2026.** Ovaj fajl služi da se rad nastavi u novoj
+Stanje na kraju **17. avgusta 2026.** Ovaj fajl služi da se rad nastavi u novoj
 sesiji bez ponovnog objašnjavanja.
 
 **Gde smo stali:** aplikacija ima **sedam** modula. Napredak, podešavanja,
@@ -15,9 +15,9 @@ govor i glasovni unos rade. Ova sesija je donela tri celine:
 3. **Nov modul „Postavi po diktatu"** — pozicija se izgovori, ti je složiš na
    tabli. Jedini modul koji ide od zapisa ka slici u glavi.
 
-**Šta nije viđeno na uređaju:** poslednje dve izmene diktata — podela na
-slušanje i slaganje, i to što se čitanje posle potvrde broji kao propust. Sve
-pre toga je probano.
+**Sve tri celine su viđene na uređaju**, zaključno sa **17. avgustom 2026**:
+diktat u konačnom obliku, izgovaranje celog poteza u jednom dahu, i izgovor
+poteza sa imenom figure. Ostalo je još nekoliko provera, spisak je na dnu.
 
 ---
 
@@ -43,10 +43,9 @@ blindfold animacija i raspakivanje ViewModel-a. Stari projekat se odatle napušt
 Aplikacija se gradi, pokreće, i ima **sedam** modula za trening. Poslednji build
 je prošao čisto, bez upozorenja. **148 testova, nijedan ne pada.**
 
-**Šest modula je prošlo na uređaju**, zajedno sa napretkom, poenima i rangovima.
-Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz iste
-porodice: prevede se čisto, pukne tek na telefonu. Sedmi, „Postavi po diktatu",
-je nov i još nije viđen na uređaju.
+**Svih sedam modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
+rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
+iste porodice: prevede se čisto, pukne tek na telefonu.
 
 ```bash
 cd C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer && ./gradlew :app:assembleDebug test
@@ -313,7 +312,7 @@ najpotrebnije. Zato sada:
 Naravoučenije za dalje: **kad dugme ume da radi dve stvari, `enabled` sme da
 gasi samo jednu od njih.**
 
-#### „Slušaj ceo potez" je slušao jedno po jedno polje
+#### Podešavanje je slušalo jedno po jedno polje
 
 Podešavanje je značilo: prepoznaj prvo polje, pa **nastavi** da slušaš drugo.
 Korisnik je, sasvim razumno, izgovarao **ceo potez u jednom dahu** — „b four g
@@ -326,6 +325,11 @@ Modul koji traži samo jedno polje (Parovi, Prati partiju, Skakač) uzme prvo i
 prekine — njihov ugovor se nije promenio.
 
 Nastavak slušanja i dalje postoji, za onoga ko zastane između polja.
+
+**Zvalo se „Slušaj ceo potez", sada se zove „Izgovori ceo potez odjednom."**
+Sa uređaja: iz starog imena se nije videlo šta korisnik treba da uradi. Ime je
+govorilo šta radi aplikacija, a podešavanje menja **korisnikovo** ponašanje —
+ono je uputstvo, ne opis. Isto pravilo važi i za ostala glasovna podešavanja.
 
 #### Potez se sme reći i preko imena figure
 
@@ -353,6 +357,18 @@ sva četiri oblika, uključujući „rook c three c two". Potez se odigrao, potv
 bila „c tri, c dva", i korisnik je mogao da ode dalje verujući da mu je top na c2.
 
 > Koliko je dobro oruđe, toliko je i lak prelaz u zabludu.
+
+Provereno na uređaju 17. avgusta 2026 — i imenovani potez i obaranje pogrešnog
+imena rade: tabla se ne dira, a izgovori se šta na tom polju zaista stoji.
+
+**Zapažanje, nije odluka:** odbijanje i najava poteza se **slušanjem lako
+pobrkaju**. „Na ce tri nije top nego dama" i „dama, ce tri, ce dva" počinju
+poljem i imenom figure, a razlikuju se po jednoj reči u sredini. Pri proveri je
+i onaj ko modul poznaje odbijanje opisao kao da je čuo najavu poteza. Bez ekrana
+je govor jedini kanal, pa je razlika između „potez je odbijen" i „potez je
+odigran" najvažnija razlika koja postoji. Ako se ovo ponovi u korišćenju, jeftina
+ispravka je da odbijanje počne rečju koja se ne može zameniti ni sa čim — „Ne." pa
+onda objašnjenje.
 
 Ime figure zato **nije ukras nego tvrdnja** o tome šta korisnik misli da tamo
 stoji. Ako se ne slaže sa tablom, tabla se ne dira i kaže se šta je zaista tu:
@@ -419,7 +435,9 @@ Izgovoreno polje ide kroz **isti `onSquareClicked`** kao i dodir, pa nema drugog
 puta do odgovora ni druge provere. U Završnici to znači da se potez izgovara u
 dva koraka: polazno pa odredišno polje.
 
-Model je preuzet i spreman na uređaju; **prepoznavanje polja još nije probano**.
+Model je preuzet i spreman na uređaju, a **prepoznavanje polja je probano i radi**
+(17. avgusta 2026) — potvrđeno kroz ceo potez izgovoren u jednom dahu, što
+podrazumeva da su oba polja prepoznata. Samo engleski.
 
 ### Podešavanja
 
@@ -439,7 +457,7 @@ koja je bolja zavisi od izgovora, a to aplikacija ne može da zna.
 | Jezik izgovora (9 jezika, koliko uređaj ima glasova) | engleski |
 | Jezik prepoznavanja (9 jezika) | engleski |
 | Slova kao reči („bravo" umesto „b") | isključeno |
-| Slušaj ceo potez (Završnica, jedan pritisak) | isključeno |
+| Izgovori ceo potez odjednom (Završnica, jedan pritisak) | isključeno |
 | Slovo i broj odvojeno („e", pa „four") | isključeno |
 
 Sve glasovne opcije su podrazumevano **isključene, tj. zatečeno ponašanje** — ko
@@ -719,6 +737,9 @@ zabeležena.
 
 ### Postavi po diktatu
 
+**Provereno na uređaju 17. avgusta 2026, u konačnom obliku** — sa podelom na
+slušanje i slaganje i sa čitanjem koje se posle potvrde broji kao propust. Radi.
+
 Pozicija se **izgovori**, tabla je prazna, a ti je složiš od figura iz palete.
 Jedini modul koji ide **od zapisa ka slici u glavi** — ostalih šest idu obrnuto,
 od viđene pozicije ka zapisu, pa je baš ovaj smer do sada nedostajao iako je on
@@ -826,9 +847,14 @@ Parovima, gde se pozicija sad pročita pa se odmah pušta prvi potez.
 
 Ostaje za dalje:
 
-- **Sažetak sesije je i dalje samo vizuelni dijalog.** Kraj se izgovara sa
-  rezultatom, ali se iz dijaloga izlazi dugmetom koje se bez ekrana ne vidi. To
-  je jedino mesto gde režim još „propada" nazad na gledanje.
+- **Sažetak sesije je i dalje samo vizuelni dijalog.** Provereno na uređaju
+  17. avgusta 2026, i ispalo je manje nego što je pisalo: **izlaz postoji, samo
+  se ne može znati da postoji.** Dodir van dijaloga i sistemsko dugme nazad
+  vraćaju u meni (`onDismissRequest` u `AppNavigation`), a poeni se upišu **pre**
+  nego što se dijalog pojavi, pa se izlaskom naslepo ništa ne gubi. Ostaje dvoje:
+  ništa ne kaže da se tako izlazi, i **„Ponovi" je nedostižno** — sesija se bez
+  otvaranja očiju ne može ponoviti, a to je baš ono što se posle jedne sesije
+  najčešće hoće. Popravka je govor, ne raspored: izgovoriti šta se sad može.
 - Odluka oko potvrde prepoznatog poteza (sada se potez odigra pa objavi;
   alternativa je pitati pre poteza).
 
@@ -915,23 +941,32 @@ jedno i drugo računa iz istorije.
 
 ## Predlog redosleda za nastavak
 
-Sedam modula postoji; šest je provereno na uređaju. Ostalo je:
+Svih sedam modula je provereno na uređaju. Provereno je 17. avgusta i ovo:
 
-1. **Probati fazu slušanja u „Postavi po diktatu"** — modul je proveren na
-   uređaju, ali podela na slušanje i slaganje je dodata posle toga.
-2. **Probati zone koje se sad zaista šire po visini**, zaključan portret,
-   „slušaj ceo potez" u jednom dahu i potez preko imena figure („rook e two").
-   Sve su to ispravke i dodaci po primedbama sa uređaja.
-3. **Izlaz iz sažetka sesije bez ekrana** — vidi gore; kraj se čuje, ali se
-   dijalog zatvara dugmetom koje se ne vidi.
-4. Dogovoriti brojeve bodovanja i da li rang išta otključava
-5. Ekran sa spiskom dostignuća
-6. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
-7. Težine u Geometriji (vidi gore) — odloženo dogovorom
-8. Ako se proba neki jezik osim engleskog, upisati `isVerified` u
+- diktat u konačnom obliku, sa podelom na slušanje i slaganje;
+- **prepoznavanje polja uopšte** — prvi put na uređaju, radi;
+- ceo potez izgovoren u jednom dahu („b four g four");
+- izgovor poteza sa imenom figure („dama, c tri, c dva");
+- **potez preko imena figure** — „rook e two", i pogrešno ime koje obara potez;
+- **zone bez ekrana i zaključan portret** — slika sa Završnice pokazuje sva tri
+  pojasa u odnosu 50 / 25 / 25, popunjena po visini, i ekran se ne okreće;
+- **sažetak sesije bez ekrana** — ponaša se tačno kako je opisano gore.
+
+**Time je spisak provera na uređaju prazan.** Sve što je ova sesija donela je
+viđeno na telefonu. Ostalo je pisanje:
+
+1. **Izgovoriti izlaz iz sažetka sesije.** Jedina poznata rupa u režimu bez
+   ekrana i jedino što je nedovršeno, a ne samo nedogovoreno. Vidi gore šta se
+   tačno dešava: izlaz radi, ali se za njega ne zna, a „Ponovi" se ne može
+   dohvatiti.
+2. Dogovoriti brojeve bodovanja i da li rang išta otključava
+3. Ekran sa spiskom dostignuća
+4. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
+5. Težine u Geometriji (vidi gore) — odloženo dogovorom
+6. Ako se proba neki jezik osim engleskog, upisati `isVerified` u
    `VoiceLanguages` odnosno `SpeechLanguages`; imena figura postoje samo na
    engleskom i dopunjuju se istim putem
-9. **Zapamti poziciju bez ekrana** — ideja 1 („čuje se, izgovara se"). Traži još
+7. **Zapamti poziciju bez ekrana** — ideja 1 („čuje se, izgovara se"). Traži još
    samo dve reči po jeziku, imena boja; ocenjivanje je već zajedničko i poredi
    skupove, pa redosled ne mora da se pamti
 
