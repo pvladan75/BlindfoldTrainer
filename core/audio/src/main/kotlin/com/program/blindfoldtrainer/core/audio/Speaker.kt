@@ -47,6 +47,15 @@ interface Speaker {
     fun say(board: Board, interrupt: Boolean = true)
 
     /**
+     * Izgovara **rečenicu na jeziku koji je izabran za govor**.
+     *
+     * Modul bira rečenicu, ne jezik: `speaker.say { correct }`. Tako je i sa
+     * poljima — modul za jezik ne zna niti treba da zna, a rečenica koja bi se
+     * pisala u modulu bila bi zauvek na jednom jeziku.
+     */
+    fun say(interrupt: Boolean = true, phrase: SpeechVoice.() -> String)
+
+    /**
      * Ponavlja poslednje izgovoreno, doslovno.
      *
      * Stoji ovde jer mu treba samo ono što je rečeno — pa radi u **svakom**

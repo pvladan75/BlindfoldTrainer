@@ -16,7 +16,6 @@ import com.program.blindfoldtrainer.core.audio.HELPER_ZONE_WEIGHT
 import com.program.blindfoldtrainer.core.audio.MAIN_ZONE_WEIGHT
 import com.program.blindfoldtrainer.core.audio.ZoneTone
 import com.program.blindfoldtrainer.core.model.SessionResult
-import com.program.blindfoldtrainer.core.progress.SessionReward
 
 /**
  * Sažetak sesije bez ekrana.
@@ -48,18 +47,14 @@ import com.program.blindfoldtrainer.core.progress.SessionReward
 @Composable
 fun SessionSummaryEyesFree(
     result: SessionResult,
-    reward: SessionReward?,
-    onAnnounce: (String) -> Unit,
-    onSay: (String) -> Unit,
+    onAnnounce: () -> Unit,
+    onSay: () -> Unit,
     onRepeat: () -> Unit,
     onBackToMenu: () -> Unit
 ) {
     // Šta se sad može — jedino tako se za zone i sazna. Čeka svoj red iza
     // modulovog „Kraj sesije, rešeno toliko od toliko".
-    val zones = stringResource(R.string.summary_eyes_free_zones)
-    LaunchedEffect(Unit) { onAnnounce(zones) }
-
-    val spokenResult = resultSpeech(result, reward)
+    LaunchedEffect(Unit) { onAnnounce() }
 
     EyesFreeControls(
         modifier = Modifier.background(MaterialTheme.colorScheme.background),
@@ -81,7 +76,7 @@ fun SessionSummaryEyesFree(
                         result.solved,
                         result.attempted
                     ),
-                    onClick = { onSay(spokenResult) },
+                    onClick = onSay,
                     tone = ZoneTone.SECONDARY,
                     buzz = Buzz.MEDIUM
                 )
@@ -97,35 +92,4 @@ fun SessionSummaryEyesFree(
             )
         )
     )
-}
-
-/**
- * Rečenica koja se izgovori na zahtev.
- *
- * Poeni, rang i dostignuća su do sada postojali **samo u dijalogu** — ko vežba
- * zatvorenih očiju za njih nije znao. Sastavlja se ovde, a ne u ViewModel-u,
- * jer su imena rangova i dostignuća resursi.
- */
-@Composable
-private fun resultSpeech(result: SessionResult, reward: SessionReward?): String {
-    val parts = mutableListOf(
-        stringResource(
-            R.string.summary_speech_result,
-            result.solved,
-            result.attempted,
-            result.mistakes
-        )
-    )
-
-    reward?.let {
-        parts += stringResource(R.string.summary_speech_xp, it.xp)
-        if (it.isRankUp) {
-            parts += stringResource(R.string.summary_rank_up, stringResource(it.rankAfter.labelRes()))
-        }
-        it.newAchievements.forEach { achievement ->
-            parts += stringResource(R.string.summary_achievement, stringResource(achievement.labelRes()))
-        }
-    }
-
-    return parts.joinToString(" ")
 }

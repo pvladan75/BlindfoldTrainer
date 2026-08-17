@@ -139,6 +139,11 @@ class AndroidSpeaker @Inject constructor(
 
     private fun wordsForSpeech(): SpeechWords = SpeechLanguages.wordsFor(spokenLanguage())
 
+    // Jezik se bira ovde, po istom pravilu kao za polja: ono što se zaista
+    // govori, a ne ono što je izabrano ako glasa za to nema.
+    override fun say(interrupt: Boolean, phrase: SpeechVoice.() -> String) =
+        sayParts(listOf(voiceFor(spokenLanguage()).phrase()), interrupt)
+
     override fun say(text: String, interrupt: Boolean) = sayParts(listOf(text), interrupt)
 
     private fun sayParts(parts: List<String>, interrupt: Boolean = true) {

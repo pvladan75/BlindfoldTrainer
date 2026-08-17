@@ -37,6 +37,18 @@ data class SpeechWords(
      * pozicije naslepo.
      */
     fun describeParts(piece: Piece, squareText: String): List<String> {
+        val prefix = if (on.isBlank()) name(piece) else "${name(piece)} $on"
+        return listOf(prefix, squareText)
+    }
+
+    /**
+     * Ime figure sa bojom i rodom, bez polja: „bela dama", „crni top".
+     *
+     * Stoji odvojeno jer se traži i van čitanja pozicije — kad se kaže šta na
+     * polju zaista stoji, ili koja figura je odgovor. Dva modula su do sada
+     * imala svoje spiskove imena, oba na srpskom; ovde ih jezik već ima.
+     */
+    fun name(piece: Piece): String {
         val isFeminine = piece.type in femininePieces
         val color = when {
             piece.color == Color.WHITE && isFeminine -> whiteFeminine
@@ -44,9 +56,7 @@ data class SpeechWords(
             isFeminine -> blackFeminine
             else -> black
         }
-        val name = pieces.getValue(piece.type)
-        val prefix = if (on.isBlank()) "$color $name" else "$color $name $on"
-        return listOf(prefix, squareText)
+        return "$color ${pieces.getValue(piece.type)}"
     }
 
     /** Isto, spojeno u jednu rečenicu. */

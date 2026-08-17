@@ -229,13 +229,13 @@ class DictationViewModel @Inject constructor(
         }
 
         // Ishod se i izgovara: u modulu koji se sluša, oko je zauzeto tablom.
-        speaker.say(
+        speaker.say {
             if (grade.isPerfect) {
-                "Sve tačno."
+                allCorrect
             } else {
-                "Tačno ${grade.correct.size} od ${grade.correct.size + grade.missed.size}."
+                correctOutOf(grade.correct.size, grade.correct.size + grade.missed.size)
             }
-        )
+        }
 
         reviewJob?.cancel()
         reviewJob = viewModelScope.launch {

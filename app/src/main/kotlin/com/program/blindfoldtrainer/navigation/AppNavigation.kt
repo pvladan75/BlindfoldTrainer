@@ -129,9 +129,8 @@ fun AppNavigation(registry: ModuleRegistry) {
                 if (eyesFree) {
                     SessionSummaryEyesFree(
                         result = finished,
-                        reward = reward,
-                        onAnnounce = summaryViewModel::announce,
-                        onSay = summaryViewModel::sayNow,
+                        onAnnounce = summaryViewModel::announceZones,
+                        onSay = { summaryViewModel.sayResult(finished, reward) },
                         onRepeat = repeatSession,
                         onBackToMenu = backToMenu
                     )

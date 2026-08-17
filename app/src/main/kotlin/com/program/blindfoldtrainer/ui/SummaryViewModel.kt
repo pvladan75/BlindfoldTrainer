@@ -3,8 +3,10 @@ package com.program.blindfoldtrainer.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.program.blindfoldtrainer.core.audio.Speaker
+import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
+import com.program.blindfoldtrainer.core.progress.SessionReward
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -36,11 +38,27 @@ class SummaryViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Eagerly, Settings.DEFAULT.eyesFree)
 
     /**
-     * Čeka svoj red. Modul je na kraju sesije već izgovorio rezultat, pa bi ovo
-     * inače preseklo baš ono zbog čega se sluša.
+     * Šta se sad može. Čeka svoj red: modul je na kraju sesije već izgovorio
+     * rezultat, pa bi ovo inače preseklo baš ono zbog čega se sluša.
      */
-    fun announce(text: String) = speaker.say(text, interrupt = false)
+    fun announceZones() = speaker.say(interrupt = false) { summaryZones }
 
-    /** Preseca — jer je zatraženo dodirom, a ono što se traži ne treba čekati. */
-    fun sayNow(text: String) = speaker.say(text, interrupt = true)
+    /**
+     * Rezultat na zahtev — preseca, jer ono što se izričito traži ne treba
+     * čekati.
+     *
+     * Rang i dostignuće se javljaju **da su osvojeni, ne koji**: imena su danas
+     * resursi ekrana, a drugi spisak za govor bi značio dva izvora istine za
+     * isto ime. Čuje se da se nešto dogodilo, na ekranu piše šta.
+     */
+    fun sayResult(result: SessionResult, reward: SessionReward?) = speaker.say {
+        buildList {
+            add(summaryResult(result.solved, result.attempted, result.mistakes))
+            reward?.let {
+                add(summaryXp(it.xp))
+                if (it.isRankUp) add(summaryRankUp)
+                if (it.newAchievements.isNotEmpty()) add(summaryAchievement)
+            }
+        }.joinToString(" ")
+    }
 }

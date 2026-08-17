@@ -3,6 +3,7 @@ package com.program.blindfoldtrainer.feature.geometry
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.program.blindfoldtrainer.core.audio.Speaker
+import com.program.blindfoldtrainer.core.audio.SpeechVoice
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
@@ -113,7 +114,7 @@ class GeometryViewModel @Inject constructor(
     fun onRepeat() = speaker.repeat()
 
     /** Prvi dodir na zonu za prekid — traži potvrdu, jer je nepovratno. */
-    fun onQuitArmed() = speaker.say("Dodirni ponovo da prekineš.")
+    fun onQuitArmed() = speaker.say { confirmStop }
 
     /** Prekid sesije bez ekrana — broji se dokle se stiglo, ali ne kao završeno. */
     fun onQuit() {
@@ -155,7 +156,7 @@ class GeometryViewModel @Inject constructor(
 
         // Bez ekrana se ispisana ispravka ne vidi, pa mora da se čuje — inače se
         // pogrešan obrazac samo ponavlja.
-        if (_isEyesFree.value) speaker.say(spokenFeedback(feedback, square))
+        if (_isEyesFree.value) speaker.say { spokenFeedback(feedback, square) }
 
         viewModelScope.launch {
             delay(feedbackPause())
@@ -167,12 +168,12 @@ class GeometryViewModel @Inject constructor(
         }
     }
 
-    private fun spokenFeedback(feedback: Feedback, square: Square?): String {
-        val color = if (square?.isLight == true) "svetlo" else "tamno"
+    private fun SpeechVoice.spokenFeedback(feedback: Feedback, square: Square?): String {
+        val color = if (square?.isLight == true) lightSquare else darkSquare
         return when (feedback) {
-            Feedback.CORRECT -> "Tačno."
-            Feedback.WRONG -> "Nije, polje je $color."
-            Feedback.TIMEOUT -> "Isteklo je vreme, polje je $color."
+            Feedback.CORRECT -> correct
+            Feedback.WRONG -> wrongSquareIs(color)
+            Feedback.TIMEOUT -> timeoutSquareIs(color)
         }
     }
 
@@ -189,10 +190,7 @@ class GeometryViewModel @Inject constructor(
         val state = _uiState.value
         if (_isEyesFree.value) {
             // Bez ekrana se sažetak ne vidi, pa bi sesija prosto utihnula.
-            speaker.say(
-                "Kraj sesije. Tačno ${state.solved} od ${state.questionNumber}.",
-                interrupt = false
-            )
+            speaker.say(interrupt = false) { sessionEndCorrect(state.solved, state.questionNumber) }
         }
         _uiState.update { it.copy(isFinished = true, feedback = null) }
     }

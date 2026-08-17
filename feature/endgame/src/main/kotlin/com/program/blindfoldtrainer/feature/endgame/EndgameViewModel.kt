@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.program.blindfoldtrainer.core.audio.Speaker
+import com.program.blindfoldtrainer.core.audio.SpeechVoice
 import com.program.blindfoldtrainer.core.audio.SpokenInput
 import com.program.blindfoldtrainer.core.audio.VoiceInput
 import com.program.blindfoldtrainer.core.audio.VoiceState
@@ -92,13 +93,19 @@ private data class UndoPoint(
 )
 
 /** Ime figure za izgovor. Rod se ne menja jer stoji uz „može" i „ne može". */
-private fun PieceType.spokenName(): String = when (this) {
-    PieceType.KING -> "kralj"
-    PieceType.QUEEN -> "dama"
-    PieceType.ROOK -> "top"
-    PieceType.BISHOP -> "lovac"
-    PieceType.KNIGHT -> "skakač"
-    PieceType.PAWN -> "pešak"
+/**
+ * Ishod kao izgovorena rečenica.
+ *
+ * Odvojeno od `messageFor`, koje ostaje za ekran: ekran prati jezik aplikacije,
+ * govor prati izabrani glas, i to su dve različite ose.
+ */
+private fun SpeechVoice.spokenOutcome(outcome: EndgameOutcome): String = when (outcome) {
+    EndgameOutcome.MATED -> outcomeMated
+    EndgameOutcome.LOST -> outcomeLost
+    EndgameOutcome.STALEMATE -> outcomeStalemate
+    EndgameOutcome.FIFTY_MOVES -> outcomeFiftyMoves
+    EndgameOutcome.GAVE_UP -> outcomeGaveUp
+    EndgameOutcome.IN_PROGRESS -> ""
 }
 
 private fun setupFor(difficulty: Difficulty) = when (difficulty) {
@@ -135,7 +142,7 @@ class EndgameViewModel @Inject constructor(
     fun onUndo() {
         val point = undoStack.removeLastOrNull()
         if (point == null) {
-            speaker.say("Nema šta da se poništi.")
+            speaker.say { nothingToUndo }
             return
         }
 
@@ -158,14 +165,14 @@ class EndgameViewModel @Inject constructor(
             )
         }
 
-        speaker.say("Poništeno.")
+        speaker.say { undone }
         // Posle poništavanja se pozicija ponovo čita: to je ispravka, a ne
         // pomoć, pa se i ne broji.
         speaker.say(point.position.board, interrupt = false)
     }
 
     /** Prvi dodir na zonu za odustajanje — traži potvrdu, jer je nepovratno. */
-    fun onGiveUpArmed() = speaker.say("Dodirni ponovo da odustaneš.")
+    fun onGiveUpArmed() = speaker.say { confirmGiveUp }
 
     /** Ponavlja poslednje izgovoreno — nisi dočuo, a ne da ti se slika raspala. */
     fun onRepeatLast() = speaker.repeat()
@@ -253,16 +260,15 @@ class EndgameViewModel @Inject constructor(
 
         val actual = state.position.board[from]
         if (named != null && actual?.type != named) {
-            speaker.say("Na")
+            speaker.say { onSquare }
             speaker.say(from, interrupt = false)
-            speaker.say(
+            speaker.say(interrupt = false) {
                 if (actual == null) {
-                    "nema figure"
+                    noPieceThere
                 } else {
-                    "nije ${named.spokenName()} nego ${actual.type.spokenName()}"
-                },
-                interrupt = false
-            )
+                    pieceMismatch(nameOf(named), nameOf(actual.type))
+                }
+            }
             onIllegalMove(from)
             return
         }
@@ -290,15 +296,15 @@ class EndgameViewModel @Inject constructor(
 
         when {
             origins.isEmpty() -> {
-                speaker.say("Nijedan ${type.spokenName()} ne može na")
+                speaker.say { noneCanReach(nameOf(type)) }
                 speaker.say(to, interrupt = false)
                 onIllegalMove(to)
             }
 
             origins.size > 1 -> {
-                speaker.say("Dva puta ${type.spokenName()} može na")
+                speaker.say { twoCanReach(nameOf(type)) }
                 speaker.say(to, interrupt = false)
-                speaker.say("reci i polazno polje", interrupt = false)
+                speaker.say(interrupt = false) { sayOriginToo }
             }
 
             // Promocija se podrazumeva u damu — kao i pri dodiru.
@@ -583,7 +589,9 @@ class EndgameViewModel @Inject constructor(
         if (outcome == EndgameOutcome.MATED) solvedCount++
 
         val message = messageFor(outcome)
-        speaker.say(message, interrupt = false)
+        // Ekran i govor idu odvojeno: poruka prati jezik aplikacije, izgovor
+        // prati izabrani glas.
+        speaker.say(interrupt = false) { spokenOutcome(outcome) }
 
         _uiState.update {
             it.copy(
@@ -617,7 +625,7 @@ class EndgameViewModel @Inject constructor(
         speaker.stop()
         // Mikrofon ne sme da ostane upaljen kad se od korisnika više ništa ne traži.
         voiceInput.stop()
-        speaker.say(messageFor(EndgameOutcome.GAVE_UP))
+        speaker.say { outcomeGaveUp }
 
         _uiState.update {
             it.copy(
@@ -632,7 +640,7 @@ class EndgameViewModel @Inject constructor(
 
         // Bez ekrana nema zone „sledeća pozicija", a otkrivene figure se ionako
         // ne vide — pa bi vežba posle odustajanja stala zauvek.
-        speaker.say("Prelazim na sledeću poziciju.", interrupt = false)
+        speaker.say(interrupt = false) { movingToNextPosition }
         outcomeJob?.cancel()
         outcomeJob = viewModelScope.launch {
             delay(OUTCOME_PAUSE_MILLIS)
@@ -653,7 +661,7 @@ class EndgameViewModel @Inject constructor(
         // Kraj se izgovara: bez ekrana se sažetak ne vidi, pa bi sesija prosto
         // utihnula.
         val state = _uiState.value
-        speaker.say("Kraj sesije. Rešeno ${solvedCount} od ${state.puzzleNumber}.", interrupt = false)
+        speaker.say(interrupt = false) { sessionEndSolved(solvedCount, state.puzzleNumber) }
         _uiState.update { it.copy(isFinished = true) }
     }
 

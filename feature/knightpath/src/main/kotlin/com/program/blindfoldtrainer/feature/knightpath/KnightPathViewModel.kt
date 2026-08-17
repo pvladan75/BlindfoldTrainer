@@ -120,15 +120,15 @@ class KnightPathViewModel @Inject constructor(
         val state = _uiState.value
         val current = state.current ?: return
         val target = state.target ?: return
-        speaker.say("Skakač je na")
+        speaker.say { knightIsOn }
         speaker.say(current, interrupt = false)
-        speaker.say("cilj", interrupt = false)
+        speaker.say(interrupt = false) { goal }
         speaker.say(target, interrupt = false)
-        speaker.say("preostalo poteza ${state.movesLeft}", interrupt = false)
+        speaker.say(interrupt = false) { movesLeft(state.movesLeft) }
     }
 
     /** Prvi dodir na zonu za odustajanje — traži potvrdu, jer je nepovratno. */
-    fun onGiveUpArmed() = speaker.say("Dodirni ponovo da odustaneš.")
+    fun onGiveUpArmed() = speaker.say { confirmGiveUp }
 
     /** Bezbedno je zvati više puta — pokreće sesiju samo prvi put. */
     fun startOnce(difficulty: Difficulty) {
@@ -186,7 +186,7 @@ class KnightPathViewModel @Inject constructor(
     private fun flashError(square: Square) {
         errorJob?.cancel()
         _uiState.update { it.copy(errorSquare = square, mistakes = it.mistakes + 1) }
-        if (_isEyesFree.value) speaker.say("Nije potez skakača.")
+        if (_isEyesFree.value) speaker.say { notKnightMove }
         errorJob = viewModelScope.launch {
             delay(ERROR_FLASH_MILLIS)
             _uiState.update { it.copy(errorSquare = null) }
@@ -236,11 +236,11 @@ class KnightPathViewModel @Inject constructor(
     private fun sayOutcome(feedback: Feedback) {
         val state = _uiState.value
         if (feedback == Feedback.SOLVED) {
-            speaker.say("Tačno, u ${state.optimalMoves} poteza.")
+            speaker.say { correctInMoves(state.optimalMoves) }
             return
         }
 
-        speaker.say("Nije uspelo. Najkraće ide ovako:")
+        speaker.say { shortestGoesLikeThis }
         state.solution.forEach { speaker.say(it, interrupt = false) }
     }
 
@@ -249,10 +249,7 @@ class KnightPathViewModel @Inject constructor(
         val state = _uiState.value
         if (_isEyesFree.value) {
             // Bez ekrana se sažetak ne vidi, pa bi sesija prosto utihnula.
-            speaker.say(
-                "Kraj sesije. Rešeno ${state.solved} od ${state.taskNumber}.",
-                interrupt = false
-            )
+            speaker.say(interrupt = false) { sessionEndSolved(state.solved, state.taskNumber) }
         }
         _uiState.update { it.copy(isFinished = true, feedback = null) }
     }
@@ -279,11 +276,11 @@ class KnightPathViewModel @Inject constructor(
         if (!_isEyesFree.value) return
 
         // Zadatak čeka svoj red, da ne preseče izgovor prethodnog ishoda.
-        speaker.say("Skakač sa", interrupt = false)
+        speaker.say(interrupt = false) { knightFrom }
         speaker.say(start, interrupt = false)
-        speaker.say("na", interrupt = false)
+        speaker.say(interrupt = false) { toSquare }
         speaker.say(target, interrupt = false)
-        speaker.say("u $optimalMoves poteza", interrupt = false)
+        speaker.say(interrupt = false) { inMoves(optimalMoves) }
     }
 
     /**

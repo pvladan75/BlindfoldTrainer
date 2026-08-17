@@ -45,7 +45,7 @@ blindfold animacija i raspakivanje ViewModel-a. Stari projekat se odatle napušt
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **sedam** modula za trening. Poslednji build
-je prošao čisto, bez upozorenja. **153 testa, nijedan ne pada.**
+je prošao čisto, bez upozorenja. **159 testova, nijedan ne pada.**
 
 **Svih sedam modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -67,7 +67,7 @@ adb install -r C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer\app\build\o
 | `:core:chess` | `Board`, `Position`, `MoveGenerator`, `Attacks`, `Fen`, `Search`, `KnightPath`, `San`, `Pgn`, `Reconstruction` | **70** |
 | `:core:moduleapi` | ugovor `TrainingModule` | — |
 | `:core:designsystem` | tema, `ChessBoard`, `PieceVisibility`, sličice figura | — |
-| `:core:audio` | `Speaker` (TTS), `VoiceInput` (Vosk), zone bez ekrana | **46** |
+| `:core:audio` | `Speaker` (TTS), `SpeechPhrases`, `VoiceInput` (Vosk), zone bez ekrana | **52** |
 | `:core:engine` | `ChessEngine` interfejs, `LocalEngine` | — |
 | `:core:progress` | `Xp`, `Rank`, `Achievement`, `ProgressSnapshot`, `ProgressRepository` | **27** |
 | `:core:data` | Room istorija sesija, DataStore podešavanja | — |
@@ -531,39 +531,70 @@ prepoznavanje — inače govori polje koje sama ne bi razumela.
 Formatiranje je zato prešlo iz proširenja u `Speaker` (`say(move)`, `say(square)`,
 `say(board)`): zavisi od jezika, a moduli za jezik ne znaju niti treba da znaju.
 
-### Izgovorene rečenice su zakucane na srpskom
+### Izgovorene rečenice prate jezik govora
 
 Prijavljeno sa uređaja 17. avgusta 2026: kad se za izgovor izabere **engleski**,
-čuje se engleski glas kako **čita srpske reči**.
+čuo se engleski glas kako **čita srpske reči**. Polja i imena figura su jezik
+odavno pratili; rečenice oko njih su stajale kao literali u modulima.
 
-Uzrok nije ni u jednom modulu nego u podeli posla koja nikad nije dovršena:
+Urađeno 18. avgusta: `SpeechPhrases` u `:core:audio`, sa **srpskim i engleskim**.
 
-| | prati jezik izgovora |
+#### Dve ose, i ne mešaju se
+
+| šta | prati |
 |---|---|
-| polja („e four", „e vier") | ✅ `SpeechWords` |
-| imena figura, boje, slaganje roda | ✅ `SpeechWords` |
-| **rečenice oko toga** | ❌ **srpski tekst u kodu** |
+| **govor** — sve što se čuje | jezik izgovora iz Podešavanja |
+| **ekran** — sve što se vidi | jezik aplikacije |
 
-Oko **trideset izgovorenih rečenica** u svih sedam modula stoji kao literal:
-„Kraj sesije. Rešeno 1 od 4", „Dodirni ponovo da odustaneš", „Tačno", „Nije
-potez skakača", „Prelazim na sledeću poziciju", „Na ce tri nije top nego dama".
-Sve one idu kroz TTS glas izabranog jezika, kakav god on bio.
+Ovo nije ista stvar i ne sme se spojiti: čovek sme da drži aplikaciju na svom
+jeziku a polja da sluša na engleskom, jer engleski TTS glas ima svaki telefon a
+njegov možda nema.
 
-Do sada se nije videlo jer je aplikacija cela na srpskom, pa se engleski birao
-samo zbog **prepoznavanja** — a to je drugi jezik i drugi smer.
+Gde je ista rečenica išla **i u govor i na ekran** — ishod u Završnici
+(`messageFor`) i pitanje u Prati partiju (`question.prompt`) — sad su razdvojeni:
+govor uzima iz `SpeechPhrases`, ekran ostaje na svome.
 
-**Predlog:** tabela `SpeechPhrases` uz postojeći `SpeechWords`, u istom fajlu i
-po istom obrascu; moduli traže rečenicu umesto da je pišu. Posao je mehanički,
-ali dodiruje svih sedam modula, pa se ne radi uzgred.
+#### Tri odluke u samoj tabeli
 
-**Dogovoreno o obimu: srpski i engleski, a ostalih osam jezika koristi engleske
-rečenice.** Isto pravilo po kom imena polja nose `isVerified` — osam prevoda
-koje niko od nas ne može da proveri bilo bi osam tihih grešaka umesto jedne
-poznate. Ko izabere poljski, dobiće poljska polja u engleskim rečenicama, i to
-je pošteniji ishod od izmišljenog poljskog.
+- **Sučelje, ne mapa.** Nova rečenica mora da bude **greška u prevođenju** dok je
+  svaki jezik ne dobije. Mapa bi je propustila i otkrila tek na uređaju, kao
+  tišinu — a nemi otkaz je u ovom projektu već triput skupo koštao.
+- **Funkcije, ne obrasci sa `%s`.** Jezici se ne slažu oko brojeva: „u 1 poteza"
+  na engleskom mora biti „in 1 move", a u množini „in 3 moves". Funkcija to reši
+  u jeziku kom pripada, umesto da svaki modul pravi izuzetak.
+- **Ostali jezici dobijaju engleske rečenice**, ne prazne i ne srpske. Isto
+  pravilo po kom imena polja nose `isVerified`: bolje poznata zamena nego
+  izmišljen prevod koji niko od nas ne može da proveri.
 
-Dok se ne uradi: **izgovor na jeziku koji nije srpski je poluupotrebljiv** —
-polja i figure su tačni, sve ostalo nije.
+#### Imena figura su usput prestala da budu srpska
+
+Završnica i Prati partiju su imale **svoje spiskove imena figura**, oba na
+srpskom, iako ih `SpeechWords` nosi po jeziku. Sad se ime traži iz `SpeechVoice`
+— to je ono što modul dobije u ruke kad govori: rečenice i imena zajedno.
+
+Zato ime figure prati **jezik**, a rečenica prati zamenu: ko govori poljski
+dobija poljska imena u engleskim rečenicama. Test to i čuva, jer je namerno.
+
+#### Zamka koju je uhvatio prevodilac
+
+`speaker.say { correct }` u Prati partiju nije radilo: u tom bloku već postoji
+lokalno `correct` tipa `Boolean`, i ono **zaklanja** rečenicu istog imena iz
+prijemnika. Kotlin daje prednost lokalnom imenu, pa je ispravka `this.correct`.
+
+Vredi zapamtiti pri dodavanju novih rečenica: **kratko ime rečenice se sudara sa
+kratkim imenom promenljive**, a prevodilac to prijavi samo kad se tipovi razlikuju.
+
+#### Šta je ostalo
+
+**Tekst na ekranu je i dalje srpski u kodu** — `statusMessage` u ViewModel-ima,
+poruke ishoda, pitanja. Dok ViewModel proizvodi tekst koji se vidi, prevod
+aplikacije nije moguć: ono što treba je da ViewModel javlja **stanje** (ishod,
+vrstu odgovora), a da ekran od toga pravi tekst preko resursa. To je zaseban
+posao i nije počet.
+
+Iz istog razloga rang i dostignuće se u sažetku izgovaraju **bez imena** — „Novi
+rang", ne „Novi rang: Majstor". Imena su danas resursi ekrana; drugi spisak u
+`SpeechPhrases` značio bi dva izvora istine za isto ime.
 
 ### Čitanje pozicije
 
@@ -1104,16 +1135,17 @@ Svih sedam modula je provereno na uređaju. Provereno je 17. avgusta i ovo:
 - **sažetak sesije bez ekrana** — provereno kako se stari dijalog ponaša
   naslepo, i baš je ta provera odredila kako izgleda ispravka.
 
-**Time je spisak provera na uređaju prazan** — i poslednja rupa u režimu bez
-ekrana je zatvorena istog dana: sažetak sesije je dobio zone i izgovara šta se
-sad može (vidi „Sažetak sesije bez ekrana"). **To još nije viđeno na uređaju.**
+**Šta čeka telefon:** dve izmene od 18. avgusta nisu viđene na uređaju —
+**sažetak sesije sa zonama** i **rečenice po jeziku govora**. Ovu drugu treba
+slušati na oba jezika: srpski da se ništa nije izgubilo, engleski da više ne
+čita srpske reči.
 
 Ostalo je:
 
-1. **Prevesti izgovorene rečenice** (`SpeechPhrases`, srpski i engleski, ostali
-   na engleski — vidi gore). Jedina prava rupa koja je ostala, i jedina stavka
-   sa ovog spiska koja je posao a ne dogovor. Sve dok stoji, izbor jezika
-   izgovora vredi samo za polja i figure.
+1. **Prevod ekranskog teksta.** Govor je od 18. avgusta na dva jezika, ekran
+   nije: ViewModel-i i dalje proizvode srpski tekst koji se vidi. Dok je tako,
+   aplikacija se ne može prevesti. Posao nije prevod nego **razdvajanje**: neka
+   ViewModel javlja stanje, a ekran neka od njega pravi tekst preko resursa.
 2. **Profili**, ako se prihvate — pre svega što se oslanja na napredak, jer im
    je mesto u bazi a ne u prikazu (vidi „Šta bi aplikacija još mogla da bude")
 3. Dogovoriti brojeve bodovanja, šta znači „savladan modul", i da li rang išta

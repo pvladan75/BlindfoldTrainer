@@ -97,7 +97,7 @@ class FollowGameViewModel @Inject constructor(
     fun onRepeat() = speaker.repeat()
 
     /** Prvi dodir na zonu za prekid — traži potvrdu, jer je nepovratno. */
-    fun onQuitArmed() = speaker.say("Dodirni ponovo da prekineš.")
+    fun onQuitArmed() = speaker.say { confirmStop }
 
     /** Prekid sesije — broji se dokle se stiglo, ali ne kao završena sesija. */
     fun onQuit() {
@@ -180,7 +180,7 @@ class FollowGameViewModel @Inject constructor(
             // Bez ekrana se ne vidi ni da je partija učitana ni šta se sad
             // očekuje — a prvi potez traži dodir, pa bi se ćutke stajalo.
             if (_isEyesFree.value) {
-                speaker.say("Partija je spremna. Dodirni za prvi potez.")
+                speaker.say { gameReady }
             }
         }
     }
@@ -229,9 +229,11 @@ class FollowGameViewModel @Inject constructor(
             // Ispisana ispravka se bez ekrana ne vidi; bez nje se pogrešna
             // slika pozicije nosi dalje kroz celu partiju.
             if (correct) {
-                speaker.say("Tačno.")
+                // `this.` jer lokalno `correct` (Boolean) zaklanja rečenicu
+                // istog imena iz prijemnika.
+                speaker.say { this.correct }
             } else {
-                speaker.say("Nije. ${question.piece.spokenName()} je na")
+                speaker.say { wrongPieceIsOn(nameOf(question.piece)) }
                 speaker.say(question.square, interrupt = false)
             }
         }
@@ -261,7 +263,7 @@ class FollowGameViewModel @Inject constructor(
         }
 
         // Čeka svoj red, da ne preseče izgovor poteza koji ga je izazvao.
-        if (_isEyesFree.value) speaker.say(question.prompt, interrupt = false)
+        if (_isEyesFree.value) speaker.say(interrupt = false) { whereIsPiece(nameOf(question.piece)) }
     }
 
     /** „21. bxc5" za belog, „21... Bg7" za crnog. */
@@ -277,10 +279,7 @@ class FollowGameViewModel @Inject constructor(
         val state = _uiState.value
         if (_isEyesFree.value) {
             // Bez ekrana se sažetak ne vidi, pa bi sesija prosto utihnula.
-            speaker.say(
-                "Kraj sesije. Tačno ${state.solved} od ${state.questionNumber}.",
-                interrupt = false
-            )
+            speaker.say(interrupt = false) { sessionEndCorrect(state.solved, state.questionNumber) }
         }
 
         _uiState.update { it.copy(isFinished = true, phase = FollowPhase.FOLLOWING) }
