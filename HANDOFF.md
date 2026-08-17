@@ -531,6 +531,40 @@ prepoznavanje — inače govori polje koje sama ne bi razumela.
 Formatiranje je zato prešlo iz proširenja u `Speaker` (`say(move)`, `say(square)`,
 `say(board)`): zavisi od jezika, a moduli za jezik ne znaju niti treba da znaju.
 
+### Izgovorene rečenice su zakucane na srpskom
+
+Prijavljeno sa uređaja 17. avgusta 2026: kad se za izgovor izabere **engleski**,
+čuje se engleski glas kako **čita srpske reči**.
+
+Uzrok nije ni u jednom modulu nego u podeli posla koja nikad nije dovršena:
+
+| | prati jezik izgovora |
+|---|---|
+| polja („e four", „e vier") | ✅ `SpeechWords` |
+| imena figura, boje, slaganje roda | ✅ `SpeechWords` |
+| **rečenice oko toga** | ❌ **srpski tekst u kodu** |
+
+Oko **trideset izgovorenih rečenica** u svih sedam modula stoji kao literal:
+„Kraj sesije. Rešeno 1 od 4", „Dodirni ponovo da odustaneš", „Tačno", „Nije
+potez skakača", „Prelazim na sledeću poziciju", „Na ce tri nije top nego dama".
+Sve one idu kroz TTS glas izabranog jezika, kakav god on bio.
+
+Do sada se nije videlo jer je aplikacija cela na srpskom, pa se engleski birao
+samo zbog **prepoznavanja** — a to je drugi jezik i drugi smer.
+
+**Predlog:** tabela `SpeechPhrases` uz postojeći `SpeechWords`, u istom fajlu i
+po istom obrascu; moduli traže rečenicu umesto da je pišu. Posao je mehanički,
+ali dodiruje svih sedam modula, pa se ne radi uzgred.
+
+**Dogovoreno o obimu: srpski i engleski, a ostalih osam jezika koristi engleske
+rečenice.** Isto pravilo po kom imena polja nose `isVerified` — osam prevoda
+koje niko od nas ne može da proveri bilo bi osam tihih grešaka umesto jedne
+poznate. Ko izabere poljski, dobiće poljska polja u engleskim rečenicama, i to
+je pošteniji ishod od izmišljenog poljskog.
+
+Dok se ne uradi: **izgovor na jeziku koji nije srpski je poluupotrebljiv** —
+polja i figure su tačni, sve ostalo nije.
+
 ### Čitanje pozicije
 
 `Board.spoken(words)` daje „beli kralj na e dva, bela dama na e pet. crni kralj
@@ -1018,16 +1052,20 @@ Svih sedam modula je provereno na uređaju. Provereno je 17. avgusta i ovo:
 ekrana je zatvorena istog dana: sažetak sesije je dobio zone i izgovara šta se
 sad može (vidi „Sažetak sesije bez ekrana"). **To još nije viđeno na uređaju.**
 
-Ostalo je samo ono što nije pisanje nego dogovor:
+Ostalo je:
 
-1. Dogovoriti brojeve bodovanja i da li rang išta otključava
-2. Ekran sa spiskom dostignuća
-3. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
-4. Težine u Geometriji (vidi gore) — odloženo dogovorom
-5. Ako se proba neki jezik osim engleskog, upisati `isVerified` u
+1. **Prevesti izgovorene rečenice** (`SpeechPhrases`, srpski i engleski, ostali
+   na engleski — vidi gore). Jedina prava rupa koja je ostala, i jedina stavka
+   sa ovog spiska koja je posao a ne dogovor. Sve dok stoji, izbor jezika
+   izgovora vredi samo za polja i figure.
+2. Dogovoriti brojeve bodovanja i da li rang išta otključava
+3. Ekran sa spiskom dostignuća
+4. Više vrsta pitanja u Prati partiju — zasad postoji samo „gde stoji figura"
+5. Težine u Geometriji (vidi gore) — odloženo dogovorom
+6. Ako se proba neki jezik osim engleskog, upisati `isVerified` u
    `VoiceLanguages` odnosno `SpeechLanguages`; imena figura postoje samo na
    engleskom i dopunjuju se istim putem
-6. **Zapamti poziciju bez ekrana** — ideja 1 („čuje se, izgovara se"). Traži još
+7. **Zapamti poziciju bez ekrana** — ideja 1 („čuje se, izgovara se"). Traži još
    samo dve reči po jeziku, imena boja; ocenjivanje je već zajedničko i poredi
    skupove, pa redosled ne mora da se pamti
 
