@@ -141,7 +141,18 @@ data class SessionResult(
      * Postoji zato što se bez vremena ne može reći „nekad si radio ovako, sad
      * ovako" — a snimak koji sabije celu istoriju u jedan broj upravo to ne ume.
      */
-    val finishedAtMillis: Long? = null
+    val finishedAtMillis: Long? = null,
+
+    /**
+     * Koja je **vrsta zadatka** ovo bila.
+     *
+     * Bez toga se rezultati iz raznih modula slivaju u jedan broj, a ne smeju:
+     * jedno pitanje u Geometriji traje dve sekunde, jedna pozicija u Završnici
+     * tri minuta, a oba se broje kao jedan pokušaj. Prosek preko toga ne meri
+     * ništa, a tačnost pada čim se pređe na teži modul — pa merilo kažnjava baš
+     * ono što treba da nagradi.
+     */
+    val taskId: String? = null
 ) {
     init {
         require(attempted >= 0) { "attempted ne može biti negativan" }

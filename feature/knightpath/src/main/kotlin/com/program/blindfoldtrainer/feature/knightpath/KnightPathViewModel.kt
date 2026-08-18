@@ -313,6 +313,7 @@ class KnightPathViewModel @Inject constructor(
             // krajevi lestvice — modul još ne prima porudžbinu, nego čita
             // podešavanje, ali profil od sada zna koliko uspeh vredi.
             support = if (_isEyesFree.value) Support.NONE else Support.FULL,
+            taskId = KNIGHT_SHORTEST_PATH.id,
             bySkill = mapOf(
                 KNIGHT_SHORTEST_PATH.measures to SkillTally(
                     attempted = state.taskNumber,

@@ -22,6 +22,7 @@ class SkillProfileTest {
 
     private fun session(
         moduleId: ModuleId = ModuleId.GEOMETRY,
+        taskId: String? = "square_color",
         attempted: Int = 10,
         solved: Int = 10,
         support: Support? = Support.FULL,
@@ -36,7 +37,8 @@ class SkillProfileTest {
         elapsedMillis = 60_000,
         bySkill = bySkill,
         support = support,
-        finishedAtMillis = finishedAtMillis
+        finishedAtMillis = finishedAtMillis,
+        taskId = taskId
     )
 
     @Test
@@ -51,9 +53,10 @@ class SkillProfileTest {
         )
 
         val profile = history.toProgressSnapshot().bySkill.getValue(Skill.COORDINATES)
+        val task = profile.byTask.getValue("square_color")
 
-        assertEquals(SkillTally(20, 17), profile.at(Support.FULL))
-        assertEquals(SkillTally(10, 5), profile.at(Support.NONE))
+        assertEquals(SkillTally(20, 17), task.at(Support.FULL))
+        assertEquals(SkillTally(10, 5), task.at(Support.NONE))
         assertEquals(30, profile.attempted)
     }
 
@@ -71,7 +74,6 @@ class SkillProfileTest {
 
         val snapshot = history.toProgressSnapshot()
 
-        assertEquals(SkillTally(10, 8), snapshot.bySkill.getValue(Skill.COORDINATES).at(Support.FULL))
         assertEquals(10, snapshot.bySkill.getValue(Skill.COORDINATES).attempted)
         assertEquals(2, snapshot.sessions)
     }
@@ -95,21 +97,21 @@ class SkillProfileTest {
      */
     @Test
     fun `drzana precka trazi i dovoljno pokusaja i dovoljno tacnosti`() {
-        val solid = SkillProfile()
+        val solid = TaskProfile()
             .plus(Support.FULL, SkillTally(20, 19))
             .plus(Support.NONE, SkillTally(10, 9))
 
         assertEquals(Support.NONE, solid.heldRung())
 
         // Bez table je probano, ali premalo — drži se i dalje samo uz tablu.
-        val shaky = SkillProfile()
+        val shaky = TaskProfile()
             .plus(Support.FULL, SkillTally(20, 19))
             .plus(Support.NONE, SkillTally(2, 2))
 
         assertEquals(Support.FULL, shaky.heldRung())
 
         // Ima pokušaja, ali tačnost ne drži ni na jednoj prečki.
-        val failing = SkillProfile().plus(Support.FULL, SkillTally(20, 5))
+        val failing = TaskProfile().plus(Support.FULL, SkillTally(20, 5))
         assertNull(failing.heldRung())
     }
 
@@ -119,8 +121,8 @@ class SkillProfileTest {
      */
     @Test
     fun `precka vredi vise od procenta pri poredjenju`() {
-        val comfortable = SkillProfile().plus(Support.FULL, SkillTally(20, 20))
-        val harder = SkillProfile().plus(Support.NONE, SkillTally(20, 14))
+        val comfortable = TaskProfile().plus(Support.FULL, SkillTally(20, 20))
+        val harder = TaskProfile().plus(Support.NONE, SkillTally(20, 14))
 
         assertTrue(
             "vežba bez table mora da stoji bolje od savršene uz tablu",
@@ -166,7 +168,7 @@ class SkillProfileTest {
             session(bySkill = mapOf(Skill.COORDINATES to SkillTally(10, 9, millis = 20_000)))
         }
 
-        val trend = history.toProgressSnapshot().trendFor(Skill.COORDINATES)!!
+        val trend = history.toProgressSnapshot().trendFor(Skill.COORDINATES, "square_color")!!
 
         assertTrue("mora imati sa čim da poredi", trend.hasComparison)
         assertEquals(20, trend.recent.attempted)
@@ -178,10 +180,10 @@ class SkillProfileTest {
     @Test
     fun `bez dovoljno istorije nema poredjenja`() {
         val history = listOf(session(bySkill = mapOf(Skill.COORDINATES to SkillTally(10, 9))))
-        val trend = history.toProgressSnapshot().trendFor(Skill.COORDINATES)!!
+        val trend = history.toProgressSnapshot().trendFor(Skill.COORDINATES, "square_color")!!
 
         assertTrue("jedan prozor nije trend", !trend.hasComparison)
-        assertNull(history.toProgressSnapshot().trendFor(Skill.CALCULATION))
+        assertNull(history.toProgressSnapshot().trendFor(Skill.CALCULATION, "play_out"))
     }
 
     /**
@@ -231,6 +233,28 @@ class SkillProfileTest {
             setOf(Skill.PIECE_GEOMETRY, Skill.POSITION_HOLD),
             withCoordinates.foundationsMissing(Skill.POSITION_UPDATE)
         )
+    }
+
+    /**
+     * Sesije drugog zadatka ne ulaze u trend, ma koliko ih bilo — inače bi
+     * prelazak na drugi modul izgledao kao nazadovanje.
+     */
+    @Test
+    fun `trend ne meri drugi zadatak`() {
+        val history = (1..4).map {
+            session(
+                taskId = "reconstruct",
+                bySkill = mapOf(Skill.COORDINATES to SkillTally(10, 3, millis = 200_000))
+            )
+        } + listOf(
+            session(bySkill = mapOf(Skill.COORDINATES to SkillTally(10, 9, millis = 20_000)))
+        )
+
+        val trend = history.toProgressSnapshot().trendFor(Skill.COORDINATES, "square_color")!!
+
+        assertEquals(10, trend.recent.attempted)
+        assertEquals(0, trend.earlier.attempted)
+        assertTrue("jedan prozor nije trend", !trend.hasComparison)
     }
 
     @Test

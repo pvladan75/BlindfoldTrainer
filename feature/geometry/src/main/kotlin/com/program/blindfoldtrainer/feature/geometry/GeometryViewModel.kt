@@ -299,6 +299,7 @@ class GeometryViewModel @Inject constructor(
             support = _support.value,
             // Ceo modul meri jednu veštinu, pa je razlaganje kratko — ali ide
             // istim kanalom kao i kod modula koji mešaju više vrsta pitanja.
+            taskId = SQUARE_COLOR.id,
             bySkill = mapOf(
                 SQUARE_COLOR.measures to SkillTally(
                     attempted = state.questionNumber,

@@ -253,6 +253,7 @@ class RecallViewModel @Inject constructor() : ViewModel() {
             // Zadatak zna samo punu podršku — slaže se iz palete, a paleta
             // traži oko.
             support = Support.FULL,
+            taskId = RECALL_RECONSTRUCT.id,
             bySkill = mapOf(
                 RECALL_RECONSTRUCT.measures to SkillTally(
                     attempted = state.taskNumber,

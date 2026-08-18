@@ -45,7 +45,7 @@ blindfold animacija i raspakivanje ViewModel-a. Stari projekat se odatle napušt
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **sedam** modula za trening. Poslednji build
-je prošao čisto, bez upozorenja. **186 testova, nijedan ne pada.**
+je prošao čisto, bez upozorenja. **187 testova, nijedan ne pada.**
 
 **Svih sedam modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -673,6 +673,44 @@ veština koja se uvek vežba uz punu podršku — kao držanje, koje mere samo Z
 poziciju i Diktat — ne može da pokaže da je automatska bez pomoći. To nije greška
 u meri nego posledica toga koji zadaci postoje; popraviće se kad zadaci pokriju
 prazne vrste.
+
+### Preko modula se ne sabira
+
+Pitanje sa strane: *ako se za jednu veštinu podaci skupljaju iz raznih modula,
+kako to strpati u jedan broj — i treba li uopšte?* Odgovor je **ne treba**, a
+aplikacija je to dotad radila.
+
+Tri razloga, i svaki je dovoljan:
+
+- **„Jedan pokušaj" nije ista stvar.** Pitanje u Geometriji traje dve sekunde,
+  pozicija u Završnici tri minuta; oba se broje kao jedan. Prosečno vreme po
+  pokušaju — uvedeno baš da razlikuje *znam* od *znam automatski* — time postaje
+  besmisleno.
+- **Tačnost nije na istoj skali.** Ko pređe sa lakog na teži modul, **broj mu
+  padne iako je napredovao**. To je najgora vrsta merila: kažnjava ono što treba
+  da nagradi.
+- **Isti naziv, različita dubina.** Ažuriranje u Parovima je nekoliko poteza, u
+  Prati partiju desetine, u Završnici uz protivnika — tri stepena iste veštine, a
+  zbir ih sakrije.
+
+Zato sesija nosi i `taskId` (kolona u bazi, verzija 4), a profil se razlaže na
+**`SkillProfile` → `TaskProfile` → prečka**. Zbira preko zadataka nema; jedini
+broj koji se sme sabrati je **obim** — koliko je ukupno vežbano.
+
+Trend se takođe gleda **unutar istog zadatka**, inače bi prelazak na drugi modul
+izgledao kao nazadovanje.
+
+#### Odatle sledi čemu provera zaista služi
+
+Podela koja je dotad bila mutna:
+
+| | odakle | čemu služi |
+|---|---|---|
+| **nivo** | provera — kratka, uvek ista, uz visoku podršku | poređivo, jer je svima isti zadatak |
+| **napredak** | sesije, unutar istog zadatka | pokazuje kretanje, bez poređenja |
+
+Provera nije ukras nego **jedini pošten izvor nivoa**. Dok je nema, „najslabija
+veština" je **procena**, i na ekranu tako i piše.
 
 ### Šta iz ovoga sledi, po redu
 

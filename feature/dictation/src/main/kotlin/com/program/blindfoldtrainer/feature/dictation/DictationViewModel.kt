@@ -288,6 +288,7 @@ class DictationViewModel @Inject constructor(
             // Zadatak zna samo punu podršku — slaže se iz palete, a paleta
             // traži oko.
             support = Support.FULL,
+            taskId = DICTATION_PLACE_POSITION.id,
             bySkill = mapOf(
                 DICTATION_PLACE_POSITION.measures to SkillTally(
                     attempted = state.taskNumber,

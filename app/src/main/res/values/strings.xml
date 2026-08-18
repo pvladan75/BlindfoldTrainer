@@ -143,6 +143,17 @@
     <string name="progress_seconds">%1$s s po zadatku</string>
     <string name="progress_foundation">Ovo ide brže kad prvo postane automatsko: %1$s.</string>
     <string name="progress_foundation_open">Vežbaj to</string>
+    <string name="progress_estimate">Procena — poređiv nivo daće provera, koje još nema.</string>
+
+    <!-- Imena vrsta zadataka; po njima se profil razlaže. -->
+    <string name="task_square_color">Boja polja</string>
+    <string name="task_shortest_path">Najkraći put skakača</string>
+    <string name="task_meeting_square">Polje susreta</string>
+    <string name="task_where_is_piece">Gde stoji figura</string>
+    <string name="task_play_out">Privođenje kraju</string>
+    <string name="task_reconstruct">Rekonstrukcija viđenog</string>
+    <string name="task_place_position">Slaganje po diktatu</string>
+    <string name="task_unknown">Nepoznat zadatak</string>
 
     <string name="support_full">uz tablu</string>
     <string name="support_partial">uz deo slike</string>

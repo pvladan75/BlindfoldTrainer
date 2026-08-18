@@ -51,3 +51,21 @@ internal fun Support.labelRes(): Int = when (this) {
     Support.TRACE -> R.string.support_trace
     Support.NONE -> R.string.support_none
 }
+
+/**
+ * Ime vrste zadatka na ekranu.
+ *
+ * Profil se razlaže po zadacima, pa se zadatak mora i imenovati. Ključ dolazi iz
+ * modula (`TaskSpec.id`), a ime stoji ovde — modul ne zna za resurse, kao ni
+ * model.
+ */
+internal fun taskLabelRes(taskId: String): Int = when (taskId) {
+    "square_color" -> R.string.task_square_color
+    "shortest_path" -> R.string.task_shortest_path
+    "meeting_square" -> R.string.task_meeting_square
+    "where_is_piece" -> R.string.task_where_is_piece
+    "play_out" -> R.string.task_play_out
+    "reconstruct" -> R.string.task_reconstruct
+    "place_position" -> R.string.task_place_position
+    else -> R.string.task_unknown
+}

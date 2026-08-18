@@ -693,6 +693,7 @@ class EndgameViewModel @Inject constructor(
             // krajevi lestvice — modul još ne prima porudžbinu, nego čita
             // podešavanje, ali profil od sada zna koliko uspeh vredi.
             support = if (_isEyesFree.value) Support.NONE else Support.FULL,
+            taskId = ENDGAME_PLAY_OUT.id,
             bySkill = mapOf(
                 ENDGAME_PLAY_OUT.measures to SkillTally(
                     attempted = state.puzzleNumber,

@@ -33,6 +33,7 @@ import com.program.blindfoldtrainer.R
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.progress.ProgressSnapshot
 import com.program.blindfoldtrainer.core.progress.SkillProfile
+import com.program.blindfoldtrainer.core.progress.TaskProfile
 import com.program.blindfoldtrainer.core.progress.SkillTrend
 
 /**
@@ -90,10 +91,10 @@ fun ProgressScreen(progress: ProgressSnapshot, onBack: () -> Unit) {
                 SkillCard(
                     skill = skill,
                     profile = progress.bySkill[skill],
-                    trend = progress.trendFor(skill),
                     isAutomatic = progress.isAutomatic(skill),
                     foundationsMissing = progress.foundationsMissing(skill),
-                    isWeakest = skill == weakest
+                    isWeakest = skill == weakest,
+                    trendFor = { taskId -> progress.trendFor(skill, taskId) }
                 )
             }
 
@@ -112,12 +113,11 @@ fun ProgressScreen(progress: ProgressSnapshot, onBack: () -> Unit) {
 private fun SkillCard(
     skill: Skill,
     profile: SkillProfile?,
-    trend: SkillTrend?,
     isAutomatic: Boolean,
     foundationsMissing: Set<Skill>,
-    isWeakest: Boolean
+    isWeakest: Boolean,
+    trendFor: (String) -> SkillTrend?
 ) {
-    val held = profile?.heldRung()
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -140,26 +140,20 @@ private fun SkillCard(
                     fontWeight = FontWeight.Bold
                 )
 
-                // Nivo je **prečka**, ne procenat: uspeh uz tablu i uspeh bez
-                // nje nisu isti dokaz, pa se ne smeju sabrati u jedan broj.
-                Text(
-                    text = when {
-                        profile == null -> stringResource(R.string.progress_not_measured)
-                        held == null -> stringResource(R.string.progress_no_rung_held)
-                        else -> stringResource(R.string.progress_holds, stringResource(held.labelRes()))
-                    },
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            if (isAutomatic) {
-                Text(
-                    text = stringResource(R.string.progress_automatic),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                if (profile == null) {
+                    Text(
+                        text = stringResource(R.string.progress_not_measured),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else if (isAutomatic) {
+                    Text(
+                        text = stringResource(R.string.progress_automatic),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
 
             Spacer(Modifier.height(6.dp))
@@ -172,36 +166,8 @@ private fun SkillCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            // Trend: bez poređenja sa ranijim, broj ne kaže da li se pomeraš.
-            // Vreme je ovde važnije od procenta — procenat ume da bude dobar
-            // odavno, a vežba i dalje spora, i to je tačno stanje „znam, ali
-            // nije automatski".
-            if (trend != null && trend.hasComparison) {
-                Spacer(Modifier.height(10.dp))
-                Text(
-                    text = stringResource(
-                        R.string.progress_trend_earlier,
-                        trend.earlier.solved,
-                        trend.earlier.attempted,
-                        secondsLabel(trend.earlier.millisPerAttempt)
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = stringResource(
-                        R.string.progress_trend_recent,
-                        trend.recent.solved,
-                        trend.recent.attempted,
-                        secondsLabel(trend.recent.millisPerAttempt)
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-
-            // Preduslovi **ne zaključavaju ništa** — samo objasne zašto ovo ide
-            // teško i ponude prečicu do onoga što bi pomoglo.
+            // Preduslovi ne zaključavaju ništa — samo objasne zašto ovo ide
+            // teško i šta bi pomoglo.
             if (foundationsMissing.isNotEmpty()) {
                 val names = foundationsMissing.map { stringResource(it.labelRes()) }
                 Spacer(Modifier.height(10.dp))
@@ -212,46 +178,106 @@ private fun SkillCard(
                 )
             }
 
-            // Po jedan red za svaku prečku na kojoj je veština probana. Zbir bi
-            // sakrio ono jedino što ovde nešto znači — gde si to postigao.
-            profile?.triedRungs?.forEach { rung ->
-                val tally = profile.at(rung) ?: return@forEach
-                Spacer(Modifier.height(10.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = stringResource(rung.labelRes()),
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    Text(
-                        text = stringResource(
-                            R.string.progress_skill_score,
-                            tally.solved,
-                            tally.attempted
-                        ),
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                if (tally.attempted > 0) {
-                    Spacer(Modifier.height(4.dp))
-                    LinearProgressIndicator(
-                        progress = { tally.solved.toFloat() / tally.attempted },
-                        modifier = Modifier.fillMaxWidth().height(6.dp)
-                    )
-                }
+            // Po jedan odeljak za svaki zadatak. Zbir preko zadataka namerno ne
+            // postoji: pitanje u Geometriji i pozicija u Završnici su oba „jedan
+            // pokušaj", a nemaju ni istu cenu ni istu težinu.
+            profile?.tasks?.forEach { (taskId, task) ->
+                Spacer(Modifier.height(14.dp))
+                TaskRows(taskId = taskId, task = task, trend = trendFor(taskId))
             }
 
             if (isWeakest) {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(10.dp))
                 Text(
                     text = stringResource(R.string.progress_weakest),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.SemiBold
                 )
+                Text(
+                    text = stringResource(R.string.progress_estimate),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun TaskRows(taskId: String, task: TaskProfile, trend: SkillTrend?) {
+    val held = task.heldRung()
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = stringResource(taskLabelRes(taskId)),
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.SemiBold
+        )
+        Text(
+            text = if (held == null) {
+                stringResource(R.string.progress_no_rung_held)
+            } else {
+                stringResource(R.string.progress_holds, stringResource(held.labelRes()))
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+
+    task.triedRungs.forEach { rung ->
+        val tally = task.at(rung) ?: return@forEach
+        Spacer(Modifier.height(6.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = stringResource(rung.labelRes()),
+                style = MaterialTheme.typography.bodySmall
+            )
+            Text(
+                text = stringResource(R.string.progress_skill_score, tally.solved, tally.attempted),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        if (tally.attempted > 0) {
+            Spacer(Modifier.height(4.dp))
+            LinearProgressIndicator(
+                progress = { tally.solved.toFloat() / tally.attempted },
+                modifier = Modifier.fillMaxWidth().height(6.dp)
+            )
+        }
+    }
+
+    // Trend se gleda unutar istog zadatka — inače bi poredio dve sekunde po
+    // pitanju sa tri minuta po poziciji. Vreme je ovde važnije od procenta:
+    // procenat ume da bude dobar odavno, a vežba i dalje spora.
+    if (trend != null && trend.hasComparison) {
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = stringResource(
+                R.string.progress_trend_earlier,
+                trend.earlier.solved,
+                trend.earlier.attempted,
+                secondsLabel(trend.earlier.millisPerAttempt)
+            ),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = stringResource(
+                R.string.progress_trend_recent,
+                trend.recent.solved,
+                trend.recent.attempted,
+                secondsLabel(trend.recent.millisPerAttempt)
+            ),
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }
 

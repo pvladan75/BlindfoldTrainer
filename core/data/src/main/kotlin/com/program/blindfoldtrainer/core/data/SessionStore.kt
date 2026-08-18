@@ -57,7 +57,10 @@ data class SessionEntity(
      * Ne zna se za sve što je upisano pre ove izmene. Takve sesije u profil po
      * veštinama **ne ulaze** — bolje bez podatka nego sa izmišljenim.
      */
-    val supportKey: String = ""
+    val supportKey: String = "",
+
+    /** Vrsta zadatka; prazno = ne zna se, kao kod svega upisanog ranije. */
+    val taskId: String = ""
 )
 
 @Dao
@@ -86,7 +89,7 @@ interface SessionDao {
  * `fallbackToDestructiveMigration` se namerno **ne** koristi: napredak je jedino
  * što korisnik u ovoj aplikaciji ima, a on živi u ovoj tabeli.
  */
-@Database(entities = [SessionEntity::class], version = 3, exportSchema = false)
+@Database(entities = [SessionEntity::class], version = 4, exportSchema = false)
 abstract class TrainerDatabase : RoomDatabase() {
     abstract fun sessionDao(): SessionDao
 
@@ -107,6 +110,15 @@ abstract class TrainerDatabase : RoomDatabase() {
             override fun migrate(connection: SQLiteConnection) {
                 connection.execSQL(
                     "ALTER TABLE sessions ADD COLUMN supportKey TEXT NOT NULL DEFAULT ''"
+                )
+            }
+        }
+
+        /** Dodavanje vrste zadatka, da se rezultati ne slivaju preko modula. */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "ALTER TABLE sessions ADD COLUMN taskId TEXT NOT NULL DEFAULT ''"
                 )
             }
         }
@@ -160,7 +172,8 @@ internal fun SessionResult.toEntity(finishedAtMillis: Long) = SessionEntity(
     completed = completed,
     finishedAtMillis = finishedAtMillis,
     skillTallies = bySkill.toStored(),
-    supportKey = support?.key.orEmpty()
+    supportKey = support?.key.orEmpty(),
+    taskId = taskId.orEmpty()
 )
 
 /**
@@ -185,7 +198,8 @@ internal fun SessionEntity.toResult(): SessionResult? {
             completed = completed,
             bySkill = skillTallies.toSkillTallies(),
             support = Support.entries.find { it.key == supportKey },
-            finishedAtMillis = finishedAtMillis
+            finishedAtMillis = finishedAtMillis,
+            taskId = taskId.ifBlank { null }
         )
     }.getOrNull()
 }

@@ -88,7 +88,7 @@ data class ProgressSnapshot(
     val bySkill: Map<Skill, SkillProfile> by lazy {
         skillHistory.fold(emptyMap()) { profiles, entry ->
             val current = profiles[entry.skill] ?: SkillProfile()
-            profiles + (entry.skill to current.plus(entry.support, entry.tally))
+            profiles + (entry.skill to current.plus(entry.taskId, entry.support, entry.tally))
         }
     }
 
@@ -103,9 +103,9 @@ data class ProgressSnapshot(
      * sledeća, jer je radna memorija jedna.
      */
     fun isAutomatic(skill: Skill): Boolean {
-        val profile = bySkill[skill] ?: return false
-        val rung = profile.heldRung() ?: return false
-        val perAttempt = profile.at(rung)?.millisPerAttempt ?: return false
+        val task = bySkill[skill]?.furthest ?: return false
+        val rung = task.heldRung() ?: return false
+        val perAttempt = task.at(rung)?.millisPerAttempt ?: return false
 
         return perAttempt <= automaticMillisFor(skill)
     }
@@ -124,9 +124,12 @@ data class ProgressSnapshot(
      * Prozor je po **broju pokušaja, ne po danima**: ko vežba dvaput nedeljno
      * nema šta da vidi u „poslednja tri dana", a baš njemu trend najviše treba.
      * Datum se prikazuje uz to, kao podatak a ne kao mera.
+     *
+     * Gleda se **unutar jednog zadatka**. Trend preko modula bi poredio dve
+     * sekunde po pitanju sa tri minuta po poziciji.
      */
-    fun trendFor(skill: Skill, window: Int = TREND_WINDOW): SkillTrend? {
-        val entries = skillHistory.filter { it.skill == skill }
+    fun trendFor(skill: Skill, taskId: String, window: Int = TREND_WINDOW): SkillTrend? {
+        val entries = skillHistory.filter { it.skill == skill && it.taskId == taskId }
         if (entries.isEmpty()) return null
 
         val recent = mutableListOf<SkillEntry>()
@@ -158,7 +161,7 @@ data class ProgressSnapshot(
     val weakestSkill: Skill?
         get() = bySkill.entries
             .filter { (_, profile) -> profile.attempted > 0 }
-            .minByOrNull { (_, profile) -> profile.standing }
+            .minByOrNull { (_, profile) -> profile.furthest?.standing ?: 0f }
             ?.key
 
     operator fun plus(result: SessionResult): ProgressSnapshot {
@@ -219,6 +222,7 @@ private fun automaticMillisFor(skill: Skill): Long = when (skill) {
 data class SkillEntry(
     val atMillis: Long,
     val skill: Skill,
+    val taskId: String,
     val support: Support,
     val tally: SkillTally
 )
@@ -245,18 +249,22 @@ private const val TREND_WINDOW = 20
 private fun SessionResult.toSkillEntries(): List<SkillEntry> {
     val support = support ?: return emptyList()
     val at = finishedAtMillis ?: return emptyList()
+    val task = taskId ?: return emptyList()
 
-    return bySkill.map { (skill, tally) -> SkillEntry(at, skill, support, tally) }
+    return bySkill.map { (skill, tally) -> SkillEntry(at, skill, task, support, tally) }
 }
 
 /**
- * Šta se o jednoj veštini zna — **po prečkama**.
+ * Šta se o jednoj veštini zna **u jednom zadatku**, po prečkama.
  *
- * Nivo veštine je prečka koju drži, a ne procenat. Procenat izgleda tačno a
- * nije: sastavljen je od nejednakih zadataka, a uspeh uz punu podršku i uspeh
- * bez table nisu isti dokaz. Zato se čuvaju razdvojeno i sabiraju tek za prikaz.
+ * Zašto po zadatku: „jedan pokušaj" nije ista stvar u dva modula — pitanje u
+ * Geometriji traje dve sekunde, pozicija u Završnici tri minuta, a oba su jedan
+ * pokušaj. Prosek preko toga ne meri ništa, a tačnost pada čim se pređe na teži
+ * modul, pa merilo kažnjava baš ono što treba da nagradi.
+ *
+ * Zašto po prečkama: uspeh uz punu podršku i uspeh bez table nisu isti dokaz.
  */
-data class SkillProfile(val bySupport: Map<Support, SkillTally> = emptyMap()) {
+data class TaskProfile(val bySupport: Map<Support, SkillTally> = emptyMap()) {
 
     val attempted: Int get() = bySupport.values.sumOf { it.attempted }
     val solved: Int get() = bySupport.values.sumOf { it.solved }
@@ -297,8 +305,42 @@ data class SkillProfile(val bySupport: Map<Support, SkillTally> = emptyMap()) {
             }.toFloat() / bySupport.values.sumOf { it.attempted }
         }
 
-    internal fun plus(support: Support, tally: SkillTally): SkillProfile =
-        SkillProfile(bySupport + (support to ((bySupport[support] ?: SkillTally(0, 0)) + tally)))
+    internal fun plus(support: Support, tally: SkillTally): TaskProfile =
+        TaskProfile(bySupport + (support to ((bySupport[support] ?: SkillTally(0, 0)) + tally)))
+}
+
+/**
+ * Šta se o veštini zna — **razloženo po zadacima**, bez zbira preko njih.
+ *
+ * Jedan broj za celu veštinu ovde namerno **ne postoji**. Ažuriranje pozicije u
+ * Parovima je nekoliko poteza, u Prati partiju desetine, u Završnici uz
+ * protivnika koji se brani — tri stepena iste veštine, a zbir ih sakrije.
+ *
+ * Poređivi nivo daće **provera**: kratka, uvek ista i svima jednaka. Dotle je
+ * ovo procena, i tako se i prikazuje.
+ */
+data class SkillProfile(val byTask: Map<String, TaskProfile> = emptyMap()) {
+
+    /** Koliko je ukupno vežbano — obim se sme sabrati, učinak ne. */
+    val attempted: Int get() = byTask.values.sumOf { it.attempted }
+
+    /** Zadaci u kojima je veština merena, od najdalje odmaklog. */
+    val tasks: List<Pair<String, TaskProfile>>
+        get() = byTask.entries
+            .sortedWith(
+                compareByDescending<Map.Entry<String, TaskProfile>> {
+                    it.value.heldRung()?.ordinal ?: -1
+                }.thenByDescending { it.value.standing }
+            )
+            .map { it.key to it.value }
+
+    /** Zadatak u kom je veština najdalje stigla — merodavan za procenu. */
+    val furthest: TaskProfile? get() = tasks.firstOrNull()?.second
+
+    internal fun plus(taskId: String, support: Support, tally: SkillTally): SkillProfile {
+        val current = byTask[taskId] ?: TaskProfile()
+        return SkillProfile(byTask + (taskId to current.plus(support, tally)))
+    }
 }
 
 /**
