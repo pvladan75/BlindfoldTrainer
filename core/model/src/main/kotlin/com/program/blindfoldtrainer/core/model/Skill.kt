@@ -44,6 +44,10 @@ enum class Skill(val key: String) {
      *
      * Zasad se samo **meri** — broj čitanja u Diktatu, „Čitaj poziciju" u
      * Završnici — a nijedan zadatak je ne uči.
+     *
+     * Da je nijedan zadatak ne meri se **ne proverava odavde** nego iz registra:
+     * veština je merena ako je [TaskSpec.measures] ijednog zadatka. Uputstvo to
+     * i piše korisniku, umesto da se prećuti.
      */
     RECOVERY("recovery"),
 
@@ -51,12 +55,20 @@ enum class Skill(val key: String) {
      * Znati šta protivnik drži i koje je polje zato vruće.
      *
      * U pravoj partiji naslepo se figure ne gube zato što se zaboravi gde
-     * stoje, nego zato što se zaboravi **šta drže**. Nijedan zadatak je još ne
-     * dodiruje.
+     * stoje, nego zato što se zaboravi **šta drže**.
+     *
+     * Mere je dva zadatka, i namerno sa dve strane: u „Prati partiju" se
+     * kontrola **prepoznaje** (ko napada ovu figuru), a u „Daj šah" se po njoj
+     * **planira** (kuda skakač sme). Isto znanje, dva različita posla.
      */
     SQUARE_CONTROL("square_control"),
 
-    /** Varijanta se vodi bez table. */
+    /**
+     * Varijanta se vodi bez table.
+     *
+     * Kao i [RECOVERY], nosi se uz druge zadatke a nijedan je ne meri — traži
+     * sve ostalo odjednom, pa dolazi poslednja.
+     */
     CALCULATION("calculation")
 }
 
@@ -75,9 +87,13 @@ enum class Skill(val key: String) {
  * KOORDINATE ──┬──> DRŽANJE ──┬──> AŽURIRANJE ──┐
  *              │              │                 ├──> RAČUNANJE
  *              └──> ZAPIS     └──> OPORAVAK     │
- * GEOMETRIJA ──┬──> AŽURIRANJE                  │
- *              └──> KONTROLA POLJA ─────────────┘
+ *                                               │
+ * DOMET FIGURE ──┬──> AŽURIRANJE                │
+ *                └──> KONTROLA POLJA ───────────┘
  * ```
+ *
+ * Ista slika stoji i u uputstvu, ali se **tamo crta iz ovog `requires`**, ne
+ * prepisuje. Ova je ovde da se veza vidi uz kod koji je definiše.
  */
 val Skill.requires: Set<Skill>
     get() = when (this) {
@@ -90,6 +106,33 @@ val Skill.requires: Set<Skill>
         Skill.SQUARE_CONTROL -> setOf(Skill.PIECE_GEOMETRY, Skill.POSITION_HOLD)
         Skill.CALCULATION -> setOf(Skill.POSITION_UPDATE, Skill.SQUARE_CONTROL)
     }
+
+/**
+ * Veštine razvrstane po spratovima, od temelja naniže.
+ *
+ * Sprat je **najduži** put do veštine koja ništa ne traži, i to je jedina
+ * računica u kojoj se [requires] pretvara u raspored. Sa **najkraćim** putem bi
+ * kontrola polja stala uz držanje pozicije — jer i jedno i drugo dodiruje
+ * geometriju — pa bi grana između njih išla vodoravno, a slika koja pokazuje
+ * „šta na čemu stoji" prestala bi da znači.
+ *
+ * Stoji u modelu a ne uz ekran koji crta, iz dva razloga: računica je čist
+ * Kotlin i sme da se testira bez Androida, a i ono što se crta i ono što se
+ * izgovori tako čitaju **isti** raspored.
+ */
+fun skillFloors(): List<List<Skill>> {
+    val floors = HashMap<Skill, Int>()
+
+    fun floorOf(skill: Skill): Int = floors.getOrPut(skill) {
+        skill.requires.maxOfOrNull { floorOf(it) + 1 } ?: 0
+    }
+
+    return Skill.entries
+        .groupBy { floorOf(it) }
+        .toSortedMap()
+        .values
+        .toList()
+}
 
 /**
  * Koliko slike aplikacija drži **umesto tebe**.

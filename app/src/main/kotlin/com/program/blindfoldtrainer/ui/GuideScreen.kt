@@ -108,26 +108,12 @@ fun GuideScreen(
             // ---- Preduslovi ------------------------------------------------
             item(key = "deps") {
                 Section(titleRes = R.string.guide_deps_title) {
+                    // Slika ide **pre** teksta: ona zamenjuje pola objašnjenja,
+                    // a ostatak tek posle nje ima gde da se zakači.
+                    Spacer(Modifier.height(4.dp))
+                    SkillGraph()
+                    Spacer(Modifier.height(14.dp))
                     Body(R.string.guide_deps)
-                    Spacer(Modifier.height(10.dp))
-                    // Grane se čitaju iz `requires`, ne prepisuju. Kad se doda
-                    // veština ili se veza promeni, ovde se to vidi samo od sebe.
-                    Skill.entries.forEach { skill ->
-                        val needs = skill.requires
-                        // `map` je inline pa sme da zove stringResource;
-                        // `joinToString` nije, pa se imena prvo pokupe.
-                        val names = needs.map { stringResource(it.labelRes()) }
-                        val tail = if (names.isEmpty()) {
-                            stringResource(R.string.guide_deps_root)
-                        } else {
-                            stringResource(R.string.guide_deps_needs, names.joinToString())
-                        }
-                        Text(
-                            text = "${stringResource(skill.labelRes())} — $tail",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
                 }
             }
 

@@ -129,4 +129,40 @@ class SkillTest {
         assertTrue(result.skills.isEmpty())
         assertEquals(emptyMap(), result.bySkill)
     }
+    /**
+     * Slika u uputstvu se crta iz [skillFloors], pa ovi testovi čuvaju **sliku**,
+     * ne računicu: ako neko doda vezu koja gura veštinu iznad njenog temelja,
+     * grana bi na ekranu išla nagore a niko to ne bi prijavio.
+     */
+    @Test
+    fun `svaka vestina stoji ispod svih svojih temelja`() {
+        val floors = skillFloors()
+        val floorOf = floors.flatMapIndexed { index: Int, skills: List<Skill> ->
+            skills.map { it to index }
+        }.toMap()
+
+        Skill.entries.forEach { skill ->
+            skill.requires.forEach { need ->
+                assertTrue(
+                    floorOf.getValue(need) < floorOf.getValue(skill),
+                    "$need mora biti iznad $skill"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `svaka vestina je tacno na jednom spratu`() {
+        val floors = skillFloors()
+
+        assertEquals(Skill.entries.size, floors.sumOf { it.size })
+        assertEquals(Skill.entries.toSet(), floors.flatten().toSet())
+    }
+
+    /** Prvi sprat je ono što se vežba bez ičega pre sebe — inače nema odakle da se krene. */
+    @Test
+    fun `prvi sprat ne trazi nista pre sebe`() {
+        assertTrue(skillFloors().first().all { it.requires.isEmpty() })
+        assertTrue(skillFloors().first().isNotEmpty())
+    }
 }
