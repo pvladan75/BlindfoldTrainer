@@ -114,6 +114,11 @@ fun GuideScreen(
                     SkillGraph()
                     Spacer(Modifier.height(14.dp))
                     Body(R.string.guide_deps)
+                    Spacer(Modifier.height(10.dp))
+                    // Sa slike se odmah vidi da neke veštine nemaju nastavak, i
+                    // to je prvo što se o njoj pita. Bolje odgovoriti tu nego
+                    // pustiti da izgledaju kao višak.
+                    Body(R.string.guide_deps_leaves)
                 }
             }
 

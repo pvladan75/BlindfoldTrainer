@@ -110,21 +110,43 @@ val Skill.requires: Set<Skill>
 /**
  * Veštine razvrstane po spratovima, od temelja naniže.
  *
- * Sprat je **najduži** put do veštine koja ništa ne traži, i to je jedina
- * računica u kojoj se [requires] pretvara u raspored. Sa **najkraćim** putem bi
- * kontrola polja stala uz držanje pozicije — jer i jedno i drugo dodiruje
- * geometriju — pa bi grana između njih išla vodoravno, a slika koja pokazuje
- * „šta na čemu stoji" prestala bi da znači.
+ * Pravilo je **„što kasnije"**: veština stoji tačno jedan sprat iznad prve stvari
+ * kojoj treba, a ne odmah ispod svojih temelja.
+ *
+ * To nije kozmetika nego jedino što sliku čini čitljivom. Domet figure ništa ne
+ * traži pre sebe, pa bi po očiglednom pravilu stajao u prvom redu — a hrani
+ * ažuriranje i kontrolu polja, koji su dva sprata niže. Grana bi onda preskakala
+ * ceo jedan red i prolazila kroz tuđa imena. Ovako **nijedna grana ne preskače
+ * sprat**, pa se svaka može ispratiti okom.
+ *
+ * Cena je što se u istom redu nađu veština koja ima temelj i veština koja nema.
+ * To se na slici i dalje vidi — u onu drugu ne ulazi nijedna grana.
+ *
+ * Veština na koju se ništa ne oslanja nema kuda da se gura, pa pada na svoj
+ * **najduži** put do korena; sve ostale se povlače za njom.
  *
  * Stoji u modelu a ne uz ekran koji crta, iz dva razloga: računica je čist
  * Kotlin i sme da se testira bez Androida, a i ono što se crta i ono što se
  * izgovori tako čitaju **isti** raspored.
  */
 fun skillFloors(): List<List<Skill>> {
+    val deepest = HashMap<Skill, Int>()
+
+    fun deepestOf(skill: Skill): Int = deepest.getOrPut(skill) {
+        skill.requires.maxOfOrNull { deepestOf(it) + 1 } ?: 0
+    }
+
+    // Ko se oslanja na koga — obrnut smer od `requires`, jer se sprat računa
+    // odozdo: veština ide tik iznad prve koja je traži.
+    val dependents = Skill.entries.associateWith { candidate ->
+        Skill.entries.filter { candidate in it.requires }
+    }
+
     val floors = HashMap<Skill, Int>()
 
     fun floorOf(skill: Skill): Int = floors.getOrPut(skill) {
-        skill.requires.maxOfOrNull { floorOf(it) + 1 } ?: 0
+        val users = dependents.getValue(skill)
+        if (users.isEmpty()) deepestOf(skill) else users.minOf { floorOf(it) } - 1
     }
 
     return Skill.entries

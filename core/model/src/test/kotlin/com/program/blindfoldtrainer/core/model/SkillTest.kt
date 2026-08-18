@@ -165,4 +165,29 @@ class SkillTest {
         assertTrue(skillFloors().first().all { it.requires.isEmpty() })
         assertTrue(skillFloors().first().isNotEmpty())
     }
+
+    /**
+     * **Ovo je test slike, ne računice.** Grana koja preskoči sprat na ekranu
+     * prolazi kroz tuđe ime i slika prestaje da se prati okom — a to je jedini
+     * razlog zbog kog se sprat uopšte računa „što kasnije".
+     *
+     * Pada ako neko doda vezu koja razvuče veštinu od onoga što je hrani. Tada
+     * treba popraviti raspored, ne obrisati test.
+     */
+    @Test
+    fun `nijedna grana ne preskace sprat`() {
+        val floorOf = skillFloors().flatMapIndexed { index: Int, skills: List<Skill> ->
+            skills.map { it to index }
+        }.toMap()
+
+        Skill.entries.forEach { skill ->
+            skill.requires.forEach { need ->
+                assertEquals(
+                    floorOf.getValue(skill) - 1,
+                    floorOf.getValue(need),
+                    "$need hrani $skill, pa mora biti tačno jedan sprat iznad"
+                )
+            }
+        }
+    }
 }

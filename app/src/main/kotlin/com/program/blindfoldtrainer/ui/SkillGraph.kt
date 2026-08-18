@@ -3,9 +3,11 @@ package com.program.blindfoldtrainer.ui
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -21,7 +23,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.material3.MaterialTheme
 import com.program.blindfoldtrainer.R
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.requires
@@ -34,12 +35,17 @@ import com.program.blindfoldtrainer.core.model.skillFloors
  * put predložiti odlučuje i šta se ovde vidi — pa slika ne može da laže ni kad se
  * doda veština, ni kad se veza promeni.
  *
- * Sprat veštine je **najduži put do korena**, ne najkraći: veština se crta ispod
- * svih svojih temelja, jer bi je najkraći put povukao gore i onda bi strelica
- * išla unazad.
+ * Tri odluke je čine čitljivom, i sve tri su naučene iz prve verzije, koja je
+ * bila splet ukrštenih dijagonala:
  *
- * Slepima i ovo mora nešto da znači, pa uz platno ide i opis istih tih grana
- * rečima — isto izvedeno, ne otkucano.
+ * - **nijedna grana ne preskače sprat** — o tome vodi računa `skillFloors`;
+ * - **grane idu pod pravim uglom**, dole pa vodoravno pa dole. Dijagonala se na
+ *   raskrsnici ne razlikuje od susedne, pravi ugao se prati okom;
+ * - **red se slaže po roditeljima** — veština staje iznad proseka onih na koje
+ *   se oslanja, pa broj ukrštanja sam pada.
+ *
+ * Uz platno ide i opis istih tih grana rečima. Aplikacija koja ima režim bez
+ * ekrana ne sme čitaču ekrana da ostavi praznu sliku.
  */
 @Composable
 fun SkillGraph(
@@ -47,7 +53,7 @@ fun SkillGraph(
     /** Veštine koje treba istaći — za sada nijedna; kasnije: šta je automatsko. */
     highlight: Set<Skill> = emptySet()
 ) {
-    val layers = remember { skillFloors() }
+    val floors = remember { orderedFloors() }
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current
 
@@ -58,10 +64,9 @@ fun SkillGraph(
 
     val labels = Skill.entries.associateWith { stringResource(it.labelRes()) }
 
-    // Isti podatak, rečima: „Ažuriranje pozicije stoji na: Držanje pozicije,
-    // Domet figure." Bez ovoga je platno za čitač ekrana prazna slika.
-    // `map` je inline pa sme da zove stringResource; `joinToString` nije, pa se
-    // redovi prvo pokupe a tek onda spoje.
+    // Isti podatak, rečima: „Ažuriranje pozicije — stoji na: Držanje pozicije,
+    // Domet figure." `map` je inline pa sme da zove stringResource, `joinToString`
+    // nije, pa se redovi prvo pokupe a tek onda spoje.
     val spokenRows = Skill.entries.map { skill ->
         val needs = skill.requires.map { labels.getValue(it) }
         if (needs.isEmpty()) {
@@ -73,14 +78,14 @@ fun SkillGraph(
     }
     val spoken = spokenRows.joinToString(". ")
 
-    val boxHeight = 46.dp
-    val rowGap = 30.dp
-    val totalHeight = boxHeight * layers.size + rowGap * (layers.size - 1)
+    val boxHeight = 54.dp
+    val rowGap = 34.dp
+    val totalHeight = boxHeight * floors.size + rowGap * (floors.size - 1)
 
     val boxHeightPx = with(density) { boxHeight.toPx() }
     val rowGapPx = with(density) { rowGap.toPx() }
-    val gapPx = with(density) { 8.dp.toPx() }
-    val cornerPx = with(density) { 8.dp.toPx() }
+    val gapPx = with(density) { 10.dp.toPx() }
+    val cornerPx = with(density) { 10.dp.toPx() }
     val strokePx = with(density) { 1.5.dp.toPx() }
 
     val labelStyle = TextStyle(
@@ -96,36 +101,58 @@ fun SkillGraph(
             .height(totalHeight)
             .semantics { contentDescription = spoken }
     ) {
-        // Prvo mesta, pa tek onda crtanje: grane se povlače između pravougaonika
-        // koji još nisu nacrtani, a pravougaonici idu preko njih da grana koja
-        // preskače sprat ne prolazi kroz tuđe ime.
+        // Sve kutije su **iste širine**, po najgušćem redu, a redovi se centriraju.
+        // Da se širina delila po redu, sprat sa jednom veštinom dobio bi kutiju
+        // preko celog ekrana i izgledao kao naslov umesto kao čvor.
+        val widest = floors.maxOf { it.size }
+        val boxWidth = (size.width - gapPx * (widest + 1)) / widest
+
         val places = HashMap<Skill, Rect>()
-        layers.forEachIndexed { row, skills ->
-            val boxWidth = (size.width - gapPx * (skills.size + 1)) / skills.size
+        floors.forEachIndexed { row, skills ->
+            val rowWidth = skills.size * boxWidth + (skills.size - 1) * gapPx
+            val left = (size.width - rowWidth) / 2f
             val top = row * (boxHeightPx + rowGapPx)
             skills.forEachIndexed { column, skill ->
-                val left = gapPx + column * (boxWidth + gapPx)
-                places[skill] = Rect(Offset(left, top), Size(boxWidth, boxHeightPx))
+                places[skill] = Rect(
+                    Offset(left + column * (boxWidth + gapPx), top),
+                    Size(boxWidth, boxHeightPx)
+                )
             }
         }
 
-        places.forEach { (skill, rect) ->
-            skill.requires.forEach { need ->
-                val from = places[need] ?: return@forEach
-                drawLine(
-                    color = edgeColor,
-                    start = Offset(from.center.x, from.bottom),
-                    end = Offset(rect.center.x, rect.top),
-                    strokeWidth = strokePx
-                )
-                // Tačka na dolasku umesto strelice: na ovoj veličini je vrh
-                // strelice mrlja, a smer se ionako čita iz toga što grane uvek
-                // idu naniže.
-                drawCircle(
-                    color = edgeColor,
-                    radius = strokePx * 2f,
-                    center = Offset(rect.center.x, rect.top)
-                )
+        // Grane prvo, kutije preko njih: tako vodoravni deo grane koja ide daleko
+        // ustranu ne prolazi preko tuđeg imena.
+        floors.forEach { skills ->
+            skills.forEach { skill ->
+                val target = places.getValue(skill)
+                val parents = skill.requires.toList()
+                parents.forEachIndexed { index, need ->
+                    val from = places[need] ?: return@forEachIndexed
+                    // Vodoravni deo svake grane dobija svoju traku u međuredu, da
+                    // se dve grane ka istoj kutiji ne poklope u jednu liniju.
+                    val lane = 0.35f + 0.3f * (index + 1) / (parents.size + 1)
+                    val channel = from.bottom + (target.top - from.bottom) * lane
+
+                    drawLine(
+                        edgeColor, Offset(from.center.x, from.bottom),
+                        Offset(from.center.x, channel), strokePx
+                    )
+                    drawLine(
+                        edgeColor, Offset(from.center.x, channel),
+                        Offset(target.center.x, channel), strokePx
+                    )
+                    drawLine(
+                        edgeColor, Offset(target.center.x, channel),
+                        Offset(target.center.x, target.top), strokePx
+                    )
+                    // Tačka na dolasku umesto strelice: na ovoj veličini je vrh
+                    // strelice mrlja, a smer se ionako čita iz toga što grane
+                    // uvek idu naniže.
+                    drawCircle(
+                        edgeColor, strokePx * 2f,
+                        Offset(target.center.x, target.top)
+                    )
+                }
             }
         }
 
@@ -135,14 +162,14 @@ fun SkillGraph(
                 color = if (filled) strongColor else boxColor,
                 topLeft = rect.topLeft,
                 size = rect.size,
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerPx, cornerPx)
+                cornerRadius = CornerRadius(cornerPx, cornerPx)
             )
             if (filled) {
                 drawRoundRect(
                     color = edgeColor,
                     topLeft = rect.topLeft,
                     size = rect.size,
-                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerPx, cornerPx),
+                    cornerRadius = CornerRadius(cornerPx, cornerPx),
                     style = Stroke(width = strokePx)
                 )
             }
@@ -150,7 +177,9 @@ fun SkillGraph(
             val text = measurer.measure(
                 text = labels.getValue(skill),
                 style = labelStyle,
-                constraints = Constraints(maxWidth = (rect.width - gapPx).toInt().coerceAtLeast(1))
+                constraints = Constraints(
+                    maxWidth = (rect.width - gapPx).toInt().coerceAtLeast(1)
+                )
             )
             drawText(
                 textLayoutResult = text,
@@ -161,4 +190,35 @@ fun SkillGraph(
             )
         }
     }
+}
+
+/**
+ * Spratovi iz `skillFloors`, ali sa **redom unutar sprata**.
+ *
+ * Veština se stavlja iznad proseka onih na koje se oslanja — poznat potez za
+ * smanjenje ukrštanja. Ona koja u spratu iznad nema nijednog roditelja ide na
+ * kraj reda, jer je slobodna a svaka druga nije.
+ *
+ * Red je stvar crtanja, ne modela, pa stoji ovde a ne uz `skillFloors`.
+ */
+private fun orderedFloors(): List<List<Skill>> {
+    val ordered = mutableListOf<List<Skill>>()
+    var above: List<Skill> = emptyList()
+
+    skillFloors().forEach { floor ->
+        val row = if (above.isEmpty()) {
+            floor
+        } else {
+            // `sortedBy` je stabilan, pa veštine sa istim prosekom zadržavaju
+            // redosled deklaracije umesto da skakuću između dva crtanja.
+            floor.sortedBy { skill ->
+                val columns = skill.requires.map { above.indexOf(it) }.filter { it >= 0 }
+                if (columns.isEmpty()) Float.MAX_VALUE else columns.average().toFloat()
+            }
+        }
+        ordered += row
+        above = row
+    }
+
+    return ordered
 }
