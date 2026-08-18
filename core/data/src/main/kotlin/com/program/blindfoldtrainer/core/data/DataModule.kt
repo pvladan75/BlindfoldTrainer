@@ -23,7 +23,8 @@ object DatabaseModule {
             .addMigrations(
                 TrainerDatabase.MIGRATION_1_2,
                 TrainerDatabase.MIGRATION_2_3,
-                TrainerDatabase.MIGRATION_3_4
+                TrainerDatabase.MIGRATION_3_4,
+                TrainerDatabase.MIGRATION_4_5
             )
             .build()
 

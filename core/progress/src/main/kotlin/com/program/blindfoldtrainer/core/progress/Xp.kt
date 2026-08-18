@@ -29,6 +29,10 @@ object Xp {
      * što je ranije zarađeno.
      */
     fun forSession(result: SessionResult): Int {
+        // Provera ne donosi poene. Merilo koje nosi nagradu prestaje da meri i
+        // počne da se juri — a ono zbog čega provera postoji je da kaže istinu.
+        if (result.isCheckup) return 0
+
         val earned = result.solved * perSolved(result.difficulty)
         val afterMistakes = (earned - result.mistakes * MISTAKE_COST).coerceAtLeast(0)
 

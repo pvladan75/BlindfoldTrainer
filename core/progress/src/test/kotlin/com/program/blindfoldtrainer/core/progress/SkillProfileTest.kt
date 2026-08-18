@@ -27,6 +27,7 @@ class SkillProfileTest {
         attempted: Int = 10,
         solved: Int = 10,
         support: Support? = Support.FULL,
+        isCheckup: Boolean = false,
         finishedAtMillis: Long? = clock++,
         bySkill: Map<Skill, SkillTally> = emptyMap()
     ) = SessionResult(
@@ -39,7 +40,8 @@ class SkillProfileTest {
         bySkill = bySkill,
         support = support,
         finishedAtMillis = finishedAtMillis,
-        taskId = taskId
+        taskId = taskId,
+        isCheckup = isCheckup
     )
 
     @Test
@@ -292,6 +294,47 @@ class SkillProfileTest {
 
         assertEquals(2, snapshot.sessionsFor(Skill.COORDINATES, "square_color", Support.FULL).size)
         assertEquals(1, snapshot.sessionsFor(Skill.COORDINATES, "square_color", Support.NONE).size)
+    }
+
+    /**
+     * Provera i vežba mere različite stvari, pa se ne sabiraju: vežba daje
+     * napredak unutar svog zadatka, provera daje nivo koji je svima jednak.
+     */
+    @Test
+    fun `provera ne ulazi u profil vezbi`() {
+        val history = listOf(
+            session(bySkill = mapOf(Skill.COORDINATES to SkillTally(10, 5))),
+            session(isCheckup = true, bySkill = mapOf(Skill.COORDINATES to SkillTally(10, 9)))
+        )
+
+        val snapshot = history.toProgressSnapshot()
+
+        assertEquals(10, snapshot.bySkill.getValue(Skill.COORDINATES).attempted)
+        assertEquals(SkillTally(10, 9), snapshot.lastCheckup(Skill.COORDINATES)?.tally)
+        assertEquals(setOf(Skill.COORDINATES), snapshot.checkedSkills)
+    }
+
+    @Test
+    fun `nivo je poslednja provera, ne prva`() {
+        val history = listOf(
+            session(isCheckup = true, bySkill = mapOf(Skill.COORDINATES to SkillTally(10, 4))),
+            session(isCheckup = true, bySkill = mapOf(Skill.COORDINATES to SkillTally(10, 9)))
+        )
+
+        val snapshot = history.toProgressSnapshot()
+
+        assertEquals(SkillTally(10, 9), snapshot.lastCheckup(Skill.COORDINATES)?.tally)
+        assertEquals(2, snapshot.checkupsFor(Skill.COORDINATES).size)
+    }
+
+    /** Provera ne nosi poene — merilo koje nagrađuje prestaje da meri. */
+    @Test
+    fun `provera ne donosi poene`() {
+        val checkup = session(isCheckup = true, solved = 10, bySkill = emptyMap())
+        val training = session(solved = 10, bySkill = emptyMap())
+
+        assertEquals(0, Xp.forSession(checkup))
+        assertTrue("vežba i dalje nosi poene", Xp.forSession(training) > 0)
     }
 
     @Test

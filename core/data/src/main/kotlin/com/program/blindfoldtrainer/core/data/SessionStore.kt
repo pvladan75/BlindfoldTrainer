@@ -60,7 +60,10 @@ data class SessionEntity(
     val supportKey: String = "",
 
     /** Vrsta zadatka; prazno = ne zna se, kao kod svega upisanog ranije. */
-    val taskId: String = ""
+    val taskId: String = "",
+
+    /** Da li je red nastao proverom, a ne vežbom. */
+    val isCheckup: Boolean = false
 )
 
 @Dao
@@ -89,7 +92,7 @@ interface SessionDao {
  * `fallbackToDestructiveMigration` se namerno **ne** koristi: napredak je jedino
  * što korisnik u ovoj aplikaciji ima, a on živi u ovoj tabeli.
  */
-@Database(entities = [SessionEntity::class], version = 4, exportSchema = false)
+@Database(entities = [SessionEntity::class], version = 5, exportSchema = false)
 abstract class TrainerDatabase : RoomDatabase() {
     abstract fun sessionDao(): SessionDao
 
@@ -119,6 +122,15 @@ abstract class TrainerDatabase : RoomDatabase() {
             override fun migrate(connection: SQLiteConnection) {
                 connection.execSQL(
                     "ALTER TABLE sessions ADD COLUMN taskId TEXT NOT NULL DEFAULT ''"
+                )
+            }
+        }
+
+        /** Razdvajanje provere od vežbe; sve zatečeno je vežba. */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "ALTER TABLE sessions ADD COLUMN isCheckup INTEGER NOT NULL DEFAULT 0"
                 )
             }
         }
@@ -173,7 +185,8 @@ internal fun SessionResult.toEntity(finishedAtMillis: Long) = SessionEntity(
     finishedAtMillis = finishedAtMillis,
     skillTallies = bySkill.toStored(),
     supportKey = support?.key.orEmpty(),
-    taskId = taskId.orEmpty()
+    taskId = taskId.orEmpty(),
+    isCheckup = isCheckup
 )
 
 /**
@@ -199,7 +212,8 @@ internal fun SessionEntity.toResult(): SessionResult? {
             bySkill = skillTallies.toSkillTallies(),
             support = Support.entries.find { it.key == supportKey },
             finishedAtMillis = finishedAtMillis,
-            taskId = taskId.ifBlank { null }
+            taskId = taskId.ifBlank { null },
+            isCheckup = isCheckup
         )
     }.getOrNull()
 }

@@ -13,7 +13,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.program.blindfoldtrainer.ModuleRegistry
+import com.program.blindfoldtrainer.core.model.Checkups
 import com.program.blindfoldtrainer.core.model.Difficulty
+import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.moduleapi.ModuleArgs
 import com.program.blindfoldtrainer.ui.MainMenuScreen
@@ -30,10 +32,32 @@ private const val ROUTE_SETTINGS = "settings"
 private const val ROUTE_PROGRESS = "progress"
 private const val ARG_MODULE = "module"
 private const val ARG_DIFFICULTY = "difficulty"
-private const val ROUTE_MODULE = "module/{$ARG_MODULE}/{$ARG_DIFFICULTY}"
+private const val ARG_TASK = "task"
+private const val ARG_SUPPORT = "support"
+private const val ARG_CHECKUP = "checkup"
 
-private fun moduleRoute(moduleKey: String, difficulty: Difficulty) =
-    "module/$moduleKey/${difficulty.name}"
+/**
+ * Jedna ruta za sve module, sa **porudžbinom** kao neobaveznim delom.
+ *
+ * Bez porudžbine je slobodno vežbanje iz menija i modul bira sam. Sa njom put
+ * ili provera traže određen zadatak na određenoj prečki.
+ */
+private const val ROUTE_MODULE =
+    "module/{$ARG_MODULE}/{$ARG_DIFFICULTY}?$ARG_TASK={$ARG_TASK}" +
+        "&$ARG_SUPPORT={$ARG_SUPPORT}&$ARG_CHECKUP={$ARG_CHECKUP}"
+
+private fun moduleRoute(
+    moduleKey: String,
+    difficulty: Difficulty,
+    taskId: String? = null,
+    support: Support? = null,
+    isCheckup: Boolean = false
+): String = buildString {
+    append("module/$moduleKey/${difficulty.name}")
+    append("?$ARG_TASK=${taskId.orEmpty()}")
+    append("&$ARG_SUPPORT=${support?.key.orEmpty()}")
+    append("&$ARG_CHECKUP=$isCheckup")
+}
 
 /**
  * Ceo graf navigacije se sastoji od menija i **jedne** rute za module.
@@ -53,6 +77,12 @@ fun AppNavigation(registry: ModuleRegistry) {
     // I ovaj stoji izvan NavHost-a, ali iz drugog razloga: podešavanje mora biti
     // pročitano **pre** nego što sažetak zatreba. Da se traži tek uz sažetak,
     // prvi kadar bi dobio zatečenu vrednost i bez ekrana bi bljesnuo dijalog.
+    // Koju proveru ponuditi: prvo neproverenu veštinu, pa onu najstariju.
+    // Provera je predlog, ne obaveza — meni ostaje netaknut ispod nje.
+    val nextCheckup = remember(progress) {
+        Checkups.ALL.minByOrNull { progress.lastCheckup(it.skill)?.atMillis ?: 0L }
+    }
+
     val summaryViewModel: SummaryViewModel = hiltViewModel()
     val eyesFree by summaryViewModel.eyesFree.collectAsState()
 
@@ -69,7 +99,19 @@ fun AppNavigation(registry: ModuleRegistry) {
                     navController.navigate(moduleRoute(module.id.key, difficulty))
                 },
                 onOpenSettings = { navController.navigate(ROUTE_SETTINGS) },
-                onOpenProgress = { navController.navigate(ROUTE_PROGRESS) }
+                onOpenProgress = { navController.navigate(ROUTE_PROGRESS) },
+                checkup = nextCheckup,
+                onStartCheckup = { checkup ->
+                    navController.navigate(
+                        moduleRoute(
+                            moduleKey = checkup.moduleId.key,
+                            difficulty = checkup.difficulty,
+                            taskId = checkup.taskId,
+                            support = checkup.support,
+                            isCheckup = true
+                        )
+                    )
+                }
             )
         }
 
@@ -91,7 +133,10 @@ fun AppNavigation(registry: ModuleRegistry) {
             route = ROUTE_MODULE,
             arguments = listOf(
                 navArgument(ARG_MODULE) { type = NavType.StringType },
-                navArgument(ARG_DIFFICULTY) { type = NavType.StringType }
+                navArgument(ARG_DIFFICULTY) { type = NavType.StringType },
+                navArgument(ARG_TASK) { type = NavType.StringType; defaultValue = "" },
+                navArgument(ARG_SUPPORT) { type = NavType.StringType; defaultValue = "" },
+                navArgument(ARG_CHECKUP) { type = NavType.BoolType; defaultValue = false }
             )
         ) { backStackEntry ->
             val moduleKey = backStackEntry.arguments?.getString(ARG_MODULE)
@@ -109,13 +154,27 @@ fun AppNavigation(registry: ModuleRegistry) {
                 return@composable
             }
 
+            val taskId = backStackEntry.arguments?.getString(ARG_TASK)?.ifBlank { null }
+            val support = backStackEntry.arguments
+                ?.getString(ARG_SUPPORT)
+                ?.let { key -> Support.entries.find { it.key == key } }
+            val isCheckup = backStackEntry.arguments?.getBoolean(ARG_CHECKUP) == true
+
             var result by remember { mutableStateOf<SessionResult?>(null) }
 
             module.Screen(
-                args = ModuleArgs(difficulty = difficulty),
+                args = ModuleArgs(
+                    difficulty = difficulty,
+                    taskId = taskId,
+                    support = support
+                ),
                 onFinish = { sessionResult ->
-                    result = sessionResult
-                    progressViewModel.record(sessionResult)
+                    // Da je ovo bila provera zna **školjka**, ne modul: modul ne
+                    // zna ni za poene ni za napredak, pa ne treba da zna ni za
+                    // merenje. Ona je poručila, ona i obeležava.
+                    val finished = sessionResult.copy(isCheckup = isCheckup)
+                    result = finished
+                    progressViewModel.record(finished)
                 }
             )
 

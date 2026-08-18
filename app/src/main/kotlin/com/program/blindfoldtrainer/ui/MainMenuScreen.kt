@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.program.blindfoldtrainer.R
 import com.program.blindfoldtrainer.core.model.Capability
+import com.program.blindfoldtrainer.core.model.Checkup
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.moduleapi.TrainingModule
 import com.program.blindfoldtrainer.core.progress.Achievement
@@ -50,7 +51,10 @@ fun MainMenuScreen(
     eyesFree: Boolean,
     onStart: (TrainingModule, Difficulty) -> Unit,
     onOpenSettings: () -> Unit,
-    onOpenProgress: () -> Unit
+    onOpenProgress: () -> Unit,
+    /** Provera koja se nudi, ili `null` ako je nema. */
+    checkup: Checkup?,
+    onStartCheckup: (Checkup) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -97,6 +101,13 @@ fun MainMenuScreen(
                 RankCard(progress = progress, onOpenProgress = onOpenProgress)
             }
 
+            // Predlog, ne obaveza: stoji iznad spiska, a spisak ostaje netaknut.
+            checkup?.let {
+                item(key = "checkup") {
+                    CheckupCard(checkup = it, onStart = { onStartCheckup(it) })
+                }
+            }
+
             items(modules, key = { it.id.key }) { module ->
                 ModuleCard(
                     module = module,
@@ -106,6 +117,53 @@ fun MainMenuScreen(
             }
 
             item(key = "voice") { VoiceNotice(onOpenSettings = onOpenSettings) }
+        }
+    }
+}
+
+/**
+ * Poziv na proveru.
+ *
+ * Provera daje **nivo** — jedino merenje koje je svima jednako, pa se sme
+ * porediti sa prošlim. Vežbe daju napredak unutar svog zadatka, ali ne i mesto
+ * na lestvici.
+ *
+ * Da ne nosi poene piše **pre** dodira, ne posle: merilo koje nagrađuje prestaje
+ * da meri.
+ */
+@Composable
+private fun CheckupCard(checkup: Checkup, onStart: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = stringResource(R.string.checkup_title),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = stringResource(
+                    R.string.checkup_offer,
+                    stringResource(checkup.skill.labelRes())
+                ),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(
+                text = stringResource(R.string.checkup_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(12.dp))
+            FilledTonalButton(onClick = onStart) {
+                Text(stringResource(R.string.checkup_start))
+            }
         }
     }
 }

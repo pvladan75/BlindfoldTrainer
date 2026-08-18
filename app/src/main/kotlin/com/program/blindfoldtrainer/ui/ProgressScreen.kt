@@ -101,6 +101,7 @@ fun ProgressScreen(
                 SkillCard(
                     skill = skill,
                     profile = progress.bySkill[skill],
+                    checkup = progress.lastCheckup(skill),
                     isAutomatic = progress.isAutomatic(skill),
                     foundationsMissing = progress.foundationsMissing(skill),
                     isWeakest = skill == weakest,
@@ -125,6 +126,7 @@ fun ProgressScreen(
 private fun SkillCard(
     skill: Skill,
     profile: SkillProfile?,
+    checkup: SkillEntry?,
     isAutomatic: Boolean,
     foundationsMissing: Set<Skill>,
     isWeakest: Boolean,
@@ -154,7 +156,21 @@ private fun SkillCard(
                     fontWeight = FontWeight.Bold
                 )
 
-                if (profile == null) {
+                // Nivo dolazi **iz provere** — jedinog merenja koje je svima
+                // jednako. Vežbe daju napredak, ali ne i mesto na lestvici.
+                if (checkup != null) {
+                    Text(
+                        text = stringResource(
+                            R.string.checkup_level,
+                            checkup.tally.solved,
+                            checkup.tally.attempted,
+                            secondsLabel(checkup.tally.millisPerAttempt)
+                        ),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                } else if (profile == null) {
                     Text(
                         text = stringResource(R.string.progress_not_measured),
                         style = MaterialTheme.typography.titleMedium,
@@ -179,6 +195,16 @@ private fun SkillCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            // Vežbana a neproverena veština ima napredak ali nema nivo, i to se
+            // kaže — inače bi obim vežbanja izgledao kao dokaz o nivou.
+            if (checkup == null && profile != null) {
+                Text(
+                    text = stringResource(R.string.checkup_never),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
             // Preduslovi ne zaključavaju ništa — samo objasne zašto ovo ide
             // teško i šta bi pomoglo.

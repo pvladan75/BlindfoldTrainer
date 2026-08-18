@@ -87,7 +87,7 @@ data class ProgressSnapshot(
      * ništa ne znamo.
      */
     val bySkill: Map<Skill, SkillProfile> by lazy {
-        skillHistory.fold(emptyMap()) { profiles, entry ->
+        skillHistory.filterNot { it.isCheckup }.fold(emptyMap()) { profiles, entry ->
             val current = profiles[entry.skill] ?: SkillProfile()
             profiles + (entry.skill to current.plus(entry.taskId, entry.support, entry.tally))
         }
@@ -137,11 +137,30 @@ data class ProgressSnapshot(
      */
     fun sessionsFor(skill: Skill, taskId: String, support: Support): List<SkillEntry> =
         skillHistory.filter {
-            it.skill == skill && it.taskId == taskId && it.support == support
+            !it.isCheckup && it.skill == skill && it.taskId == taskId && it.support == support
         }
 
+    /**
+     * Sve provere jedne veštine, hronološki — merenja koja se smeju porediti.
+     *
+     * Odvojene su od vežbi jer mere drugu stvar: vežba kaže koliko si radio i
+     * kuda ideš, provera kaže **gde stojiš**. Sabrati ih značilo bi razblažiti
+     * jedino merenje koje je svima jednako.
+     */
+    fun checkupsFor(skill: Skill): List<SkillEntry> =
+        skillHistory.filter { it.isCheckup && it.skill == skill }
+
+    /** Poslednja provera veštine, ako je bilo ijedne. */
+    fun lastCheckup(skill: Skill): SkillEntry? = checkupsFor(skill).lastOrNull()
+
+    /** Veštine koje su ikad proverene — one za koje se zna **nivo**, ne samo obim. */
+    val checkedSkills: Set<Skill>
+        get() = skillHistory.filterTo(mutableSetOf()) { it.isCheckup }.mapTo(mutableSetOf()) { it.skill }
+
     fun trendFor(skill: Skill, taskId: String, window: Int = TREND_WINDOW): SkillTrend? {
-        val entries = skillHistory.filter { it.skill == skill && it.taskId == taskId }
+        val entries = skillHistory.filter {
+            !it.isCheckup && it.skill == skill && it.taskId == taskId
+        }
         if (entries.isEmpty()) return null
 
         val recent = mutableListOf<SkillEntry>()
@@ -236,7 +255,9 @@ data class SkillEntry(
     val skill: Skill,
     val taskId: String,
     val support: Support,
-    val tally: SkillTally
+    val tally: SkillTally,
+    /** Provera daje **nivo**, vežba daje **napredak** — ne mešaju se. */
+    val isCheckup: Boolean = false
 )
 
 /** Kako veština stoji sada naspram toga kako je stajala ranije. */
@@ -263,7 +284,9 @@ private fun SessionResult.toSkillEntries(): List<SkillEntry> {
     val at = finishedAtMillis ?: return emptyList()
     val task = taskId ?: return emptyList()
 
-    return bySkill.map { (skill, tally) -> SkillEntry(at, skill, task, support, tally) }
+    return bySkill.map { (skill, tally) ->
+        SkillEntry(at, skill, task, support, tally, isCheckup)
+    }
 }
 
 /**

@@ -149,6 +149,12 @@
     <string name="chart_target">- - - orijentir: %1$s s</string>
     <string name="progress_target_reached">orijentir dostignut</string>
     <string name="progress_target">orijentir: %1$s uz %2$d%% tačnosti</string>
+    <string name="checkup_title">Provera</string>
+    <string name="checkup_offer">Izmeri gde stojiš: %1$s</string>
+    <string name="checkup_hint">Kratko, uvek isto i bez poena — zato može da se poredi sa prošlim merenjem. Tabla se vidi, da bi se znalo šta je tačno otkazalo.</string>
+    <string name="checkup_start">Izmeri</string>
+    <string name="checkup_never">nije provereno</string>
+    <string name="checkup_level">nivo: %1$d/%2$d · %3$s</string>
     <string name="progress_estimate">Procena — poređiv nivo daće provera, koje još nema.</string>
 
     <!-- Imena vrsta zadataka; po njima se profil razlaže. -->

@@ -152,7 +152,16 @@ data class SessionResult(
      * ništa, a tačnost pada čim se pređe na teži modul — pa merilo kažnjava baš
      * ono što treba da nagradi.
      */
-    val taskId: String? = null
+    val taskId: String? = null,
+
+    /**
+     * Da li je ovo bila **provera**, a ne vežba.
+     *
+     * Provera ne nosi poene — čim bi ih nosila, prestala bi da meri i počela da
+     * se juri. Zato i stoji odvojeno od vežbi u profilu: vežba daje napredak,
+     * provera daje nivo.
+     */
+    val isCheckup: Boolean = false
 ) {
     init {
         require(attempted >= 0) { "attempted ne može biti negativan" }

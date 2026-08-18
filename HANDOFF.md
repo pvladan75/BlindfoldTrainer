@@ -45,7 +45,7 @@ blindfold animacija i raspakivanje ViewModel-a. Stari projekat se odatle napušt
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **sedam** modula za trening. Poslednji build
-je prošao čisto, bez upozorenja. **189 testova, nijedan ne pada.**
+je prošao čisto, bez upozorenja. **192 testa, nijedan ne pada.**
 
 **Svih sedam modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -777,6 +777,46 @@ Dve stvari koje su usput ispravljene:
 
 Bez ovoga provera ne bi imala čime da radi: ona mora da poruči **određen zadatak
 na određenoj prečki**, a dotle je porudžbinu razumeo jedan modul od sedam.
+
+### Provera postoji
+
+Urađeno **18. avgusta 2026**. Merenje koje je svima jednako, pa daje **nivo** —
+ono što vežbe ne mogu da daju jer se učinak iz raznih zadataka ne sme sabrati.
+
+Četiri svojstva, sva ugrađena:
+
+- **uvek ista** — isti zadatak, težina i prečka, pa se dva merenja porede;
+- **uz punu podršku** — kad podrška padne, veštine prestaju da budu razdvojive, a
+  dijagnoza traži razdvojivost; teret ide u vežbu;
+- **bez poena** — `Xp.forSession` vraća nulu za proveru. Merilo koje nagrađuje
+  prestaje da meri i počne da se juri;
+- **kratka** — merenje koje se izbegava ne meri ništa.
+
+**Radi se po jednoj veštini, ne za svih osam odjednom.** Osam merenja ne stane u
+tri minuta, jedno stane u jedan. Profil se puni u komadima, i to je pošteno.
+
+**Provera postoji za tri veštine** — koordinatnu automatiku, geometriju figure i
+držanje pozicije. Za ažuriranje, kontrolu polja i računanje **još ne**: njihovi
+zadaci traju predugo za merenje, i tu tek treba smisliti kako. Veština bez
+provere stoji na „nije provereno", što je tačno stanje.
+
+#### Modul ne zna da je bio proveravan
+
+Da je sesija bila provera zna **školjka**, ne modul: `AppNavigation` obeleži
+rezultat pri prijemu. Modul ne zna ni za poene ni za napredak, pa nema razloga da
+zna ni za merenje — a i porudžbina koju dobija je ista kao svaka druga.
+
+Ruta modula je zato dobila neobavezan rep: zadatak, prečku i oznaku provere.
+
+#### Nivo i napredak stoje odvojeno
+
+`bySkill`, trend i grafik računaju **samo vežbe**; provere se čuvaju posebno i iz
+njih se čita nivo. Sabrati ih značilo bi razblažiti jedino merenje koje je svima
+jednako.
+
+Na kartici veštine to izgleda ovako: ko je proveren vidi **nivo**, ko je samo
+vežbao vidi napredak i uz njega „nije provereno" — jer bi inače obim vežbanja
+izgledao kao dokaz o nivou.
 
 ### Šta iz ovoga sledi, po redu
 
