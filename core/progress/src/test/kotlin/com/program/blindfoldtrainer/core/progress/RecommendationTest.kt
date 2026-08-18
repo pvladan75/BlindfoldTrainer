@@ -179,6 +179,34 @@ class RecommendationTest {
     }
 
     /**
+     * Razlog „temelj" govori o **ovoj** veštini, ne o onoj iznad nje:
+     * „koordinate su temelj" je argument, „držanju pozicije fale temelji" je
+     * prigovor. Zato se pali kad je izabrana veština temelj drugima, a još nije
+     * automatska.
+     */
+    @Test
+    fun `temelj se prijavljuje na samom temelju`() {
+        // Koordinate su probane i tačne, ali spore — dakle nisu automatske, a
+        // na njima stoje držanje i zapis.
+        val history = listOf(
+            session(Skill.COORDINATES, "square_color", 10, 10, millis = 90_000)
+        )
+
+        val recommendation = history.toProgressSnapshot()
+            .recommend(listOf(coordinates), lastTaskId = null)!!
+
+        assertEquals(Reason.FOUNDATION, recommendation.reason)
+    }
+
+    /** Neprobano je osnovnija činjenica od toga što je nešto temelj. */
+    @Test
+    fun `neprobano ide ispred temelja`() {
+        val recommendation = ProgressSnapshot.EMPTY.recommend(listOf(coordinates))!!
+
+        assertEquals(Reason.NEVER_TRIED, recommendation.reason)
+    }
+
+    /**
      * Preporuka koja uvek šalje na najgore je preporuka koja se prestane
      * otvarati — na svakih pet sesija dolazi ono što ide dobro.
      */

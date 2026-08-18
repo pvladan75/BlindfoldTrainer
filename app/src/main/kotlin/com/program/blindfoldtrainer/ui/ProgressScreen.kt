@@ -150,10 +150,13 @@ private fun SkillCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Bez težine duži naslov pregazi ono desno od sebe: red ih ređa
+                // jedno pored drugog i ne skraćuje nijedno samo od sebe.
                 Text(
                     text = stringResource(skill.labelRes()),
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f).padding(end = 8.dp)
                 )
 
                 // Nivo dolazi **iz provere** — jedinog merenja koje je svima
@@ -267,7 +270,8 @@ private fun TaskRows(
         Text(
             text = stringResource(taskLabelRes(taskId)),
             style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(1f).padding(end = 8.dp)
         )
         Text(
             text = if (held == null) {

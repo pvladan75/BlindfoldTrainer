@@ -1,6 +1,7 @@
 package com.program.blindfoldtrainer.core.progress
 
 import com.program.blindfoldtrainer.core.model.Skill
+import com.program.blindfoldtrainer.core.model.requires
 import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.model.TaskSpec
 
@@ -18,7 +19,13 @@ enum class Reason {
     /** Najslabija među merenima. */
     WEAKEST,
 
-    /** Temelj koji koči ostale: dok on nije automatski, iznad njega ide sporo. */
+    /**
+     * **Ovo je temelj** za druge veštine, a još nije automatsko.
+     *
+     * Veza ide u ovom smeru namerno: razlog objašnjava zašto je vredno raditi
+     * baš **ovo**, a ne zašto nešto drugo ne ide. „Koordinate su temelj" je
+     * argument; „držanju pozicije fale temelji" je prigovor.
+     */
     FOUNDATION,
 
     /** Ono što ide dobro — da predlog ne bude uvek najgore mesto. */
@@ -80,10 +87,13 @@ fun ProgressSnapshot.recommend(
         skill = chosen.measures,
         taskId = chosen.id,
         support = nextRung(chosen),
+        // Redosled razloga nije proizvoljan: prvo ono što je **osnovnija
+        // činjenica**. Da nisi ni probao je jače od svega ostalog što bi se o
+        // tome moglo reći, pa ide ispred toga što je veština i temelj.
         reason = when {
             wantsStrength -> Reason.STRENGTH
             bySkill[chosen.measures] == null -> Reason.NEVER_TRIED
-            foundationsMissing(chosen.measures).isNotEmpty() -> Reason.FOUNDATION
+            isUnautomaticFoundation(chosen.measures) -> Reason.FOUNDATION
             else -> Reason.WEAKEST
         }
     )
@@ -104,6 +114,16 @@ private fun ProgressSnapshot.priorityOf(task: TaskSpec): Float {
 
     return profile.standing + blocked
 }
+
+/**
+ * Da li je ova veština **temelj drugima**, a još nije automatska.
+ *
+ * To je najjači razlog koji preporuka ume da ponudi, jer ne govori o ovoj
+ * veštini nego o svemu što na njoj stoji: dok temelj troši pažnju, iznad njega
+ * se napreduje sporo ma koliko se vežbalo.
+ */
+private fun ProgressSnapshot.isUnautomaticFoundation(skill: Skill): Boolean =
+    !isAutomatic(skill) && Skill.entries.any { skill in it.requires }
 
 private fun ProgressSnapshot.standingOf(task: TaskSpec): Float =
     bySkill[task.measures]?.byTask?.get(task.id)?.standing ?: 0f
