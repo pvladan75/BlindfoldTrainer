@@ -55,12 +55,12 @@ class SummaryViewModel @Inject constructor(
         buildList {
             add(summaryResult(result.solved, result.attempted, result.mistakes))
 
-            // Šta je sesija pomerila — bez ekrana je ovo jedini način da se to
-            // sazna, a bez njega sažetak kaže koliko si radio ali ne i na čemu.
-            result.bySkill.forEach { (skill, tally) ->
-                add("${skillName(skill)} ${tally.solved} / ${tally.attempted}")
-            }
-
+            // Razlaganja po veštinama ovde **nema**, iako se na ekranu vidi.
+            // Probano na uređaju i odbijeno: „ažuriranje pozicije 6 od 8" je
+            // izgovoreno ime pojma i dva broja — sluhu ne znači ništa, a stoji
+            // između rezultata i poena, tamo gde se sluša najpažljivije.
+            //
+            // Profil je za čitanje. Govor nosi ishod, ekran nosi analizu.
             reward?.let {
                 add(summaryXp(it.xp))
                 if (it.isRankUp) add(summaryRankUp)

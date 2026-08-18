@@ -481,9 +481,7 @@ radi" nego da korisnik to otkrije pred tablom u koju ne gleda.
 Tri mesta, istog dana:
 
 - **Sažetak sesije** — red „Pomereno", sa učinkom po veštini koju je sesija
-  dodirnula. Bez ekrana se isti podatak **izgovara**, pa je uz `SpeechPhrases`
-  dodato i `skillName`. To je svesan izuzetak od pravila o dva izvora istine za
-  imena: bez ekrana je govor jedini način da se sazna šta je sesija pomerila.
+  dodirnula.
 - **Kartica modula** — „Razvija: …", unija veština njegovih zadataka. Modul više
   ne izgleda kao vežba sama sebi svrha.
 - **Ekran napretka** — otvara se dodirom na karticu ranga u meniju. Ide **po
@@ -493,6 +491,24 @@ Tri mesta, istog dana:
 
 Traka učinka se crta samo tamo gde ima podatka — prazna traka bi izgledala kao
 nula, a nula i „nije mereno" nisu ista stvar.
+
+#### Profil se ne izgovara
+
+Prvo je i sažetak bez ekrana čitao razlaganje, i to je bilo stavljeno **ispred**
+ekrana napretka kao najvrednije mesto — sa obrazloženjem da bez ekrana drugog
+načina nema.
+
+Sa uređaja: **„ne znači mi ništa da ga čujem."**
+
+Razlog se vidi kad se pročita naglas ono što je zaista stizalo: „ažuriranje
+pozicije 6 od 8" je ime pojma i dva broja, i to usred rečenice u kojoj se sluša
+ishod. Ime veštine je oznaka za čitanje — u govoru nema za šta da se zakači.
+
+> **Govor nosi ishod, ekran nosi analizu.**
+
+Izbačeno je i `skillName` iz `SpeechPhrases`, sa njim. Pravilo o dva izvora
+istine za imena je time ostalo neprekršeno — a bilo je prekršeno baš zbog reda
+koji nije radio.
 
 Ostaje ono što traži još merenja: provera, put i podsetnici.
 

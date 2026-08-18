@@ -3,7 +3,6 @@ package com.program.blindfoldtrainer.core.audio
 import com.program.blindfoldtrainer.core.chess.Piece
 import com.program.blindfoldtrainer.core.chess.PieceType
 import com.program.blindfoldtrainer.core.model.Language
-import com.program.blindfoldtrainer.core.model.Skill
 
 /**
  * Rečenice koje aplikacija izgovara.
@@ -147,15 +146,6 @@ interface SpeechPhrases {
      */
     val summaryRankUp: String
     val summaryAchievement: String
-
-    /**
-     * Ime veštine u govoru.
-     *
-     * Postoji iako imena stoje i kao resursi ekrana, i to je izuzetak od pravila
-     * o dva izvora istine — jer bez ekrana je ovo **jedini** način da se sazna
-     * šta je sesija pomerila, a to je najvredniji red celog sažetka.
-     */
-    fun skillName(skill: Skill): String
 }
 
 /**
@@ -303,17 +293,6 @@ internal object EnglishPhrases : SpeechPhrases {
 
     override val summaryRankUp = "New rank."
     override val summaryAchievement = "New achievement."
-
-    override fun skillName(skill: Skill): String = when (skill) {
-        Skill.COORDINATES -> "square knowledge"
-        Skill.PIECE_GEOMETRY -> "piece geometry"
-        Skill.POSITION_HOLD -> "holding the position"
-        Skill.POSITION_UPDATE -> "updating the position"
-        Skill.NOTATION -> "notation to picture"
-        Skill.RECOVERY -> "rebuilding the picture"
-        Skill.SQUARE_CONTROL -> "square control"
-        Skill.CALCULATION -> "blindfold calculation"
-    }
 }
 
 /**
