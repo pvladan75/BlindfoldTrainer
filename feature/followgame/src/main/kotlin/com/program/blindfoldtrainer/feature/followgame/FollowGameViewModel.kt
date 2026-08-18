@@ -13,6 +13,10 @@ import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Skill
+import com.program.blindfoldtrainer.core.model.SkillTally
+import com.program.blindfoldtrainer.core.model.Support
+import com.program.blindfoldtrainer.core.model.TaskSpec
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
 import com.program.blindfoldtrainer.core.moduleapi.userReason
@@ -295,7 +299,13 @@ class FollowGameViewModel @Inject constructor(
             solved = state.solved,
             mistakes = state.mistakes,
             elapsedMillis = System.currentTimeMillis() - startedAtMillis,
-            completed = state.isFinished && !wasQuit
+            completed = state.isFinished && !wasQuit,
+            bySkill = mapOf(
+                FOLLOW_WHERE_IS_PIECE.measures to SkillTally(
+                    attempted = state.questionNumber,
+                    solved = state.solved
+                )
+            )
         )
     }
 
@@ -306,3 +316,20 @@ class FollowGameViewModel @Inject constructor(
         speaker.stop()
     }
 }
+
+/**
+ * Potezi majstorske partije stižu jedan po jedan; povremeno se pita gde koja
+ * figura stoji.
+ *
+ * Meri **ažuriranje** — i to je jedini zadatak u kom se greška gomila kroz
+ * desetine poteza, kao u pravoj partiji. Prevod zapisa ide uz to, jer potezi
+ * stižu kao reči a ne kao slika.
+ *
+ * Ovde će stati i pitanja koja još ne postoje — „ko napada ovu figuru" meri
+ * kontrolu polja i biće **zaseban zadatak**, ne druga težina ovog.
+ */
+internal val FOLLOW_WHERE_IS_PIECE = TaskSpec(
+    id = "where_is_piece",
+    skills = listOf(Skill.POSITION_UPDATE, Skill.NOTATION),
+    supports = listOf(Support.FULL, Support.NONE)
+)

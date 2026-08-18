@@ -11,6 +11,10 @@ import com.program.blindfoldtrainer.core.chess.randomSparsePosition
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Skill
+import com.program.blindfoldtrainer.core.model.SkillTally
+import com.program.blindfoldtrainer.core.model.Support
+import com.program.blindfoldtrainer.core.model.TaskSpec
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -245,7 +249,13 @@ class RecallViewModel @Inject constructor() : ViewModel() {
             solved = state.solved,
             mistakes = state.mistakes,
             elapsedMillis = System.currentTimeMillis() - startedAtMillis,
-            completed = state.isFinished
+            completed = state.isFinished,
+            bySkill = mapOf(
+                RECALL_RECONSTRUCT.measures to SkillTally(
+                    attempted = state.taskNumber,
+                    solved = state.solved
+                )
+            )
         )
     }
 
@@ -255,3 +265,19 @@ class RecallViewModel @Inject constructor() : ViewModel() {
         reviewJob?.cancel()
     }
 }
+
+/**
+ * Pozicija se vidi nekoliko sekundi, pa se vraća po sećanju.
+ *
+ * Meri **držanje**, i to je jedini zadatak koji ga meri čisto: nema poteza koji
+ * bi sliku menjali, pa ne meri ni ažuriranje ni oporavak — samo koliko se veza
+ * figura–polje drži odjednom.
+ *
+ * Zna samo punu podršku. Rešava se vraćanjem figura iz palete na tablu, a to je
+ * i meta koja se dodiruje i izbor koji se gleda; zone tu ne pomažu.
+ */
+internal val RECALL_RECONSTRUCT = TaskSpec(
+    id = "reconstruct",
+    skills = listOf(Skill.POSITION_HOLD),
+    supports = listOf(Support.FULL)
+)

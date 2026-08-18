@@ -20,6 +20,8 @@ class PairsTrainingModule @Inject constructor() : TrainingModule {
     override val titleRes = R.string.pairs_title
     override val descriptionRes = R.string.pairs_description
     override val iconRes = R.drawable.ic_pairs
+    override val tasks = listOf(PAIRS_MEETING_SQUARE)
+
     override val difficulties = listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD)
     override val needs = setOf(Capability.SPEECH_OUTPUT, Capability.VOICE_INPUT)
 

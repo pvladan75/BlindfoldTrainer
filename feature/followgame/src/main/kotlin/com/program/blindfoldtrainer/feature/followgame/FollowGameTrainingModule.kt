@@ -20,6 +20,8 @@ class FollowGameTrainingModule @Inject constructor() : TrainingModule {
     override val titleRes = R.string.follow_game_title
     override val descriptionRes = R.string.follow_game_description
     override val iconRes = R.drawable.ic_follow_game
+    override val tasks = listOf(FOLLOW_WHERE_IS_PIECE)
+
     override val difficulties = listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD)
     override val needs = setOf(Capability.SPEECH_OUTPUT, Capability.VOICE_INPUT)
 

@@ -11,6 +11,10 @@ import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Skill
+import com.program.blindfoldtrainer.core.model.SkillTally
+import com.program.blindfoldtrainer.core.model.Support
+import com.program.blindfoldtrainer.core.model.TaskSpec
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -304,7 +308,13 @@ class KnightPathViewModel @Inject constructor(
             solved = state.solved,
             mistakes = state.mistakes,
             elapsedMillis = System.currentTimeMillis() - startedAtMillis,
-            completed = state.isFinished
+            completed = state.isFinished,
+            bySkill = mapOf(
+                KNIGHT_SHORTEST_PATH.measures to SkillTally(
+                    attempted = state.taskNumber,
+                    solved = state.solved
+                )
+            )
         )
     }
 
@@ -316,3 +326,15 @@ class KnightPathViewModel @Inject constructor(
         voiceInput.stop()
     }
 }
+
+/**
+ * Skakač od polazišta do odredišta, najkraćim putem, bez table.
+ *
+ * Meri **geometriju figure** — skakačev skok je jedini koji se ne vidi po liniji
+ * nego se mora znati. Računanje ide uz to, jer se put bira među mogućnostima.
+ */
+internal val KNIGHT_SHORTEST_PATH = TaskSpec(
+    id = "shortest_path",
+    skills = listOf(Skill.PIECE_GEOMETRY, Skill.CALCULATION),
+    supports = listOf(Support.FULL, Support.NONE)
+)

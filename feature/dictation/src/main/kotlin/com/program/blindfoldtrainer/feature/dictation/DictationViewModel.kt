@@ -12,6 +12,10 @@ import com.program.blindfoldtrainer.core.chess.randomSparsePosition
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Skill
+import com.program.blindfoldtrainer.core.model.SkillTally
+import com.program.blindfoldtrainer.core.model.Support
+import com.program.blindfoldtrainer.core.model.TaskSpec
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -280,7 +284,13 @@ class DictationViewModel @Inject constructor(
             solved = state.solved,
             mistakes = state.mistakes,
             elapsedMillis = System.currentTimeMillis() - startedAtMillis,
-            completed = state.isFinished
+            completed = state.isFinished,
+            bySkill = mapOf(
+                DICTATION_PLACE_POSITION.measures to SkillTally(
+                    attempted = state.taskNumber,
+                    solved = state.solved
+                )
+            )
         )
     }
 
@@ -290,3 +300,18 @@ class DictationViewModel @Inject constructor(
         speaker.stop()
     }
 }
+
+/**
+ * Pozicija se izgovori, tabla je prazna, ti je složiš.
+ *
+ * Meri **prevod zapisa u sliku** — jedini smer koji ostali zadaci nemaju, jer
+ * svi idu od viđene pozicije ka zapisu. Držanje ide uz to, pošto se cela
+ * pozicija nosi od slušanja do slaganja.
+ *
+ * Zna samo punu podršku: slaže se iz palete, a paleta traži oko.
+ */
+internal val DICTATION_PLACE_POSITION = TaskSpec(
+    id = "place_position",
+    skills = listOf(Skill.NOTATION, Skill.POSITION_HOLD),
+    supports = listOf(Support.FULL)
+)

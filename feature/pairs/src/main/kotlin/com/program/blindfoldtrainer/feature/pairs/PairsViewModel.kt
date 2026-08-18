@@ -14,6 +14,10 @@ import com.program.blindfoldtrainer.core.designsystem.board.PieceVisibility
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Skill
+import com.program.blindfoldtrainer.core.model.SkillTally
+import com.program.blindfoldtrainer.core.model.Support
+import com.program.blindfoldtrainer.core.model.TaskSpec
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
 import com.program.blindfoldtrainer.core.moduleapi.userReason
@@ -401,7 +405,13 @@ class PairsViewModel @Inject constructor(
             solved = solvedPuzzles,
             mistakes = state.mistakes,
             elapsedMillis = System.currentTimeMillis() - startedAtMillis,
-            completed = state.isFinished
+            completed = state.isFinished,
+            bySkill = mapOf(
+                PAIRS_MEETING_SQUARE.measures to SkillTally(
+                    attempted = state.puzzleNumber,
+                    solved = solvedPuzzles
+                )
+            )
         )
     }
 
@@ -414,3 +424,16 @@ class PairsViewModel @Inject constructor(
         voiceInput.stop()
     }
 }
+
+/**
+ * Potezi stižu glasom dok je tabla prazna; traži se polje na kom se figure sreću.
+ *
+ * Meri **ažuriranje**: svaki potez menja sliku, a odgovor je tačan samo ako je
+ * slika ostala tačna kroz ceo niz. Držanje ide uz to, jer se pozicija mora
+ * nositi između poteza.
+ */
+internal val PAIRS_MEETING_SQUARE = TaskSpec(
+    id = "meeting_square",
+    skills = listOf(Skill.POSITION_UPDATE, Skill.POSITION_HOLD),
+    supports = listOf(Support.FULL, Support.NONE)
+)

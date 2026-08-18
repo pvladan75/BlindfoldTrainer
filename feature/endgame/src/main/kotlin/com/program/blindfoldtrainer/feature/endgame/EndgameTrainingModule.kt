@@ -20,6 +20,8 @@ class EndgameTrainingModule @Inject constructor() : TrainingModule {
     override val titleRes = R.string.endgame_title
     override val descriptionRes = R.string.endgame_description
     override val iconRes = R.drawable.ic_endgame
+    override val tasks = listOf(ENDGAME_PLAY_OUT)
+
     override val difficulties = listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD)
     override val needs = setOf(Capability.SPEECH_OUTPUT, Capability.ENGINE, Capability.VOICE_INPUT)
 

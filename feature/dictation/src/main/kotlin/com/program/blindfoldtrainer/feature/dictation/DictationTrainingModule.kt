@@ -20,6 +20,8 @@ class DictationTrainingModule @Inject constructor() : TrainingModule {
     override val titleRes = R.string.dictation_title
     override val descriptionRes = R.string.dictation_description
     override val iconRes = R.drawable.ic_dictation
+    override val tasks = listOf(DICTATION_PLACE_POSITION)
+
     override val difficulties = listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD)
 
     /** Samo govor: pozicija se izgovara, a odgovara se dodirom po tabli. */
@@ -29,7 +31,6 @@ class DictationTrainingModule @Inject constructor() : TrainingModule {
      * Tabla je ovde **odgovor**, ne prikaz — figure se na nju spuštaju. Bez nje
      * vežbe nema, pa režim bez ekrana ovaj modul ne podnosi.
      */
-    override val supportsEyesFree = false
 
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {

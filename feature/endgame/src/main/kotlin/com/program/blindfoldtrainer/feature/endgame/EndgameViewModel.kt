@@ -18,6 +18,10 @@ import com.program.blindfoldtrainer.core.engine.ChessEngine
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Skill
+import com.program.blindfoldtrainer.core.model.SkillTally
+import com.program.blindfoldtrainer.core.model.Support
+import com.program.blindfoldtrainer.core.model.TaskSpec
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
 import com.program.blindfoldtrainer.core.moduleapi.userReason
@@ -684,7 +688,13 @@ class EndgameViewModel @Inject constructor(
             solved = solvedCount,
             mistakes = state.mistakes,
             elapsedMillis = System.currentTimeMillis() - startedAtMillis,
-            completed = state.isFinished
+            completed = state.isFinished,
+            bySkill = mapOf(
+                ENDGAME_PLAY_OUT.measures to SkillTally(
+                    attempted = state.puzzleNumber,
+                    solved = solvedCount
+                )
+            )
         )
     }
 
@@ -697,3 +707,21 @@ class EndgameViewModel @Inject constructor(
         voiceInput.stop()
     }
 }
+
+/**
+ * Dobijena pozicija se privodi kraju bez table, protiv motora koji se brani.
+ *
+ * Meri **ažuriranje**, jer se posle svakog para poteza slika mora obnoviti; uz
+ * njega idu držanje, računanje i oporavak — ovo je jedini zadatak u aplikaciji
+ * koji sve četiri traži odjednom, i zato je najbliži pravoj partiji.
+ */
+internal val ENDGAME_PLAY_OUT = TaskSpec(
+    id = "play_out",
+    skills = listOf(
+        Skill.POSITION_UPDATE,
+        Skill.POSITION_HOLD,
+        Skill.CALCULATION,
+        Skill.RECOVERY
+    ),
+    supports = listOf(Support.FULL, Support.NONE)
+)

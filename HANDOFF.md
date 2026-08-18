@@ -45,7 +45,7 @@ blindfold animacija i raspakivanje ViewModel-a. Stari projekat se odatle napušt
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **sedam** modula za trening. Poslednji build
-je prošao čisto, bez upozorenja. **174 testa, nijedan ne pada.**
+je prošao čisto, bez upozorenja. **178 testova, nijedan ne pada.**
 
 **Svih sedam modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -69,7 +69,7 @@ adb install -r C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer\app\build\o
 | `:core:designsystem` | tema, `ChessBoard`, `PieceVisibility`, sličice figura | — |
 | `:core:audio` | `Speaker` (TTS), `SpeechPhrases`, `VoiceInput` (Vosk), zone bez ekrana | **52** |
 | `:core:engine` | `ChessEngine` interfejs, `LocalEngine` | — |
-| `:core:progress` | `Xp`, `Rank`, `Achievement`, `ProgressSnapshot`, `ProgressRepository` | **27** |
+| `:core:progress` | `Xp`, `Rank`, `Achievement`, `ProgressSnapshot` (uz profil po veštinama), `ProgressRepository` | **31** |
 | `:core:data` | Room istorija sesija, DataStore podešavanja | — |
 | `:feature:geometry` | Geometrija table | — |
 | `:feature:pairs` | Interaktivni parovi | — |
@@ -437,12 +437,46 @@ razloga iz kog su ključ modula i ime težine tekst: nova veština ne sme da pom
 značenje već upisanih redova. Nepoznata veština ili oštećen unos **otpadaju**, a
 ostatak reda preživi — ista logika po kojoj nepoznat modul ne obara ceo napredak.
 
-#### Šta ostaje odmah posle ovoga
+#### Svih sedam se izjasnilo
 
-1. Ostalih šest modula da se izjasne — svaki svoje zadatke i prečke.
-2. `supportsEyesFree` da nestane: kad svi prijave zadatke, izvodi se iz toga da
-   li ijedan ume `Support.NONE`. Do tada stoji kao i pre, da meni ne slaže.
-3. Profil po veštinama iz istorije — zbir `bySkill` kroz sesije.
+Isti dan, posle Geometrije. Svaki modul sad prijavljuje svoj zadatak, veštine
+koje razvija i prečke koje ume, a rezultat sesije nosi razlaganje po veštini
+koju taj zadatak **meri**.
+
+| modul | zadatak | meri | uz to nosi | prečke |
+|---|---|---|---|---|
+| Geometrija | `square_color` | koordinatna automatika | — | FULL, NONE |
+| Putanja skakača | `shortest_path` | geometrija figure | računanje | FULL, NONE |
+| Interaktivni parovi | `meeting_square` | ažuriranje | držanje | FULL, NONE |
+| Prati partiju | `where_is_piece` | ažuriranje | prevod zapisa | FULL, NONE |
+| Dokrajči protivnika | `play_out` | ažuriranje | držanje, računanje, oporavak | FULL, NONE |
+| Zapamti poziciju | `reconstruct` | držanje | — | FULL |
+| Postavi po diktatu | `place_position` | prevod zapisa | držanje | FULL |
+
+Dva nalaza koja se vide tek kad se poređa:
+
+- **Ažuriranje meri tri zadatka, a kontrolu polja i oporavak nijedan.** Prazne
+  vrste iz tabele veština nisu se popunile same od sebe.
+- **Nijedan zadatak ne ume srednje prečke** (`PARTIAL`, `TRACE`). Lestvica
+  postoji u kodu, ali su joj zasad zauzeti samo krajevi — a to je baš razlog
+  zbog kog je „bez ekrana" delovao kao skok.
+
+`supportsEyesFree` je **prestao da bude tvrdnja i postao izvod**: modul radi bez
+ekrana ako ijedan njegov zadatak ume `Support.NONE`. Dva izvora istine su time
+postala jedan. Modul koji se ne izjasni daje `false` — bolje da meni kaže „ne
+radi" nego da korisnik to otkrije pred tablom u koju ne gleda.
+
+#### Profil postoji, prikaza još nema
+
+`ProgressSnapshot` sabira `bySkill` kroz celu istoriju i ume da kaže
+`weakestSkill`. Dva pravila su ugrađena i pokrivena testovima:
+
+- **sesija bez razlaganja ne razblažuje profil** — stare sesije ga ne pomeraju ni
+  na gore ni na dole;
+- **nemereno nije slabost** — `weakestSkill` ne vraća veštinu o kojoj nema
+  podatka, jer „ne zna se da je slaba" i „zna se da je slaba" nisu ista stvar.
+
+Ostaje prikaz: ekran napretka po veštinama i red u sažetku sesije.
 
 ### Šta iz ovoga sledi, po redu
 

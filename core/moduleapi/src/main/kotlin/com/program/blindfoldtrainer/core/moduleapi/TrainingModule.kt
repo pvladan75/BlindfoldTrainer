@@ -67,13 +67,17 @@ interface TrainingModule {
     /**
      * Da li modul ume da se odradi bez gledanja u ekran.
      *
-     * Nije svaka vežba prevodiva na zone i glas: „Zapamti poziciju" se rešava
-     * vraćanjem figura iz palete na tablu, a glasovni unos prepoznaje samo
-     * polja — ne i figure. Meni na osnovu ovoga kaže korisniku koji modul mu
-     * uz uključen režim **neće** raditi, umesto da to sazna tek unutra.
+     * **Izvedeno, ne upisano.** Ranije je svaki modul sam tvrdio da li radi bez
+     * ekrana, pa su postojala dva izvora istine — tvrdnja i ono što modul zaista
+     * ume. Sada je odgovor jednostavan: modul radi bez ekrana ako ijedan njegov
+     * zadatak ume [Support.NONE].
+     *
+     * Modul koji se još nije izjasnio ovde daje `false`, i to je namerno: bolje
+     * da meni kaže „ne radi bez ekrana" nego da korisnik to otkrije unutra, pred
+     * tablom u koju ne gleda.
      */
     val supportsEyesFree: Boolean
-        get() = true
+        get() = tasks.any { Support.NONE in it.supports }
 
     /**
      * Ekran modula.

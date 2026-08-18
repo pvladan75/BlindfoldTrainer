@@ -20,6 +20,8 @@ class KnightPathTrainingModule @Inject constructor() : TrainingModule {
     override val titleRes = R.string.knight_path_title
     override val descriptionRes = R.string.knight_path_description
     override val iconRes = R.drawable.ic_knight_path
+    override val tasks = listOf(KNIGHT_SHORTEST_PATH)
+
     override val difficulties = listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD)
     override val needs = setOf(Capability.SPEECH_OUTPUT, Capability.VOICE_INPUT)
 
