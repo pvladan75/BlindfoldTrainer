@@ -45,7 +45,7 @@ blindfold animacija i raspakivanje ViewModel-a. Stari projekat se odatle napušt
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **sedam** modula za trening. Poslednji build
-je prošao čisto, bez upozorenja. **159 testova, nijedan ne pada.**
+je prošao čisto, bez upozorenja. **174 testa, nijedan ne pada.**
 
 **Svih sedam modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -63,7 +63,7 @@ adb install -r C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer\app\build\o
 
 | Modul | Sadržaj | Testovi |
 |---|---|---|
-| `:core:model` | `ModuleId`, `Difficulty`, `Capability`, `SessionResult` | **5** |
+| `:core:model` | `ModuleId`, `Difficulty`, `Capability`, `SessionResult`, `Skill`, `Support`, `TaskSpec` | **15** |
 | `:core:chess` | `Board`, `Position`, `MoveGenerator`, `Attacks`, `Fen`, `Search`, `KnightPath`, `San`, `Pgn`, `Reconstruction` | **70** |
 | `:core:moduleapi` | ugovor `TrainingModule` | — |
 | `:core:designsystem` | tema, `ChessBoard`, `PieceVisibility`, sličice figura | — |
@@ -381,6 +381,68 @@ prošlim merenjem.
 - **Kartica modula** — šta ovaj modul razvija, da se vidi da nije tek tako.
 - **Sažetak sesije** — jedan red: **šta je ova sesija pomerila.** To je najvažnije
   od tri, jer stiže u trenutku kad je zaslužen, i bez otvaranja ijednog ekrana.
+
+### Prvi presek: Geometrija zna svoju veštinu
+
+Napisano **18. avgusta 2026**. Prvi komad ovog dogovora koji zaista postoji u
+kodu — jedan modul preveden do kraja, da se vidi drži li podela vodu pre nego što
+se povuče kroz ostalih šest.
+
+**Šta je uvedeno** (`:core:model`):
+
+- `Skill` — osam veština, sa ključem koji se ne sme menjati, kao kod `ModuleId`.
+- `Support` — četiri prečke (`FULL`, `PARTIAL`, `TRACE`, `NONE`) sa `harder()` i
+  `easier()`; **redosled je zajednički, značenje je na zadatku.**
+- `TaskSpec` — vrsta zadatka: šta pita, koje veštine razvija, koje prečke ume.
+  `measures` je prva veština u spisku — ona po kojoj zadatak ide u profil.
+- `SkillTally` i `SessionResult.bySkill` — razlaganje po veštinama, uz prazno
+  koje **znači „nije mereno", ne nulu**.
+
+**Ugovor modula** je dobio `tasks` i izvedeno `skills`. Prazno `tasks` znači
+„modul se još nije izjasnio" — takav modul radi kao i pre, ali ne ulazi ni u
+profil ni u put. Šest ih je danas takvo.
+
+`ModuleArgs` je dobio `taskId` i `support` — **porudžbinu** puta. Kad ih nema,
+modul bira sam, po težini i po podrazumevanoj prečki iz podešavanja.
+
+#### Geometrija je iz testa postala vežba
+
+Zadatak `square_color` meri koordinatnu automatiku i ume **dve prečke**, namerno
+bez one između:
+
+| prečka | šta se dešava posle odgovora |
+|---|---|
+| `FULL` | **pokaže se tabla sa poljem** — gradi vezu koordinate i mesta |
+| `NONE` | table nema, istina se **izgovori** |
+
+Ovo je razlika test/vežba u malom: test kaže da li si pogodio, vežba pokaže
+istinu — i to **posle svakog odgovora, ne samo posle greške**, jer se veza gradi
+i kad se pogodi.
+
+Time je i stara nedoumica rešena bez biranja strane: „pokaži tablu" i „izgovori"
+nisu suprotni predlozi nego **dve prečke iste lestvice**. Prva je ulaz za
+početnika, druga je veština koja preživi zatvorene oči.
+
+Prekidač „bez ekrana" u ovom modulu više ne bira ekran nego **polaznu prečku**:
+ko vežba zatvorenih očiju kreće od najniže koju zadatak ume.
+
+#### Istorija se čuva
+
+Baza je otišla na verziju 2 zbog kolone sa razlaganjem. Migracija samo dodaje
+kolonu — `fallbackToDestructiveMigration` se **ne** koristi, jer je napredak
+jedino što korisnik u ovoj aplikaciji ima.
+
+Razlaganje se čuva kao tekst (`coordinates:10/8;position_hold:5/4`), iz istog
+razloga iz kog su ključ modula i ime težine tekst: nova veština ne sme da pomeri
+značenje već upisanih redova. Nepoznata veština ili oštećen unos **otpadaju**, a
+ostatak reda preživi — ista logika po kojoj nepoznat modul ne obara ceo napredak.
+
+#### Šta ostaje odmah posle ovoga
+
+1. Ostalih šest modula da se izjasne — svaki svoje zadatke i prečke.
+2. `supportsEyesFree` da nestane: kad svi prijave zadatke, izvodi se iz toga da
+   li ijedan ume `Support.NONE`. Do tada stoji kao i pre, da meni ne slaže.
+3. Profil po veštinama iz istorije — zbir `bySkill` kroz sesije.
 
 ### Šta iz ovoga sledi, po redu
 

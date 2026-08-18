@@ -20,12 +20,18 @@ class GeometryTrainingModule @Inject constructor() : TrainingModule {
     override val titleRes = R.string.geometry_title
     override val descriptionRes = R.string.geometry_description
     override val iconRes = R.drawable.ic_geometry
+    override val tasks = listOf(SQUARE_COLOR)
+
     override val difficulties = listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD)
     override val needs = setOf(Capability.SPEECH_OUTPUT)
 
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {
-        GeometryScreen(difficulty = args.difficulty, onFinish = onFinish)
+        GeometryScreen(
+            difficulty = args.difficulty,
+            onFinish = onFinish,
+            support = args.support
+        )
     }
 }
 

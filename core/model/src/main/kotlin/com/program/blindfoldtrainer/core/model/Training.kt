@@ -56,6 +56,23 @@ enum class Capability {
 }
 
 /**
+ * Koliko je jedna veština dobila u jednoj sesiji.
+ *
+ * Namerno **bez procenta**: procenat izgleda tačno a nije, jer je sastavljen od
+ * nejednakih zadataka. Dva broja se sabiraju kroz istoriju i tek iz njih se
+ * računa ono što se prikazuje.
+ */
+data class SkillTally(val attempted: Int, val solved: Int) {
+    init {
+        require(attempted >= 0) { "attempted ne može biti negativan" }
+        require(solved in 0..attempted) { "solved ($solved) mora biti u 0..attempted ($attempted)" }
+    }
+
+    operator fun plus(other: SkillTally) =
+        SkillTally(attempted + other.attempted, solved + other.solved)
+}
+
+/**
  * Ishod jedne završene sesije treninga.
  *
  * Ovo je **jedini** kanal kojim modul prijavljuje rezultat. Zahvaljujući tome
@@ -73,7 +90,20 @@ data class SessionResult(
     val mistakes: Int,
     val elapsedMillis: Long,
     /** Da li je sesija završena bez odustajanja (korisnik nije prekinuo). */
-    val completed: Boolean = true
+    val completed: Boolean = true,
+
+    /**
+     * Šta je sesija dodirnula, **po veštinama**.
+     *
+     * Zbirni brojevi iznad kažu koliko si dobro prošao; ovo kaže **koja veština
+     * klizi**, a to je jedino po čemu se profil, provera i put uopšte mogu
+     * napraviti. Sesija ostaje jedan red u istoriji — razlaganje je u njoj, a ne
+     * u zasebnoj tabeli, jer se veština meri po sesiji a ne po dodiru.
+     *
+     * Prazno je dozvoljeno i **znači „nije mereno"**, ne nulu: sesije upisane
+     * pre ove izmene ga nemaju, i to se korisniku tako i kaže.
+     */
+    val bySkill: Map<Skill, SkillTally> = emptyMap()
 ) {
     init {
         require(attempted >= 0) { "attempted ne može biti negativan" }
@@ -88,6 +118,9 @@ data class SessionResult(
 
     val accuracy: Float
         get() = if (attempted == 0) 0f else solved.toFloat() / attempted
+
+    /** Veštine koje je ova sesija uopšte dodirnula. */
+    val skills: Set<Skill> get() = bySkill.keys
 
     companion object {
         /** Sesija koju je korisnik napustio pre kraja. */

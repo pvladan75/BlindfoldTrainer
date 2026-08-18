@@ -10,13 +10,20 @@ import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
+import com.program.blindfoldtrainer.core.model.Skill
+import com.program.blindfoldtrainer.core.model.SkillTally
+import com.program.blindfoldtrainer.core.model.Support
+import com.program.blindfoldtrainer.core.model.TaskSpec
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -36,11 +43,36 @@ data class GeometryUiState(
     /** `null` kad težina nema vremensko ograničenje. */
     val remainingMillis: Long? = null,
     val questionLimitMillis: Long? = null,
-    val isFinished: Boolean = false
+    val isFinished: Boolean = false,
+
+    /**
+     * Polje koje se posle odgovora **pokaže na tabli**, uz punu podršku.
+     *
+     * Ovo je razlika između testa i vežbe: test kaže da li si pogodio, vežba
+     * pokaže istinu. Uz [Support.NONE] table nema pa se ista istina izgovara.
+     */
+    val revealedSquare: Square? = null
 ) {
     val progress: Float
         get() = if (questionCount == 0) 0f else questionNumber.toFloat() / questionCount
 }
+
+/**
+ * Jedina vrsta zadatka koju ovaj modul ume: **koje je boje polje**.
+ *
+ * Meri koordinatnu automatiku — ne „umeš li da nađeš e4 na tabli", nego „znaš li
+ * šta je e4 zatvorenih očiju". Zato dve prečke, i namerno bez one između:
+ *
+ * - [Support.FULL] — posle odgovora se pokaže tabla sa poljem. To gradi vezu
+ *   koordinate i mesta, i to je pravi ulaz za početnika.
+ * - [Support.NONE] — table nema, istina se izgovori. Ovo je veština kakva
+ *   zaista treba, jer preživi zatvorene oči.
+ */
+internal val SQUARE_COLOR = TaskSpec(
+    id = "square_color",
+    skills = listOf(Skill.COORDINATES),
+    supports = listOf(Support.FULL, Support.NONE)
+)
 
 /**
  * Podešavanja po težini. Lako nema sat i služi da se nauči obrazac; teško je
@@ -75,10 +107,22 @@ class GeometryViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(GeometryUiState())
     val uiState: StateFlow<GeometryUiState> = _uiState.asStateFlow()
 
-    private val _isEyesFree = MutableStateFlow(Settings.DEFAULT.eyesFree)
+    private val _support = MutableStateFlow(Support.FULL)
 
     /** Da li se vežba bez gledanja u ekran; bira se u Podešavanjima. */
-    val isEyesFree: StateFlow<Boolean> = _isEyesFree.asStateFlow()
+    /**
+     * Koliko slike aplikacija drži umesto tebe.
+     *
+     * Zamenilo je prekidač „bez ekrana": on je bio skok sa prve prečke na
+     * poslednju, pa je modul ili imao tablu ili je nije imao. Ovde su prečke
+     * dve — [Support.FULL] pokaže istinu na tabli, [Support.NONE] je izgovori —
+     * a koje postoje kaže sam zadatak.
+     */
+    val support: StateFlow<Support> = _support.asStateFlow()
+
+    /** Zadržano za ekran: najniža prečka znači da se tabla ne crta. */
+    val isEyesFree: StateFlow<Boolean> = _support.map { it == Support.NONE }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     private lateinit var setup: Setup
     private var difficulty: Difficulty = Difficulty.EASY
@@ -89,8 +133,14 @@ class GeometryViewModel @Inject constructor(
     /** Sesija je prekinuta pre kraja — ne sme da se prijavi kao završena. */
     private var wasQuit = false
 
-    /** Bezbedno je zvati više puta — pokreće sesiju samo prvi put. */
-    fun startOnce(difficulty: Difficulty) {
+    /**
+     * Bezbedno je zvati više puta — pokreće sesiju samo prvi put.
+     *
+     * [requestedSupport] stiže iz porudžbine puta. Kad ga nema — slobodno
+     * vežbanje iz menija — prečka se izvodi iz podešavanja: ko vežba zatvorenih
+     * očiju kreće od najniže koju zadatak ume.
+     */
+    fun startOnce(difficulty: Difficulty, requestedSupport: Support? = null) {
         if (isStarted) return
         isStarted = true
         this.difficulty = difficulty
@@ -98,8 +148,12 @@ class GeometryViewModel @Inject constructor(
 
         viewModelScope.launch {
             // Prvo podešavanje se sačeka: bez toga bi prvo pitanje prošlo pre
-            // nego što se sazna da se vežba bez ekrana, pa ne bi bilo izgovoreno.
-            _isEyesFree.value = settingsRepository.settings.first().eyesFree
+            // nego što se sazna koliko podrške ima, pa istina ne bi bila ni
+            // pokazana ni izgovorena.
+            val settings = settingsRepository.settings.first()
+            val wanted = requestedSupport
+                ?: if (settings.eyesFree) SQUARE_COLOR.hardest else Support.FULL
+            _support.value = SQUARE_COLOR.nearestSupport(wanted)
 
             startedAtMillis = System.currentTimeMillis()
             _uiState.value = GeometryUiState(
@@ -126,7 +180,7 @@ class GeometryViewModel @Inject constructor(
 
     /** Rok po pitanju; bez ekrana se produžava za izgovor. */
     private fun questionLimit(): Long? = setup.perQuestionMillis?.let { limit ->
-        if (_isEyesFree.value) limit + EYES_FREE_GRACE_MILLIS else limit
+        if (_support.value == Support.NONE) limit + EYES_FREE_GRACE_MILLIS else limit
     }
 
     fun onAnswer(answer: Answer) {
@@ -150,13 +204,17 @@ class GeometryViewModel @Inject constructor(
                 feedback = feedback,
                 solved = it.solved + if (feedback == Feedback.CORRECT) 1 else 0,
                 mistakes = it.mistakes + if (feedback == Feedback.CORRECT) 0 else 1,
-                remainingMillis = null
+                remainingMillis = null,
+                // Uz punu podršku se istina **pokaže**, i to posle svakog
+                // odgovora a ne samo posle greške: veza „e4 je tamno" se gradi
+                // i kad se pogodi.
+                revealedSquare = if (_support.value == Support.FULL) square else null
             )
         }
 
-        // Bez ekrana se ispisana ispravka ne vidi, pa mora da se čuje — inače se
-        // pogrešan obrazac samo ponavlja.
-        if (_isEyesFree.value) speaker.say { spokenFeedback(feedback, square) }
+        // Uz najnižu prečku table nema, pa ista istina mora da se čuje — inače
+        // se pogrešan obrazac samo ponavlja.
+        if (_support.value == Support.NONE) speaker.say { spokenFeedback(feedback, square) }
 
         viewModelScope.launch {
             delay(feedbackPause())
@@ -183,12 +241,12 @@ class GeometryViewModel @Inject constructor(
      * kretao pre nego što se pitanje uopšte čuje.
      */
     private fun feedbackPause(): Long =
-        if (_isEyesFree.value) EYES_FREE_FEEDBACK_PAUSE_MILLIS else FEEDBACK_PAUSE_MILLIS
+        if (_support.value == Support.NONE) EYES_FREE_FEEDBACK_PAUSE_MILLIS else FEEDBACK_PAUSE_MILLIS
 
     private fun finish() {
         questionJob?.cancel()
         val state = _uiState.value
-        if (_isEyesFree.value) {
+        if (_support.value == Support.NONE) {
             // Bez ekrana se sažetak ne vidi, pa bi sesija prosto utihnula.
             speaker.say(interrupt = false) { sessionEndCorrect(state.solved, state.questionNumber) }
         }
@@ -204,12 +262,13 @@ class GeometryViewModel @Inject constructor(
                 square = square,
                 questionNumber = it.questionNumber + 1,
                 feedback = null,
+                revealedSquare = null,
                 remainingMillis = limit
             )
         }
 
         // Bez ekrana je izgovoreno polje celo pitanje.
-        if (_isEyesFree.value) speaker.say(square, interrupt = false)
+        if (_support.value == Support.NONE) speaker.say(square, interrupt = false)
 
         if (limit == null) return
         questionJob?.cancel()
@@ -236,7 +295,15 @@ class GeometryViewModel @Inject constructor(
             solved = state.solved,
             mistakes = state.mistakes,
             elapsedMillis = System.currentTimeMillis() - startedAtMillis,
-            completed = state.isFinished && !wasQuit
+            completed = state.isFinished && !wasQuit,
+            // Ceo modul meri jednu veštinu, pa je razlaganje kratko — ali ide
+            // istim kanalom kao i kod modula koji mešaju više vrsta pitanja.
+            bySkill = mapOf(
+                SQUARE_COLOR.measures to SkillTally(
+                    attempted = state.questionNumber,
+                    solved = state.solved
+                )
+            )
         )
     }
 

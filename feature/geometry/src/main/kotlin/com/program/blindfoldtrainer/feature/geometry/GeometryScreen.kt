@@ -2,6 +2,8 @@ package com.program.blindfoldtrainer.feature.geometry
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -37,20 +39,25 @@ import com.program.blindfoldtrainer.core.audio.ZoneTone
 import com.program.blindfoldtrainer.core.designsystem.theme.BoardDark
 import com.program.blindfoldtrainer.core.designsystem.theme.BoardLight
 import com.program.blindfoldtrainer.core.designsystem.theme.SquareError
+import com.program.blindfoldtrainer.core.chess.Board
+import com.program.blindfoldtrainer.core.designsystem.board.ChessBoard
+import com.program.blindfoldtrainer.core.designsystem.board.SquareTint
 import com.program.blindfoldtrainer.core.designsystem.theme.SquareSuccess
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Support
 
 @Composable
 fun GeometryScreen(
     difficulty: Difficulty,
     onFinish: (SessionResult) -> Unit,
+    support: Support? = null,
     viewModel: GeometryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val isEyesFree by viewModel.isEyesFree.collectAsState()
 
-    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty) }
+    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty, support) }
 
     LaunchedEffect(uiState.isFinished) {
         if (uiState.isFinished) onFinish(viewModel.buildResult())
@@ -208,6 +215,22 @@ private fun QuestionPrompt(uiState: GeometryUiState) {
             style = MaterialTheme.typography.titleMedium,
             color = SquareError
         )
+
+        // Vežba, ne test: posle odgovora se **pokaže** gde to polje stoji, i to
+        // i kad je odgovor tačan — veza koordinate i mesta se gradi i tada.
+        // Mesto je zauzeto i dok table nema, da odgovor ne skakuće po ekranu.
+        Box(
+            modifier = Modifier.fillMaxWidth(0.62f).aspectRatio(1f),
+            contentAlignment = Alignment.Center
+        ) {
+            uiState.revealedSquare?.let { revealed ->
+                ChessBoard(
+                    board = Board.EMPTY,
+                    tints = mapOf(revealed to SquareTint.HIGHLIGHT),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
     }
 }
 
