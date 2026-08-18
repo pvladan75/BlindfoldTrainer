@@ -27,7 +27,7 @@ poslednjeg probanja.
 
 ## Gde smo stali ovog trenutka
 
-**Poslednji komit: `%KOMIT%`.** Sve je komitovano i gurnuto; radno stablo je čisto.
+**Poslednji komit: `7f16186`.** Sve je komitovano i gurnuto; radno stablo je čisto.
 
 Stanje na **18. avgust 2026.** Sesija ima dva dela. Prvi je „Daj šah" viđen na
 uređaju po prvi put, i tri ispravke koje su odatle stigle. Drugi je **uputstvo** —
