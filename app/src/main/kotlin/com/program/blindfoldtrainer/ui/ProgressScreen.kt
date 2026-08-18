@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -33,6 +34,7 @@ import com.program.blindfoldtrainer.R
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.model.TaskSpec
+import com.program.blindfoldtrainer.core.progress.Benchmarks
 import com.program.blindfoldtrainer.core.progress.Depth
 import com.program.blindfoldtrainer.core.progress.ProgressSnapshot
 import com.program.blindfoldtrainer.core.progress.SkillEntry
@@ -66,6 +68,10 @@ fun ProgressScreen(
     // Dok je merena samo jedna veština, „najslabija" nema sa čim da se poredi
     // — a na jedinoj merenoj zvuči kao prekor umesto kao putokaz.
     val weakest = progress.weakestSkill.takeIf { progress.measuredSkills.size >= 2 }
+
+    // Automatizam se meri prema orijentiru zadatka, a orijentire zna registar —
+    // isti spisak zadataka koji ovaj ekran ionako dobija.
+    val benchmarks = remember(tasks) { Benchmarks.of(tasks.values) }
 
     Scaffold(
         topBar = {
@@ -103,8 +109,8 @@ fun ProgressScreen(
                     skill = skill,
                     profile = progress.bySkill[skill],
                     checkup = progress.lastCheckup(skill),
-                    isAutomatic = progress.isAutomatic(skill),
-                    foundationsMissing = progress.foundationsMissing(skill),
+                    isAutomatic = progress.isAutomatic(skill, benchmarks),
+                    foundationsMissing = progress.foundationsMissing(skill, benchmarks),
                     isWeakest = skill == weakest,
                     trendFor = { taskId -> progress.trendFor(skill, taskId) },
                     depthFor = { taskId -> progress.depthFor(taskId) },

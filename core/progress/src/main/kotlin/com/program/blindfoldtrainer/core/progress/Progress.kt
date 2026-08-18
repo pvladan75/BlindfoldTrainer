@@ -7,6 +7,7 @@ import com.program.blindfoldtrainer.core.model.Benchmark
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.SkillTally
 import com.program.blindfoldtrainer.core.model.Support
+import com.program.blindfoldtrainer.core.model.TaskSpec
 import com.program.blindfoldtrainer.core.model.requires
 
 /** Napredak u jednom modulu. */
@@ -102,13 +103,29 @@ data class ProgressSnapshot(
      * Traži se oboje: prečka koju drži i brzina na njoj. Tačan ali spor odgovor
      * znači da veština još troši pažnju — a na takvoj se ne može graditi
      * sledeća, jer je radna memorija jedna.
+     *
+     * Brzina se meri **prema orijentiru te prečke tog zadatka**, ne prema broju
+     * upisanom uz veštinu. Ranije je stajala konstanta po veštini, a poredila se
+     * sa vremenom po pokušaju — a pokušaj je u jednom zadatku pitanje od tri
+     * sekunde, a u drugom cela pozicija od minut i po. Držanje pozicije se tako
+     * priznavalo tek ispod 25 s, dok je sopstveni cilj rekonstrukcije 60 s: da
+     * bude „automatsko", trebalo je biti **dva i po puta brži od najboljeg
+     * rezultata koji zadatak uopšte traži**. Zato držanje nikad nije postajalo
+     * automatsko, a sve što na njemu stoji bilo je trajno blokirano u preporuci.
+     *
+     * Sada je merilo isto za sve: **[AUTOMATIC_SHARE] ispod orijentira**. Drži
+     * prečku i budi osetno brži od onoga što je na njoj cilj.
      */
-    fun isAutomatic(skill: Skill): Boolean {
-        val task = bySkill[skill]?.furthest ?: return false
+    fun isAutomatic(skill: Skill, benchmarks: Benchmarks): Boolean {
+        val (taskId, task) = bySkill[skill]?.tasks?.firstOrNull() ?: return false
         val rung = task.heldRung() ?: return false
         val perAttempt = task.at(rung)?.millisPerAttempt ?: return false
 
-        return perAttempt <= automaticMillisFor(skill)
+        // Zadatak bez orijentira na toj prečki se ne proglašava ni automatskim ni
+        // sporim — nema prema čemu, a „ne zna se" je ovde puna vrednost.
+        val target = benchmarks.of(taskId, rung)?.millisPerAttempt ?: return false
+
+        return perAttempt <= target * AUTOMATIC_SHARE
     }
 
     /**
@@ -116,8 +133,8 @@ data class ProgressSnapshot(
      *
      * Prazan skup ne znači da je veština laka, nego da je ništa ne koči.
      */
-    fun foundationsMissing(skill: Skill): Set<Skill> =
-        skill.requires.filterNotTo(mutableSetOf()) { isAutomatic(it) }
+    fun foundationsMissing(skill: Skill, benchmarks: Benchmarks): Set<Skill> =
+        skill.requires.filterNotTo(mutableSetOf()) { isAutomatic(it, benchmarks) }
 
     /**
      * Kako je veština stajala **ranije** naspram toga kako stoji **sada**.
@@ -242,22 +259,40 @@ data class ProgressSnapshot(
 }
 
 /**
- * Koliko sme da traje jedan pokušaj da bi se veština smatrala **automatskom**.
+ * Koliko ispod orijentira treba biti da bi se veština smatrala **automatskom**.
  *
- * Brojevi su **prvi predlog**, kao i pragovi rangova — menjaju se na jednom
- * mestu i istorija se sama preračuna. Razlikuju se po veštini jer se razlikuje i
- * ono što se broji kao pokušaj: jedno pitanje o boji polja naspram cele
- * odigrane završnice.
+ * Jedan broj za sve veštine, jer se poredi sa **ciljem tog zadatka na toj
+ * prečki** — a taj cilj već zna da je jedno pitanje o boji polja nešto drugo od
+ * cele odigrane završnice. Ranije je ovde stajalo osam konstanti u milisekundama
+ * i mešale su dve stvari: koliko veština sme da traje i koliko traje pokušaj u
+ * kom se meri.
+ *
+ * Broj je **prvi predlog**, kao i pragovi rangova i sami orijentiri. Menja se na
+ * jednom mestu i istorija se sama preračuna.
  */
-private fun automaticMillisFor(skill: Skill): Long = when (skill) {
-    Skill.COORDINATES -> 2_500
-    Skill.PIECE_GEOMETRY -> 8_000
-    Skill.NOTATION -> 25_000
-    Skill.POSITION_HOLD -> 25_000
-    Skill.POSITION_UPDATE -> 20_000
-    Skill.RECOVERY -> 25_000
-    Skill.SQUARE_CONTROL -> 12_000
-    Skill.CALCULATION -> 60_000
+private const val AUTOMATIC_SHARE = 0.75f
+
+/**
+ * Orijentiri po zadatku — školjka ih zna iz registra, napredak ne.
+ *
+ * Napredak čuva šta se dogodilo, a ne šta je trebalo da se dogodi: orijentir
+ * pripada zadatku i menja se sa njim, dok istorija ostaje ista. Zato se
+ * dodaje spolja, umesto da se prepisuje u zapis sesije.
+ */
+fun interface Benchmarks {
+
+    fun of(taskId: String, support: Support): Benchmark?
+
+    companion object {
+
+        /** Kad se orijentiri ne znaju: tada se ni jedna veština ne proglašava automatskom. */
+        val UNKNOWN = Benchmarks { _, _ -> null }
+
+        fun of(tasks: Iterable<TaskSpec>): Benchmarks {
+            val byId = tasks.associateBy { it.id }
+            return Benchmarks { taskId, support -> byId[taskId]?.benchmarkFor(support) }
+        }
+    }
 }
 
 /**

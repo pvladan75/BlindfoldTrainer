@@ -86,11 +86,17 @@ enum class Skill(val key: String) {
  * ```
  * KOORDINATE ──┬──> DRŽANJE ──┬──> AŽURIRANJE ──┐
  *              │              │                 ├──> RAČUNANJE
- *              └──> ZAPIS     └──> OPORAVAK     │
- *                                               │
+ *              └──> ZAPIS ────┤  └──> OPORAVAK  │
+ *                             │                 │
  * DOMET FIGURE ──┬──> AŽURIRANJE                │
  *                └──> KONTROLA POLJA ───────────┘
  * ```
+ *
+ * **Zašto ažuriranje traži i zapis:** naslepo potez stiže isključivo kao zapis —
+ * u „Prati partiju" je tabla prazna na svakoj prečki, pa se potez ili pročita ili
+ * čuje, ali se uvek dekodira. Dok to dekodiranje troši pažnju, nema se čime
+ * primeniti potez na sliku. Ista mehanika kao svuda ovde: radna memorija je
+ * jedna.
  *
  * Ista slika stoji i u uputstvu, ali se **tamo crta iz ovog `requires`**, ne
  * prepisuje. Ova je ovde da se veza vidi uz kod koji je definiše.
@@ -101,7 +107,8 @@ val Skill.requires: Set<Skill>
         Skill.PIECE_GEOMETRY -> emptySet()
         Skill.POSITION_HOLD -> setOf(Skill.COORDINATES)
         Skill.NOTATION -> setOf(Skill.COORDINATES)
-        Skill.POSITION_UPDATE -> setOf(Skill.POSITION_HOLD, Skill.PIECE_GEOMETRY)
+        Skill.POSITION_UPDATE ->
+            setOf(Skill.POSITION_HOLD, Skill.PIECE_GEOMETRY, Skill.NOTATION)
         Skill.RECOVERY -> setOf(Skill.POSITION_HOLD)
         Skill.SQUARE_CONTROL -> setOf(Skill.PIECE_GEOMETRY, Skill.POSITION_HOLD)
         Skill.CALCULATION -> setOf(Skill.POSITION_UPDATE, Skill.SQUARE_CONTROL)

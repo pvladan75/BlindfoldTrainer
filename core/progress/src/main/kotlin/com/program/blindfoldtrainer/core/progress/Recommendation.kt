@@ -76,11 +76,15 @@ fun ProgressSnapshot.recommend(
 
     val candidates = tasks.filterNot { it.id == lastTaskId }.ifEmpty { tasks }
 
+    // Orijentiri stižu iz istog spiska zadataka koji se i predlaže — bez njih se
+    // ne zna šta je „brzo", pa ni šta je temelj koji drži.
+    val benchmarks = Benchmarks.of(tasks)
+
     val wantsStrength = sessions > 0 && sessions % STRENGTH_EVERY == 0
     val chosen = if (wantsStrength) {
         candidates.maxByOrNull { standingOf(it) } ?: return null
     } else {
-        candidates.minByOrNull { priorityOf(it) } ?: return null
+        candidates.minByOrNull { priorityOf(it, benchmarks) } ?: return null
     }
 
     return Recommendation(
@@ -93,7 +97,7 @@ fun ProgressSnapshot.recommend(
         reason = when {
             wantsStrength -> Reason.STRENGTH
             bySkill[chosen.measures] == null -> Reason.NEVER_TRIED
-            isUnautomaticFoundation(chosen.measures) -> Reason.FOUNDATION
+            isUnautomaticFoundation(chosen.measures, benchmarks) -> Reason.FOUNDATION
             else -> Reason.WEAKEST
         }
     )
@@ -105,9 +109,9 @@ fun ProgressSnapshot.recommend(
  * Veština čiji temelji nisu automatski se **ne zabranjuje** nego samo pomera
  * unazad: ako je sve ostalo pokriveno, i ona će doći na red.
  */
-private fun ProgressSnapshot.priorityOf(task: TaskSpec): Float {
+private fun ProgressSnapshot.priorityOf(task: TaskSpec, benchmarks: Benchmarks): Float {
     val skill = task.measures
-    val blocked = if (foundationsMissing(skill).isEmpty()) 0f else BLOCKED_PENALTY
+    val blocked = if (foundationsMissing(skill, benchmarks).isEmpty()) 0f else BLOCKED_PENALTY
 
     val profile = bySkill[skill]?.byTask?.get(task.id)
         ?: return NEVER_TRIED_PRIORITY + blocked
@@ -122,8 +126,10 @@ private fun ProgressSnapshot.priorityOf(task: TaskSpec): Float {
  * veštini nego o svemu što na njoj stoji: dok temelj troši pažnju, iznad njega
  * se napreduje sporo ma koliko se vežbalo.
  */
-private fun ProgressSnapshot.isUnautomaticFoundation(skill: Skill): Boolean =
-    !isAutomatic(skill) && Skill.entries.any { skill in it.requires }
+private fun ProgressSnapshot.isUnautomaticFoundation(
+    skill: Skill,
+    benchmarks: Benchmarks
+): Boolean = !isAutomatic(skill, benchmarks) && Skill.entries.any { skill in it.requires }
 
 private fun ProgressSnapshot.standingOf(task: TaskSpec): Float =
     bySkill[task.measures]?.byTask?.get(task.id)?.standing ?: 0f

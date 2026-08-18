@@ -7,6 +7,7 @@ import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.SkillTally
 import com.program.blindfoldtrainer.core.model.Support
+import com.program.blindfoldtrainer.core.model.TaskSpec
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -17,6 +18,35 @@ import org.junit.Test
  * procenat uz tablu i bez nje nije isti podatak.
  */
 class SkillProfileTest {
+
+    /**
+     * Zadatak sa **kratkim** pokušajem: jedno pitanje o boji polja.
+     *
+     * Brojevi su isti kao u Geometriji, prepisani ovde jer `:core:progress` ne
+     * vidi feature module — a poenta testa je odnos prema orijentiru, ne baš ta
+     * vrednost.
+     */
+    private val squareColor = TaskSpec(
+        id = "square_color",
+        skills = listOf(Skill.COORDINATES),
+        supports = listOf(Support.FULL, Support.NONE),
+        benchmarks = mapOf(
+            Support.FULL to Benchmark(millisPerAttempt = 3_000, minAccuracy = 0.9f),
+            Support.NONE to Benchmark(millisPerAttempt = 4_500, minAccuracy = 0.9f)
+        )
+    )
+
+    /** Zadatak sa **dugim** pokušajem: cela izdiktirana pozicija. */
+    private val placePosition = TaskSpec(
+        id = "place_position",
+        skills = listOf(Skill.NOTATION),
+        supports = listOf(Support.FULL),
+        benchmarks = mapOf(
+            Support.FULL to Benchmark(millisPerAttempt = 75_000, minAccuracy = 0.8f)
+        )
+    )
+
+    private val benchmarks = Benchmarks.of(listOf(squareColor, placePosition))
 
     /** Vreme raste samo od sebe, da bi istorija bila hronološka. */
     private var clock = 1_000_000L
@@ -216,8 +246,14 @@ class SkillProfileTest {
             )
         ).toProgressSnapshot()
 
-        assertTrue("1,5 s po zadatku je automatski", fast.isAutomatic(Skill.COORDINATES))
-        assertTrue("6 s po zadatku nije", !slow.isAutomatic(Skill.COORDINATES))
+        assertTrue(
+            "1,5 s po pitanju je ispod orijentira od 4,5 s",
+            fast.isAutomatic(Skill.COORDINATES, benchmarks)
+        )
+        assertTrue(
+            "6 s po pitanju je iznad orijentira",
+            !slow.isAutomatic(Skill.COORDINATES, benchmarks)
+        )
     }
 
     /**
@@ -227,8 +263,14 @@ class SkillProfileTest {
     fun `temelj koji nije automatski se prijavljuje`() {
         val nothing = ProgressSnapshot.EMPTY
 
-        assertEquals(setOf(Skill.COORDINATES), nothing.foundationsMissing(Skill.POSITION_HOLD))
-        assertEquals(emptySet<Skill>(), nothing.foundationsMissing(Skill.COORDINATES))
+        assertEquals(
+            setOf(Skill.COORDINATES),
+            nothing.foundationsMissing(Skill.POSITION_HOLD, benchmarks)
+        )
+        assertEquals(
+            emptySet<Skill>(),
+            nothing.foundationsMissing(Skill.COORDINATES, benchmarks)
+        )
 
         val withCoordinates = listOf(
             session(
@@ -237,10 +279,13 @@ class SkillProfileTest {
             )
         ).toProgressSnapshot()
 
-        assertEquals(emptySet<Skill>(), withCoordinates.foundationsMissing(Skill.POSITION_HOLD))
         assertEquals(
-            setOf(Skill.PIECE_GEOMETRY, Skill.POSITION_HOLD),
-            withCoordinates.foundationsMissing(Skill.POSITION_UPDATE)
+            emptySet<Skill>(),
+            withCoordinates.foundationsMissing(Skill.POSITION_HOLD, benchmarks)
+        )
+        assertEquals(
+            setOf(Skill.PIECE_GEOMETRY, Skill.POSITION_HOLD, Skill.NOTATION),
+            withCoordinates.foundationsMissing(Skill.POSITION_UPDATE, benchmarks)
         )
     }
 
@@ -375,5 +420,61 @@ class SkillProfileTest {
 
         assertNull(empty.weakestSkill)
         assertTrue(empty.measuredSkills.isEmpty())
+    }
+
+    /**
+     * **Ovo je test zbog kog je prag i menjan.**
+     *
+     * Dok je automatizam bio konstanta u milisekundama po veštini, prevod zapisa
+     * se priznavao tek ispod 25 s po pokušaju — a pokušaj je tamo cela izdiktirana
+     * pozicija, čiji je sopstveni cilj 75 s. Tražilo se, dakle, da budeš tri puta
+     * brži od najboljeg rezultata koji zadatak uopšte traži, pa veština nikad nije
+     * postajala automatska, a sve što na njoj stoji bilo je trajno blokirano.
+     *
+     * Sad se meri prema orijentiru: 50 s po poziciji je ispod 75 s × 0,75.
+     */
+    @Test
+    fun `dug zadatak sme da bude automatski`() {
+        val fluent = listOf(
+            session(
+                taskId = "place_position",
+                support = Support.FULL,
+                bySkill = mapOf(Skill.NOTATION to SkillTally(10, 9, millis = 500_000))
+            )
+        ).toProgressSnapshot()
+
+        assertTrue(
+            "50 s po poziciji je osetno ispod cilja od 75 s",
+            fluent.isAutomatic(Skill.NOTATION, benchmarks)
+        )
+
+        val struggling = listOf(
+            session(
+                taskId = "place_position",
+                support = Support.FULL,
+                bySkill = mapOf(Skill.NOTATION to SkillTally(10, 9, millis = 700_000))
+            )
+        ).toProgressSnapshot()
+
+        assertTrue(
+            "70 s jeste ispod cilja, ali ne osetno",
+            !struggling.isAutomatic(Skill.NOTATION, benchmarks)
+        )
+    }
+
+    /**
+     * Bez orijentira se **ne tvrdi ništa**. „Ne zna se" je ovde puna vrednost, kao
+     * i „nije mereno" u profilu — nula bi rekla da je veština spora.
+     */
+    @Test
+    fun `bez orijentira nema automatizma`() {
+        val fast = listOf(
+            session(
+                support = Support.NONE,
+                bySkill = mapOf(Skill.COORDINATES to SkillTally(20, 19, millis = 30_000))
+            )
+        ).toProgressSnapshot()
+
+        assertTrue(!fast.isAutomatic(Skill.COORDINATES, Benchmarks.UNKNOWN))
     }
 }

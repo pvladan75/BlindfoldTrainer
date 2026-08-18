@@ -27,7 +27,7 @@ poslednjeg probanja.
 
 ## Gde smo stali ovog trenutka
 
-**Poslednji komit: `56781f4`.** Sve je komitovano i gurnuto; radno stablo je čisto.
+**Poslednji komit: `%KOMIT%`.** Sve je komitovano i gurnuto; radno stablo je čisto.
 
 Stanje na **18. avgust 2026.** Sesija ima dva dela. Prvi je „Daj šah" viđen na
 uređaju po prvi put, i tri ispravke koje su odatle stigle. Drugi je **uputstvo** —
@@ -213,17 +213,64 @@ Uputstvo je viđeno u prvoj verziji i po primedbama odatle precrtana je slika i
 promenjena reč; **precrtana slika i tekst o slepim ulicama nisu viđeni**, jer su
 napisani posle toga.
 
+### Prag automatizma je bio nedostižan
+
+Najveći nalaz ove sesije, i nađen je usput — pri proveri da li `POSITION_UPDATE`
+treba da traži `NOTATION`.
+
+Automatizam se merio **konstantom po veštini u milisekundama**, a poredila se sa
+vremenom **po pokušaju**. Pokušaj je u jednom zadatku pitanje od tri sekunde, a u
+drugom cela pozicija od minut i po — pa je merilo tražilo nemoguće:
+
+| veština | prag | meri je | cilj tog zadatka |
+|---|---|---|---|
+| Držanje pozicije | 25 s | Rekonstrukcija | **60 s** |
+| Prevod zapisa | 25 s | Diktat | **75 s** |
+| Domet figure | 8 s | Najkraći put | 20 s |
+
+Da ti se držanje pozicije prizna kao automatsko, trebalo je biti **dva i po puta
+brži od najboljeg rezultata koji zadatak uopšte traži**. Posledica je da držanje
+nikad nije postajalo automatsko — pa je `Ažuriranje pozicije` bilo **trajno
+blokirano**, kao i `Kontrola polja`, a put je pet od deset zadataka sistematski
+gurao na kraj sa kaznom od `+10`.
+
+Sad je merilo isto za sve: **automatski = drži oslonac i ispod 75% orijentira te
+prečke tog zadatka**. Osam konstanti je nestalo; ostao je jedan udeo
+(`AUTOMATIC_SHARE`).
+
+Orijentiri stižu spolja, kroz `Benchmarks` — napredak čuva **šta se dogodilo**, a
+ne šta je trebalo da se dogodi. Orijentir pripada zadatku i menja se sa njim, dok
+istorija ostaje ista; da je prepisan u zapis sesije, promena cilja bi prepravila
+prošlost.
+
+Zadatak bez orijentira na toj prečki se **ne proglašava ni automatskim ni sporim**
+— „ne zna se" je i ovde puna vrednost.
+
+### Ažuriranje sad traži i zapis
+
+Provereno pre nego što je dodato: u „Prati partiju" je tabla **prazna na svakoj
+prečki** (`Board.EMPTY`), pa se potez ili pročita ili čuje — ali se uvek dekodira.
+Nema oslonca na kom potez stiže kao slika. Dok dekodiranje troši pažnju, nema se
+čime primeniti potez, što je doslovno kriterijum po kom je `requires` i pisan.
+
+Na slici se to vidi kao **jedna nova grana**, prava naniže: Prevod zapisa →
+Ažuriranje pozicije. Spratovi se nisu pomerili, i zapis više nije slepa ulica.
+
+### Kartica se zove „Predlog"
+
+Bila je „Sledeće", što je zvučalo kao program koji te vodi. Razmatrano je i
+„Preporuka" — tačno, ali formalno. **„Predlog"** je reč koju projekat ionako
+koristi za taj pojam („predlog, ne šina") i jedina koja sama kaže da se sme
+odbiti, što je i cela doktrina te kartice.
+
 ### Šta je ostalo otvoreno
 
 1. **Komentari u kodu i dalje kažu „prečka"** — oko 190 mesta. Nije puštano kroz
    `sed` zbog promene roda; to je prolaz koji se mora pročitati. Uz to: `podrška`
    je već u upotrebi u kodu za isti pojam i **ženskog** je roda, pa bi za
    komentare bila upola jeftinija. Za korisnika ostaje **oslonac**.
-2. **Da li `POSITION_UPDATE` treba da traži `NOTATION`.** Po objašnjenju slepih
-   ulica — ne možeš primeniti potez koji nisi dekodirao — trebalo bi, i zapis bi
-   prestao da bude slepa ulica. Izmena je jedna linija u `Skill.requires`, ali
-   **menja i preporuku**: ažuriranje bi bilo „blokirano" dok zapis ne postane
-   automatski. Nije dirano bez odluke.
+2. **Udeo od 75% je prvi predlog**, kao i sami orijentiri. Tek sa nekoliko nedelja
+   vežbanja se vidi da li je premekan ili pretvrd.
 3. **Faze uputstva koje su ostale**: „?" sa kartica u odeljke (isti stringovi,
    bez novog teksta), i slika veština na ekranu Napretka.
 

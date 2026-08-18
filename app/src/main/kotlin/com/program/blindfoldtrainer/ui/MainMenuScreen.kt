@@ -161,7 +161,7 @@ fun MainMenuScreen(
 }
 
 /**
- * Sledeći korak koji put predlaže.
+ * Predlog koji put daje za sledeći korak.
  *
  * **Presudan je drugi red — razlog.** Preporuka bez razloga je proročanstvo, a
  * proročanstvu se ne veruje kad promaši; sa razlogom je argument i korisnik sme
