@@ -25,6 +25,47 @@ poslednjeg probanja.
 
 ---
 
+## Gde smo stali ovog trenutka
+
+**Poslednji komit: `92570b2`.** Sve je komitovano i gurnuto na GitHub; radno
+stablo je čisto osim `.idea/gradle.xml`, koji je izmenjen i pre svega ovoga.
+
+### Šta nije viđeno na uređaju
+
+Ove tri izmene su napisane i sagrađene, ali **nisu instalirane**:
+
+1. **Modul „Daj šah“** u konačnom obliku — cilj je šah, ne saopšteno polje, i ima
+   fazu pamćenja na srednjoj prečki. Ovo je prvi zadatak u aplikaciji koji uopšte
+   koristi `Support.PARTIAL`, pa je najvrednije probati baš njega.
+2. **Pitanje „ko napada figuru“** u Prati partiju.
+3. **Dubina do prve greške** u Prati partiju.
+
+Instalacija ide ovako, kad je telefon na kablu ili na bežičnom debagu:
+
+```
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+### Šta bi trebalo probati prvo
+
+- **Srednja prečka u „Daj šah“**: tabla se vidi, dodirneš „ZAPAMTIO SAM“, crne
+  figure nestaju a skakač ostaje. Ako ta prečka ne radi kako treba, cela podela na
+  prečke pada na prvom pravom ispitu.
+- **Put** bi trebalo da ponudi neproverene zadatke — kontrola polja se meri u dva
+  nova zadatka i nijedan još nije vežban.
+
+### Šta je odmah sledeće po dogovoru
+
+1. Nekoliko nedelja stvarnog korišćenja pre novih velikih stvari — orijentiri,
+   pragovi automatizma i put su svi prvi predlog i nikog nisu vodili kroz mesec
+   dana.
+2. Zatim server: prvo čuvanje napretka, pa dnevni zadatak, pa lestvica po
+   istrajnosti. Nikako lestvica po veštinama.
+3. Nedovršeno sa spiska: prevod ekranskog teksta, ekran dostignuća, smislene
+   pozicije za „Zapamti poziciju“ i „Diktat“, težine u Geometriji, podsetnici.
+
+---
+
 ## Verzionisanje
 
 Projekat je pod gitom od **15. avgusta 2026**: grana `master`, prvi komit
