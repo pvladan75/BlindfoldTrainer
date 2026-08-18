@@ -27,6 +27,7 @@ import com.program.blindfoldtrainer.R
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.requires
 import com.program.blindfoldtrainer.core.model.skillFloors
+import kotlin.math.abs
 
 /**
  * Slika zavisnosti među veštinama.
@@ -35,14 +36,17 @@ import com.program.blindfoldtrainer.core.model.skillFloors
  * put predložiti odlučuje i šta se ovde vidi — pa slika ne može da laže ni kad se
  * doda veština, ni kad se veza promeni.
  *
- * Tri odluke je čine čitljivom, i sve tri su naučene iz prve verzije, koja je
- * bila splet ukrštenih dijagonala:
+ * Četiri odluke je čine čitljivom, i sve četiri su naučene sa uređaja — prva
+ * verzija je bila splet ukrštenih dijagonala, druga je imala dve grane stopljene
+ * u jednu podebljanu liniju:
  *
  * - **nijedna grana ne preskače sprat** — o tome vodi računa `skillFloors`;
  * - **grane idu pod pravim uglom**, dole pa vodoravno pa dole. Dijagonala se na
  *   raskrsnici ne razlikuje od susedne, pravi ugao se prati okom;
  * - **red se slaže po roditeljima** — veština staje iznad proseka onih na koje
- *   se oslanja, pa broj ukrštanja sam pada.
+ *   se oslanja, pa broj ukrštanja sam pada;
+ * - **trake se dele po međuredu, ne po cilju** — inače dve grane iz različitih
+ *   kutija dobiju skoro isti razmak i vodoravni delovi im se stope.
  *
  * Uz platno ide i opis istih tih grana rečima. Aplikacija koja ima režim bez
  * ekrana ne sme čitaču ekrana da ostavi praznu sliku.
@@ -79,7 +83,7 @@ fun SkillGraph(
     val spoken = spokenRows.joinToString(". ")
 
     val boxHeight = 54.dp
-    val rowGap = 34.dp
+    val rowGap = 44.dp
     val totalHeight = boxHeight * floors.size + rowGap * (floors.size - 1)
 
     val boxHeightPx = with(density) { boxHeight.toPx() }
@@ -122,37 +126,60 @@ fun SkillGraph(
 
         // Grane prvo, kutije preko njih: tako vodoravni deo grane koja ide daleko
         // ustranu ne prolazi preko tuđeg imena.
-        floors.forEach { skills ->
-            skills.forEach { skill ->
-                val target = places.getValue(skill)
-                val parents = skill.requires.toList()
-                parents.forEachIndexed { index, need ->
-                    val from = places[need] ?: return@forEachIndexed
-                    // Vodoravni deo svake grane dobija svoju traku u međuredu, da
-                    // se dve grane ka istoj kutiji ne poklope u jednu liniju.
-                    val lane = 0.35f + 0.3f * (index + 1) / (parents.size + 1)
-                    val channel = from.bottom + (target.top - from.bottom) * lane
+        //
+        // Trake se dele **po međuredu, ne po cilju.** Kad je svaka grana sama
+        // birala traku prema tome koji je po redu roditelj svog cilja, dve grane
+        // iz različitih kutija dobijale su skoro isti razmak i vodoravni delovi
+        // su se stapali u jednu podebljanu liniju.
+        floors.forEachIndexed { row, skills ->
+            if (row == 0) return@forEachIndexed
 
-                    drawLine(
-                        edgeColor, Offset(from.center.x, from.bottom),
-                        Offset(from.center.x, channel), strokePx
-                    )
-                    drawLine(
-                        edgeColor, Offset(from.center.x, channel),
-                        Offset(target.center.x, channel), strokePx
-                    )
-                    drawLine(
-                        edgeColor, Offset(target.center.x, channel),
-                        Offset(target.center.x, target.top), strokePx
-                    )
-                    // Tačka na dolasku umesto strelice: na ovoj veličini je vrh
-                    // strelice mrlja, a smer se ionako čita iz toga što grane
-                    // uvek idu naniže.
-                    drawCircle(
-                        edgeColor, strokePx * 2f,
-                        Offset(target.center.x, target.top)
-                    )
-                }
+            val edges = skills.flatMap { skill ->
+                val target = places.getValue(skill)
+                skill.requires.mapNotNull { need -> places[need]?.let { it to target } }
+            }
+
+            // Grana pravo naniže nema vodoravni deo, pa joj traka ni ne treba —
+            // a i ne sme da je zauzme, jer bi ostalima ostalo manje mesta.
+            val (straight, bent) = edges.partition { (from, target) ->
+                abs(from.center.x - target.center.x) < 1f
+            }
+
+            straight.forEach { (from, target) ->
+                drawLine(
+                    edgeColor, Offset(from.center.x, from.bottom),
+                    Offset(target.center.x, target.top), strokePx
+                )
+            }
+
+            // Najduža grana dobija traku najbliže polazištu: kraće onda prolaze
+            // ispod nje umesto da je seku po sredini.
+            val spread = bent.sortedByDescending { (from, target) ->
+                abs(from.center.x - target.center.x)
+            }
+
+            spread.forEachIndexed { index, (from, target) ->
+                val lane = 0.25f + 0.5f * (index + 1) / (spread.size + 1)
+                val channel = from.bottom + (target.top - from.bottom) * lane
+
+                drawLine(
+                    edgeColor, Offset(from.center.x, from.bottom),
+                    Offset(from.center.x, channel), strokePx
+                )
+                drawLine(
+                    edgeColor, Offset(from.center.x, channel),
+                    Offset(target.center.x, channel), strokePx
+                )
+                drawLine(
+                    edgeColor, Offset(target.center.x, channel),
+                    Offset(target.center.x, target.top), strokePx
+                )
+            }
+
+            // Tačka na dolasku umesto strelice: na ovoj veličini je vrh strelice
+            // mrlja, a smer se ionako čita iz toga što grane uvek idu naniže.
+            edges.forEach { (_, target) ->
+                drawCircle(edgeColor, strokePx * 2f, Offset(target.center.x, target.top))
             }
         }
 
