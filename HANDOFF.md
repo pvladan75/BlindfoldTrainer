@@ -27,32 +27,75 @@ poslednjeg probanja.
 
 ## Gde smo stali ovog trenutka
 
-**Poslednji komit: `92570b2`.** Sve je komitovano i gurnuto na GitHub; radno
-stablo je čisto osim `.idea/gradle.xml`, koji je izmenjen i pre svega ovoga.
+**Poslednji komit: `655b178`.** Sve je komitovano; radno stablo je čisto.
+
+Stanje na **18. avgust 2026.** Prethodna sesija je napisala „Daj šah", ovo je
+prva sesija u kojoj je taj modul **viđen na uređaju** — i sa uređaja je stiglo
+troje, sve iz iste porodice: prečka je bila pola vežbe, a korisnik je nije mogao
+ni izabrati ni pročitati.
+
+### Prečka se sad bira u meniju
+
+Kartica modula ima red **„Koliko pomoći"** iznad dugmića za težinu. Do sada se
+prečka birala samo **posredno** — globalnim režimom bez ekrana ili predlogom
+puta. Srednja se zato nije mogla dohvatiti bez dve uspešne sesije na punoj
+podršci, pa je zadatak koji je zbog nje i napravljen bio nedostupan iz menija.
+
+Zatečeno stanje je **neizabrano**: dok se prečka ne dodirne, modul dobija `null`
+i odlučuje sam, tačno kao pre. Chip koji svetli pokazuje šta bi se tada dogodilo,
+da izbor ne izgleda prazan. Red se ne pokazuje kod modula sa jednom prečkom —
+„Zapamti poziciju" i „Diktat" umeju samo `FULL`.
+
+Sporedni dobitak: **„bez table" iz kartice daje režim bez ekrana za jednu
+sesiju**, bez diranja podešavanja. Svih šest modula sa više prečki taj raspored
+izvode iz prečke, ne iz podešavanja.
+
+### Skakača nije bilo na tabli
+
+Najpoučniji bag ove sesije, jer je izgledao kao sitnica u prikazu a bio je u
+tome **šta je pozicija**. U poziciji zadatka stoje **samo crne figure**; beli
+skakač je bio čisto stanje sesije i na tabli se pojavljivao jedino kao obojeno
+polje. Na srednjoj prečki je posle „ZAPAMTIO SAM" ostajala **prazna tabla** —
+filter „prikaži samo polje skakača" gledao je u polje na kom nema figure, pa nije
+imao šta da prikaže.
+
+Skakač se sad dodaje **samo za prikaz**. U poziciju ne sme: zaklonio bi liniju
+topa ili lovca i promenio šta crni drži, a to je baš ono što zadatak meri.
+
+### Pravilo piše na ekranu
+
+Sa uređaja je stiglo i da „Daj šah" **menja pravila** u zavisnosti od toga odakle
+se ušlo — iz menija se ne sme stati na napadnuto polje, sa kartice „Sledeće" se
+sme. To nije bag nego **dva zadatka** sa istim ciljem: `no_capture` meri
+geometriju skakača, `safe_path` kontrolu polja i ulaz je u nju.
+
+Razmatrano je spajanje na strože pravilo, pa odbačeno: obrisalo bi jednu popunjenu
+vrstu u tabeli veština, istoriju upisanu pod tim `taskId`-om, i prirodnu prečku
+ka težem zadatku. Pravi problem je bio što se **ne vidi u kom si zadatku**, jer
+oba pišu isti cilj. Sad ispod cilja stoji red sa pravilom.
+
+Iz menija i dalje ide strože — zatečeni zadatak modula je `safe_path`.
+
+### Šta je viđeno na uređaju
+
+- srednja prečka u „Daj šah": tabla, „ZAPAMTIO SAM", crne figure nestanu, skakač
+  ostane **kao figura**;
+- puna podrška, sa redom o pravilu;
+- „bez table" izabrano iz kartice, bez globalnog režima.
 
 ### Šta nije viđeno na uređaju
 
-Ove tri izmene su napisane i sagrađene, ali **nisu instalirane**:
+1. **Red sa pravilom u lakšem zadatku** (`no_capture`). Nije ga se moglo dohvatiti:
+   put ne nudi isti zadatak dva puta zaredom, a taj je odigran pre ove izmene.
+2. **Pitanje „ko napada figuru"** u Prati partiju.
+3. **Dubina do prve greške** u Prati partiju — traži jednu **novu** vežbu, jer
+   stare sesije u bazi imaju `null` na tom mestu.
 
-1. **Modul „Daj šah“** u konačnom obliku — cilj je šah, ne saopšteno polje, i ima
-   fazu pamćenja na srednjoj prečki. Ovo je prvi zadatak u aplikaciji koji uopšte
-   koristi `Support.PARTIAL`, pa je najvrednije probati baš njega.
-2. **Pitanje „ko napada figuru“** u Prati partiju.
-3. **Dubina do prve greške** u Prati partiju.
-
-Instalacija ide ovako, kad je telefon na kablu ili na bežičnom debagu:
-
-```
-adb install -r app/build/outputs/apk/debug/app-debug.apk
-```
-
-### Šta bi trebalo probati prvo
-
-- **Srednja prečka u „Daj šah“**: tabla se vidi, dodirneš „ZAPAMTIO SAM“, crne
-  figure nestaju a skakač ostaje. Ako ta prečka ne radi kako treba, cela podela na
-  prečke pada na prvom pravom ispitu.
-- **Put** bi trebalo da ponudi neproverene zadatke — kontrola polja se meri u dva
-  nova zadatka i nijedan još nije vežban.
+Sve troje čeka da put te zadatke ponudi. To i pokazuje šta je ostalo od iste
+porodice problema: **prečka se sad bira, a zadatak se i dalje ne bira.** Modul sa
+dva zadatka iz menija ume da odradi samo jedan; drugi zavisi od preporuke. Sledeći
+očigledan korak je birač zadatka uz birač prečke, po istom pravilu — neizabrano
+znači „modul odlučuje".
 
 ### Šta je odmah sledeće po dogovoru
 
@@ -62,7 +105,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 2. Zatim server: prvo čuvanje napretka, pa dnevni zadatak, pa lestvica po
    istrajnosti. Nikako lestvica po veštinama.
 3. Nedovršeno sa spiska: prevod ekranskog teksta, ekran dostignuća, smislene
-   pozicije za „Zapamti poziciju“ i „Diktat“, težine u Geometriji, podsetnici.
+   pozicije za „Zapamti poziciju" i „Diktat", težine u Geometriji, podsetnici.
 
 ---
 
