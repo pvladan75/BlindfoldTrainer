@@ -544,6 +544,73 @@ prečka dole" se ne može izračunati bez ovog podatka.
 
 Ostaje ono što traži još merenja: provera, put i podsetnici.
 
+### Besmislene pozicije se ne pamte
+
+Nalaz sa strane, **18. avgusta 2026**, iz intervjua sa Žužom Polgar: pokazane su
+joj dve pozicije, jedna iz odigrane partije i jedna sa nasumično poređanim
+figurama. Prvu je rekonstruisala, drugu nije — jer druga **nema odnose među
+figurama** koje bi se imale za šta zakačiti.
+
+`randomSparsePosition` u `:core:chess` radi upravo to drugo: baca nasumične
+figure na nasumična polja, uz jedino pravilo da pešak ne stane na prvi ili osmi
+red. Na tome stoje **dva modula** — „Zapamti poziciju" i „Postavi po diktatu".
+
+Rečeno kroz naš model veština: ta dva ne mere `POSITION_HOLD` u šahovskom smislu
+nego **sirovo vizuelno pamćenje**. Na takvim pozicijama su velemajstor i početnik
+izjednačeni, pa modul ne može da pokaže napredak u veštini zbog koje postoji.
+
+**Očigledno rešenje je izmereno i ne radi.** Prave pozicije iz `games.pgn`:
+
+| figura | koliko takvih pozicija |
+|---|---|
+| 3–8 | **nijedna** |
+| 9 | 11 |
+| 10–12 | 91 |
+
+Od 4551 pozicije u korpusu nema nijedne dovoljno retke — majstori odustanu mnogo
+pre golog kraja. Ovaj sadržaj ne može da nahrani ta dva modula.
+
+**Predlog za kasnije: isečak prave pozicije, ne cela.** Iz stvarne pozicije se
+zadrži **povezan skup** figura — kreće se od jedne i dodaju se najbliži susedi
+dok se ne skupi koliko treba. Pešački lanac, kralj iza zaklona, top iza
+slobodnjaka — ti odnosi ostaju, a nasumično bacanje ih ne može stvoriti. Sadržaj
+je već tu, ništa se ne piše. Rezerva je generisanje po pravilima uverljivosti.
+
+**Očekivana posledica:** kad pozicije postanu smislene, 3/5/7 figura postaće
+prelako — to je i poenta eksperimenta. Težinu će trebati podići, ali tek posle
+prve sesije na uređaju.
+
+### Okrenuta tabla otkriva način pamćenja
+
+Ideja: pozicija se pokaže sa **bele** strane, a rekonstruiše sa **crne**.
+
+Ono što se pri okretanju zaista menja je manje nego što izgleda: **koordinate se
+ne okreću.** e4 je e4 sa obe strane; okreće se samo slika. Odatle:
+
+> Ko poziciju drži kao **koordinate ili odnose**, tome je zadatak trivijalan. Ko
+> je zapamtio **sliku**, tome se raspala.
+
+Zato ovo nije nova veština nego **zadatak koji otkriva kojim si načinom
+zapamtio** — i usput kažnjava lošiji način. Ono što velemajstor ima, poziciju kao
+skup odnosa, nije veština pored držanja pozicije nego **mehanizam kojim je
+držanje jako**; da mehanizme upisujemo u spisak veština, profil bi dva puta
+brojao istu stvar.
+
+**Pravi dobitak je poređenje.** Odnos uspeha na okrenutoj i neokrenutoj tabli je
+dijagnoza koju nijedan naš zadatak zasad ne ume: 9/10 obično a 3/10 okrenuto ne
+znači „slab si" nego **„pamtiš sliku umesto odnosa"**, a to je savet vredniji od
+procenta.
+
+Tri praktične stvari:
+
+- **prikaz ne košta ništa** — `ChessBoard` već prima `orientation: Color`;
+- **ovo je vrsta zadatka, ne nova osa i verovatno ne nov modul** — drugi
+  `TaskSpec` u „Zapamti poziciju", sa svojim uputstvom; ako vremenom zatraži
+  sopstveni identitet, postaće modul;
+- **ne penje se niz lestvicu podrške** — bez table nema šta da se okrene, jer je
+  u govoru „e4" isto sa obe strane. Ovaj zadatak živi pri vrhu lestvice i to je
+  u redu.
+
 ### Šta iz ovoga sledi, po redu
 
 1. `Skill` (osam) i `podrška` ulaze u ugovor zadatka; modul prijavljuje **uniju**
@@ -551,7 +618,10 @@ Ostaje ono što traži još merenja: provera, put i podsetnici.
 2. Razlaganje po veštinama u `SessionResult`.
 3. Nova pitanja u „Prati partiju" — počev od „ko napada ovu figuru", koje prvo
    dodiruje veštinu 7.
-4. **Skakač kroz minsko polje**: crne figure na tabli, beli skakač treba do
+4. **Smislene pozicije** za „Zapamti poziciju" i „Postavi po diktatu" — vidi
+   „Besmislene pozicije se ne pamte". Dok toga nema, ta dva modula mere pamćenje
+   a ne šah.
+5. **Skakač kroz minsko polje**: crne figure na tabli, beli skakač treba do
    ciljnog polja bez uzimanja — ili bez stajanja na napadnuto polje. Prvi modul
    za kontrolu polja; `Attacks.kt` i `KnightPath` već postoje, sadržaj se
    generiše. Napad se računa **statično** (crne figure se ne pomeraju) i to mora
