@@ -42,12 +42,15 @@ import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.designsystem.board.ChessBoard
 import com.program.blindfoldtrainer.core.designsystem.board.SquareTint
 import com.program.blindfoldtrainer.core.model.Difficulty
+import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.model.SessionResult
 import java.util.concurrent.TimeUnit
 
 @Composable
 fun EndgameScreen(
     difficulty: Difficulty,
+    /** Porudžbina puta; bez nje modul bira prečku po podešavanju. */
+    support: Support? = null,
     onFinish: (SessionResult) -> Unit,
     viewModel: EndgameViewModel = hiltViewModel()
 ) {
@@ -55,7 +58,7 @@ fun EndgameScreen(
     val voiceState by viewModel.voiceState.collectAsState()
     val isEyesFree by viewModel.isEyesFree.collectAsState()
 
-    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty) }
+    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty, support) }
     LaunchedEffect(uiState.isFinished) {
         if (uiState.isFinished) onFinish(viewModel.buildResult())
     }

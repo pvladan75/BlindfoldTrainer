@@ -21,6 +21,9 @@ import com.program.blindfoldtrainer.core.model.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -91,10 +94,22 @@ class KnightPathViewModel @Inject constructor(
 
     val voiceState: StateFlow<VoiceState> = voiceInput.state
 
-    private val _isEyesFree = MutableStateFlow(Settings.DEFAULT.eyesFree)
+    /**
+     * Koliko slike aplikacija drži umesto tebe.
+     *
+     * Zamenilo je prekidač „bez ekrana", koji je bio skok sa prve prečke na
+     * poslednju. Prečku bira **porudžbina puta** kad je ima, inače podešavanje.
+     */
+    private val _support = MutableStateFlow(Support.FULL)
+
+    val support: StateFlow<Support> = _support.asStateFlow()
+
+    /** Zadržano za ekran: najniža prečka znači da se tabla ne crta. */
+    val isEyesFree: StateFlow<Boolean> = _support
+        .map { it == Support.NONE }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     /** Da li se vežba bez gledanja u ekran; bira se u Podešavanjima. */
-    val isEyesFree: StateFlow<Boolean> = _isEyesFree.asStateFlow()
 
     private lateinit var setup: Setup
     private var difficulty: Difficulty = Difficulty.EASY
@@ -136,7 +151,7 @@ class KnightPathViewModel @Inject constructor(
     fun onGiveUpArmed() = speaker.say { confirmGiveUp }
 
     /** Bezbedno je zvati više puta — pokreće sesiju samo prvi put. */
-    fun startOnce(difficulty: Difficulty) {
+    fun startOnce(difficulty: Difficulty, requestedSupport: Support? = null) {
         if (isStarted) return
         isStarted = true
         this.difficulty = difficulty
@@ -145,7 +160,13 @@ class KnightPathViewModel @Inject constructor(
         viewModelScope.launch {
             // Prvo podešavanje se sačeka: bez toga bi prvi zadatak stigao pre
             // nego što se sazna da se vežba bez ekrana, pa ne bi bio izgovoren.
-            _isEyesFree.value = settingsRepository.settings.first().eyesFree
+            val eyesFree = settingsRepository.settings.first().eyesFree
+            // Porudžbina puta ima prednost; bez nje odlučuje podešavanje.
+            // Rezim vise nije prekidac nego polazna precka.
+            // prečka — najniža koju zadatak ume.
+            val wanted = requestedSupport
+                ?: if (eyesFree) KNIGHT_SHORTEST_PATH.hardest else Support.FULL
+            _support.value = KNIGHT_SHORTEST_PATH.nearestSupport(wanted)
 
             startedAtMillis = System.currentTimeMillis()
             _uiState.value = KnightPathUiState(taskCount = setup.taskCount)
@@ -172,7 +193,7 @@ class KnightPathViewModel @Inject constructor(
 
         // Primljeno polje se izgovara: kad potez stiže glasom, to je jedina
         // potvrda da je prepoznato ono što je i rečeno.
-        if (_isEyesFree.value) speaker.say(square)
+        if (_support.value == Support.NONE) speaker.say(square)
 
         when {
             square == target -> resolve(Feedback.SOLVED)
@@ -191,7 +212,7 @@ class KnightPathViewModel @Inject constructor(
     private fun flashError(square: Square) {
         errorJob?.cancel()
         _uiState.update { it.copy(errorSquare = square, mistakes = it.mistakes + 1) }
-        if (_isEyesFree.value) speaker.say { notKnightMove }
+        if (_support.value == Support.NONE) speaker.say { notKnightMove }
         errorJob = viewModelScope.launch {
             delay(ERROR_FLASH_MILLIS)
             _uiState.update { it.copy(errorSquare = null) }
@@ -222,7 +243,7 @@ class KnightPathViewModel @Inject constructor(
             )
         }
 
-        if (_isEyesFree.value) sayOutcome(feedback)
+        if (_support.value == Support.NONE) sayOutcome(feedback)
 
         resolveJob = viewModelScope.launch {
             delay(if (feedback == Feedback.SOLVED) SOLVED_PAUSE_MILLIS else FAILED_PAUSE_MILLIS)
@@ -252,7 +273,7 @@ class KnightPathViewModel @Inject constructor(
     private fun finish() {
         voiceInput.stop()
         val state = _uiState.value
-        if (_isEyesFree.value) {
+        if (_support.value == Support.NONE) {
             // Bez ekrana se sažetak ne vidi, pa bi sesija prosto utihnula.
             speaker.say(interrupt = false) { sessionEndSolved(state.solved, state.taskNumber) }
         }
@@ -278,7 +299,7 @@ class KnightPathViewModel @Inject constructor(
             )
         }
 
-        if (!_isEyesFree.value) return
+        if (!(_support.value == Support.NONE)) return
 
         // Zadatak čeka svoj red, da ne preseče izgovor prethodnog ishoda.
         speaker.say(interrupt = false) { knightFrom }
@@ -310,10 +331,9 @@ class KnightPathViewModel @Inject constructor(
             mistakes = state.mistakes,
             elapsedMillis = System.currentTimeMillis() - startedAtMillis,
             completed = state.isFinished,
-            // Prečka na kojoj je sesija stvarno odrađena. Zasad su zauzeti samo
-            // krajevi lestvice — modul još ne prima porudžbinu, nego čita
-            // podešavanje, ali profil od sada zna koliko uspeh vredi.
-            support = if (_isEyesFree.value) Support.NONE else Support.FULL,
+            // Prečka na kojoj je sesija stvarno odrađena — ona koju je modul
+            // dobio porudžbinom ili izveo iz podešavanja, ne pretpostavka.
+            support = _support.value,
             taskId = KNIGHT_SHORTEST_PATH.id,
             bySkill = mapOf(
                 KNIGHT_SHORTEST_PATH.measures to SkillTally(

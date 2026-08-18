@@ -28,6 +28,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -94,10 +97,22 @@ class PairsViewModel @Inject constructor(
 
     val voiceState: StateFlow<VoiceState> = voiceInput.state
 
-    private val _isEyesFree = MutableStateFlow(Settings.DEFAULT.eyesFree)
+    /**
+     * Koliko slike aplikacija drži umesto tebe.
+     *
+     * Zamenilo je prekidač „bez ekrana", koji je bio skok sa prve prečke na
+     * poslednju. Prečku bira **porudžbina puta** kad je ima, inače podešavanje.
+     */
+    private val _support = MutableStateFlow(Support.FULL)
+
+    val support: StateFlow<Support> = _support.asStateFlow()
+
+    /** Zadržano za ekran: najniža prečka znači da se tabla ne crta. */
+    val isEyesFree: StateFlow<Boolean> = _support
+        .map { it == Support.NONE }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     /** Da li se vežba bez gledanja u ekran; bira se u Podešavanjima. */
-    val isEyesFree: StateFlow<Boolean> = _isEyesFree.asStateFlow()
 
     /**
      * Čita **trenutnu** poziciju — onu koja je nastala odigranim potezima, ne
@@ -134,7 +149,7 @@ class PairsViewModel @Inject constructor(
     private var isStarted = false
     private var currentPuzzleFailed = false
 
-    fun startOnce(difficulty: Difficulty) {
+    fun startOnce(difficulty: Difficulty, requestedSupport: Support? = null) {
         if (isStarted) return
         isStarted = true
         this.difficulty = difficulty
@@ -143,7 +158,13 @@ class PairsViewModel @Inject constructor(
         viewModelScope.launch {
             // Prvo podešavanje se sačeka: bez toga bi prva zagonetka krenula pre
             // nego što se sazna da se vežba bez ekrana, pa se ne bi ni pročitala.
-            _isEyesFree.value = settingsRepository.settings.first().eyesFree
+            val eyesFree = settingsRepository.settings.first().eyesFree
+            // Porudžbina puta ima prednost; bez nje odlučuje podešavanje.
+            // Rezim vise nije prekidac nego polazna precka.
+            // prečka — najniža koju zadatak ume.
+            val wanted = requestedSupport
+                ?: if (eyesFree) PAIRS_MEETING_SQUARE.hardest else Support.FULL
+            _support.value = PAIRS_MEETING_SQUARE.nearestSupport(wanted)
 
             val loaded = runCatching {
                 buildList {
@@ -202,7 +223,7 @@ class PairsViewModel @Inject constructor(
 
     private fun onCorrectSquare(square: Square) {
         // Bez ekrana se obojeno polje ne vidi, pa ishod mora da se čuje.
-        if (_isEyesFree.value) speaker.say { correct }
+        if (_support.value == Support.NONE) speaker.say { correct }
         viewModelScope.launch {
             _uiState.update { it.copy(feedbackSquare = square, feedbackIsCorrect = true) }
             delay(FEEDBACK_MILLIS)
@@ -217,7 +238,7 @@ class PairsViewModel @Inject constructor(
     }
 
     private fun onWrongSquare(square: Square) {
-        if (_isEyesFree.value) speaker.say { notThat }
+        if (_support.value == Support.NONE) speaker.say { notThat }
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
@@ -257,7 +278,7 @@ class PairsViewModel @Inject constructor(
             it.copy(phase = PairsPhase.REVEALED, visibility = PieceVisibility.All)
         }
 
-        if (!_isEyesFree.value) return
+        if (!(_support.value == Support.NONE)) return
 
         // Bez ekrana nema zone „sledeća pozicija" — otkrivene figure se ionako
         // ne vide, pa bi vežba stala zauvek. Sledeća stiže sama.
@@ -287,7 +308,7 @@ class PairsViewModel @Inject constructor(
             return
         }
 
-        val eyesFree = _isEyesFree.value
+        val eyesFree = (_support.value == Support.NONE)
 
         _uiState.update {
             it.copy(
@@ -337,7 +358,7 @@ class PairsViewModel @Inject constructor(
 
             // Bez ekrana potez čeka svoj red — inače bi presekao čitanje
             // pozicije ili ispravku koja mu prethodi.
-            speaker.say(move, interrupt = !_isEyesFree.value)
+            speaker.say(move, interrupt = !(_support.value == Support.NONE))
 
             _uiState.update {
                 it.copy(
@@ -361,7 +382,7 @@ class PairsViewModel @Inject constructor(
 
     private fun finishPuzzle() {
         if (!currentPuzzleFailed) solvedPuzzles++
-        if (_isEyesFree.value) speaker.say(interrupt = false) { puzzleSolved }
+        if (_support.value == Support.NONE) speaker.say(interrupt = false) { puzzleSolved }
         viewModelScope.launch {
             _uiState.update {
                 it.copy(phase = PairsPhase.SOLVED, visibility = PieceVisibility.All)
@@ -377,7 +398,7 @@ class PairsViewModel @Inject constructor(
         voiceInput.stop()
 
         val state = _uiState.value
-        if (_isEyesFree.value) {
+        if (_support.value == Support.NONE) {
             // Bez ekrana se sažetak ne vidi, pa bi sesija prosto utihnula.
             speaker.say(interrupt = false) { sessionEndSolved(solvedPuzzles, state.puzzleNumber) }
         } else {
@@ -407,10 +428,9 @@ class PairsViewModel @Inject constructor(
             mistakes = state.mistakes,
             elapsedMillis = System.currentTimeMillis() - startedAtMillis,
             completed = state.isFinished,
-            // Prečka na kojoj je sesija stvarno odrađena. Zasad su zauzeti samo
-            // krajevi lestvice — modul još ne prima porudžbinu, nego čita
-            // podešavanje, ali profil od sada zna koliko uspeh vredi.
-            support = if (_isEyesFree.value) Support.NONE else Support.FULL,
+            // Prečka na kojoj je sesija stvarno odrađena — ona koju je modul
+            // dobio porudžbinom ili izveo iz podešavanja, ne pretpostavka.
+            support = _support.value,
             taskId = PAIRS_MEETING_SQUARE.id,
             bySkill = mapOf(
                 PAIRS_MEETING_SQUARE.measures to SkillTally(

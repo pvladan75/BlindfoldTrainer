@@ -27,7 +27,11 @@ class PairsTrainingModule @Inject constructor() : TrainingModule {
 
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {
-        PairsScreen(difficulty = args.difficulty, onFinish = onFinish)
+        PairsScreen(
+            difficulty = args.difficulty,
+            support = args.support,
+            onFinish = onFinish
+        )
     }
 }
 

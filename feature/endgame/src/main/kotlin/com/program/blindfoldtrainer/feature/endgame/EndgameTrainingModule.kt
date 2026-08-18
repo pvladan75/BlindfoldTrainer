@@ -27,7 +27,11 @@ class EndgameTrainingModule @Inject constructor() : TrainingModule {
 
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {
-        EndgameScreen(difficulty = args.difficulty, onFinish = onFinish)
+        EndgameScreen(
+            difficulty = args.difficulty,
+            support = args.support,
+            onFinish = onFinish
+        )
     }
 }
 

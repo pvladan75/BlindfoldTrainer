@@ -20,6 +20,9 @@ import com.program.blindfoldtrainer.core.model.TaskSpec
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -119,7 +122,15 @@ class DictationViewModel @Inject constructor(
     private var isStarted = false
 
     /** Bezbedno je zvati više puta — pokreće sesiju samo prvi put. */
-    fun startOnce(difficulty: Difficulty) {
+    /**
+     * Prečka na kojoj je sesija odrađena. Ovaj zadatak zna samo punu podršku, pa
+     * se svaka porudžbina svodi na nju — `nearestSupport` to kaže umesto da se
+     * pravilo prepisuje ovde.
+     */
+    private var resolvedSupport = Support.FULL
+
+    fun startOnce(difficulty: Difficulty, requestedSupport: Support? = null) {
+        resolvedSupport = DICTATION_PLACE_POSITION.nearestSupport(requestedSupport ?: Support.FULL)
         if (isStarted) return
         isStarted = true
         this.difficulty = difficulty
@@ -286,9 +297,7 @@ class DictationViewModel @Inject constructor(
             mistakes = state.mistakes,
             elapsedMillis = System.currentTimeMillis() - startedAtMillis,
             completed = state.isFinished,
-            // Zadatak zna samo punu podršku — slaže se iz palete, a paleta
-            // traži oko.
-            support = Support.FULL,
+            support = resolvedSupport,
             taskId = DICTATION_PLACE_POSITION.id,
             bySkill = mapOf(
                 DICTATION_PLACE_POSITION.measures to SkillTally(

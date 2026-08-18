@@ -32,7 +32,11 @@ class RecallTrainingModule @Inject constructor() : TrainingModule {
 
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {
-        RecallScreen(difficulty = args.difficulty, onFinish = onFinish)
+        RecallScreen(
+            difficulty = args.difficulty,
+            support = args.support,
+            onFinish = onFinish
+        )
     }
 }
 

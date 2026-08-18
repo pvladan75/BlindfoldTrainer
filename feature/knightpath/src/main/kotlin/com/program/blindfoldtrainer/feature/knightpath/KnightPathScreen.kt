@@ -42,11 +42,14 @@ import com.program.blindfoldtrainer.core.designsystem.board.SquareTint
 import com.program.blindfoldtrainer.core.designsystem.theme.SquareError
 import com.program.blindfoldtrainer.core.designsystem.theme.SquareSuccess
 import com.program.blindfoldtrainer.core.model.Difficulty
+import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.model.SessionResult
 
 @Composable
 fun KnightPathScreen(
     difficulty: Difficulty,
+    /** Porudžbina puta; bez nje modul bira prečku po podešavanju. */
+    support: Support? = null,
     onFinish: (SessionResult) -> Unit,
     viewModel: KnightPathViewModel = hiltViewModel()
 ) {
@@ -54,7 +57,7 @@ fun KnightPathScreen(
     val voiceState by viewModel.voiceState.collectAsState()
     val isEyesFree by viewModel.isEyesFree.collectAsState()
 
-    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty) }
+    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty, support) }
 
     LaunchedEffect(uiState.isFinished) {
         if (uiState.isFinished) onFinish(viewModel.buildResult())

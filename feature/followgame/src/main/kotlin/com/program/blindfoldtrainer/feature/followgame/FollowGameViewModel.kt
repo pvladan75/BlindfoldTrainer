@@ -26,6 +26,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -93,10 +96,22 @@ class FollowGameViewModel @Inject constructor(
 
     val voiceState: StateFlow<VoiceState> = voiceInput.state
 
-    private val _isEyesFree = MutableStateFlow(Settings.DEFAULT.eyesFree)
+    /**
+     * Koliko slike aplikacija drži umesto tebe.
+     *
+     * Zamenilo je prekidač „bez ekrana", koji je bio skok sa prve prečke na
+     * poslednju. Prečku bira **porudžbina puta** kad je ima, inače podešavanje.
+     */
+    private val _support = MutableStateFlow(Support.FULL)
+
+    val support: StateFlow<Support> = _support.asStateFlow()
+
+    /** Zadržano za ekran: najniža prečka znači da se tabla ne crta. */
+    val isEyesFree: StateFlow<Boolean> = _support
+        .map { it == Support.NONE }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     /** Da li se vežba bez gledanja u ekran; bira se u Podešavanjima. */
-    val isEyesFree: StateFlow<Boolean> = _isEyesFree.asStateFlow()
 
     /** Ponavlja poslednje izgovoreno — potez ili pitanje, šta je poslednje bilo. */
     fun onRepeat() = speaker.repeat()
@@ -134,7 +149,7 @@ class FollowGameViewModel @Inject constructor(
     /** Sesija je prekinuta pre kraja — ne sme da se prijavi kao završena. */
     private var wasQuit = false
 
-    fun startOnce(difficulty: Difficulty) {
+    fun startOnce(difficulty: Difficulty, requestedSupport: Support? = null) {
         if (isStarted) return
         isStarted = true
         this.difficulty = difficulty
@@ -143,7 +158,13 @@ class FollowGameViewModel @Inject constructor(
         viewModelScope.launch {
             // Prvo podešavanje se sačeka: bez toga bi prvi potez mogao da prođe
             // pre nego što se sazna da se vežba bez ekrana, pa ne bi bio izgovoren.
-            _isEyesFree.value = settingsRepository.settings.first().eyesFree
+            val eyesFree = settingsRepository.settings.first().eyesFree
+            // Porudžbina puta ima prednost; bez nje odlučuje podešavanje.
+            // Rezim vise nije prekidac nego polazna precka.
+            // prečka — najniža koju zadatak ume.
+            val wanted = requestedSupport
+                ?: if (eyesFree) FOLLOW_WHERE_IS_PIECE.hardest else Support.FULL
+            _support.value = FOLLOW_WHERE_IS_PIECE.nearestSupport(wanted)
 
             val loaded = runCatching { catalog.games() }
             val failure = loaded.exceptionOrNull()
@@ -184,7 +205,7 @@ class FollowGameViewModel @Inject constructor(
 
             // Bez ekrana se ne vidi ni da je partija učitana ni šta se sad
             // očekuje — a prvi potez traži dodir, pa bi se ćutke stajalo.
-            if (_isEyesFree.value) {
+            if (_support.value == Support.NONE) {
                 speaker.say { gameReady }
             }
         }
@@ -209,7 +230,7 @@ class FollowGameViewModel @Inject constructor(
 
         // Bez ekrana je izgovoren potez jedini put do partije. Ide poljima a ne
         // skraćenim zapisom: „Nf3" se ne izgovara, „g1, f3" se izgovara svuda.
-        if (_isEyesFree.value) speaker.say(move)
+        if (_support.value == Support.NONE) speaker.say(move)
 
         if (ply % setup.plyGap == 0) askQuestion()
     }
@@ -230,7 +251,7 @@ class FollowGameViewModel @Inject constructor(
             )
         }
 
-        if (_isEyesFree.value) {
+        if (_support.value == Support.NONE) {
             // Ispisana ispravka se bez ekrana ne vidi; bez nje se pogrešna
             // slika pozicije nosi dalje kroz celu partiju.
             if (correct) {
@@ -268,7 +289,7 @@ class FollowGameViewModel @Inject constructor(
         }
 
         // Čeka svoj red, da ne preseče izgovor poteza koji ga je izazvao.
-        if (_isEyesFree.value) speaker.say(interrupt = false) { whereIsPiece(nameOf(question.piece)) }
+        if (_support.value == Support.NONE) speaker.say(interrupt = false) { whereIsPiece(nameOf(question.piece)) }
     }
 
     /** „21. bxc5" za belog, „21... Bg7" za crnog. */
@@ -282,7 +303,7 @@ class FollowGameViewModel @Inject constructor(
         voiceInput.stop()
 
         val state = _uiState.value
-        if (_isEyesFree.value) {
+        if (_support.value == Support.NONE) {
             // Bez ekrana se sažetak ne vidi, pa bi sesija prosto utihnula.
             speaker.say(interrupt = false) { sessionEndCorrect(state.solved, state.questionNumber) }
         }
@@ -301,10 +322,9 @@ class FollowGameViewModel @Inject constructor(
             mistakes = state.mistakes,
             elapsedMillis = System.currentTimeMillis() - startedAtMillis,
             completed = state.isFinished && !wasQuit,
-            // Prečka na kojoj je sesija stvarno odrađena. Zasad su zauzeti samo
-            // krajevi lestvice — modul još ne prima porudžbinu, nego čita
-            // podešavanje, ali profil od sada zna koliko uspeh vredi.
-            support = if (_isEyesFree.value) Support.NONE else Support.FULL,
+            // Prečka na kojoj je sesija stvarno odrađena — ona koju je modul
+            // dobio porudžbinom ili izveo iz podešavanja, ne pretpostavka.
+            support = _support.value,
             taskId = FOLLOW_WHERE_IS_PIECE.id,
             bySkill = mapOf(
                 FOLLOW_WHERE_IS_PIECE.measures to SkillTally(

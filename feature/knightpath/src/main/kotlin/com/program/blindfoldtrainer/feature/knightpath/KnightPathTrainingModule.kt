@@ -27,7 +27,11 @@ class KnightPathTrainingModule @Inject constructor() : TrainingModule {
 
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {
-        KnightPathScreen(difficulty = args.difficulty, onFinish = onFinish)
+        KnightPathScreen(
+            difficulty = args.difficulty,
+            support = args.support,
+            onFinish = onFinish
+        )
     }
 }
 

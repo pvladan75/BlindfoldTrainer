@@ -755,6 +755,29 @@ orijentir sledeće prečke. To je isti signal koji petlji puta treba — „ovo 
 savladano, spusti podršku" — pa linija nije ukras nego **vidljivi oblik pravila
 koje već postoji**.
 
+### Svih sedam prima porudžbinu
+
+Do sada je samo Geometrija razumela `args.support`; ostalih šest je prijavljivalo
+prečke ali ih nije primalo — čitali su prekidač „bez ekrana". Sad svi rade isto:
+
+```
+porudžbina puta  →  ako je nema, podešavanje  →  nearestSupport zadatka
+```
+
+Time **„Bez ekrana" prestaje da bude režim i postaje polazna prečka**: ko vežba
+zatvorenih očiju kreće od najniže koju zadatak ume, a zadatak koji je nema ponudi
+svoju najnižu umesto da se izvinjava.
+
+Dve stvari koje su usput ispravljene:
+
+- **Prečka se bira na početku sesije i tu ostaje.** Završnica je dotad pratila
+  podešavanje uživo, pa bi promena usred vežbe prebacila režim ispod ruke.
+- **Rezultat više ne izvodi prečku iz prekidača** nego prijavljuje onu na kojoj
+  je sesija stvarno odrađena.
+
+Bez ovoga provera ne bi imala čime da radi: ona mora da poruči **određen zadatak
+na određenoj prečki**, a dotle je porudžbinu razumeo jedan modul od sedam.
+
 ### Šta iz ovoga sledi, po redu
 
 1. `Skill` (osam) i `podrška` ulaze u ugovor zadatka; modul prijavljuje **uniju**

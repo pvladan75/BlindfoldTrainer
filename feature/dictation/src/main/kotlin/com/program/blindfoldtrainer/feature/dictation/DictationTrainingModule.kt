@@ -34,7 +34,11 @@ class DictationTrainingModule @Inject constructor() : TrainingModule {
 
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {
-        DictationScreen(difficulty = args.difficulty, onFinish = onFinish)
+        DictationScreen(
+            difficulty = args.difficulty,
+            support = args.support,
+            onFinish = onFinish
+        )
     }
 }
 

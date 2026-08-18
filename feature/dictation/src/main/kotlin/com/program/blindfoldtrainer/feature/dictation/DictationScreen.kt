@@ -34,17 +34,20 @@ import com.program.blindfoldtrainer.core.designsystem.board.PieceVisibility
 import com.program.blindfoldtrainer.core.designsystem.board.SquareTint
 import com.program.blindfoldtrainer.core.designsystem.board.drawableRes
 import com.program.blindfoldtrainer.core.model.Difficulty
+import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.model.SessionResult
 
 @Composable
 fun DictationScreen(
     difficulty: Difficulty,
+    /** Porudžbina puta; bez nje modul bira prečku po podešavanju. */
+    support: Support? = null,
     onFinish: (SessionResult) -> Unit,
     viewModel: DictationViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty) }
+    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty, support) }
 
     LaunchedEffect(uiState.isFinished) {
         if (uiState.isFinished) onFinish(viewModel.buildResult())

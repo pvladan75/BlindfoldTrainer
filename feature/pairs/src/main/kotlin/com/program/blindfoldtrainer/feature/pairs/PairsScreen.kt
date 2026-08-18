@@ -47,12 +47,15 @@ import com.program.blindfoldtrainer.core.audio.VoiceInputButton
 import com.program.blindfoldtrainer.core.audio.VoiceState
 import com.program.blindfoldtrainer.core.audio.ZoneTone
 import com.program.blindfoldtrainer.core.model.Difficulty
+import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.model.SessionResult
 import java.util.concurrent.TimeUnit
 
 @Composable
 fun PairsScreen(
     difficulty: Difficulty,
+    /** Porudžbina puta; bez nje modul bira prečku po podešavanju. */
+    support: Support? = null,
     onFinish: (SessionResult) -> Unit,
     viewModel: PairsViewModel = hiltViewModel()
 ) {
@@ -60,7 +63,7 @@ fun PairsScreen(
     val voiceState by viewModel.voiceState.collectAsState()
     val isEyesFree by viewModel.isEyesFree.collectAsState()
 
-    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty) }
+    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty, support) }
     LaunchedEffect(uiState.isFinished) {
         if (uiState.isFinished) onFinish(viewModel.buildResult())
     }

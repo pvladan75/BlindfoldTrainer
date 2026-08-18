@@ -32,6 +32,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -194,16 +197,27 @@ class EndgameViewModel @Inject constructor(
 
     private var settings: Settings = Settings.DEFAULT
 
-    private val _isEyesFree = MutableStateFlow(Settings.DEFAULT.eyesFree)
+    /**
+     * Koliko slike aplikacija drži umesto tebe.
+     *
+     * Zamenilo je prekidač „bez ekrana", koji je bio skok sa prve prečke na
+     * poslednju. Prečku bira **porudžbina puta** kad je ima, inače podešavanje.
+     */
+    private val _support = MutableStateFlow(Support.FULL)
+
+    val support: StateFlow<Support> = _support.asStateFlow()
+
+    /** Zadržano za ekran: najniža prečka znači da se tabla ne crta. */
+    val isEyesFree: StateFlow<Boolean> = _support
+        .map { it == Support.NONE }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     /** Da li se vežba bez gledanja u ekran; bira se u Podešavanjima. */
-    val isEyesFree: StateFlow<Boolean> = _isEyesFree.asStateFlow()
 
     init {
         viewModelScope.launch {
             settingsRepository.settings.collect {
                 settings = it
-                _isEyesFree.value = it.eyesFree
             }
         }
     }
@@ -343,7 +357,7 @@ class EndgameViewModel @Inject constructor(
     private var outcomeJob: Job? = null
     private var isStarted = false
 
-    fun startOnce(difficulty: Difficulty) {
+    fun startOnce(difficulty: Difficulty, requestedSupport: Support? = null) {
         if (isStarted) return
         isStarted = true
         this.difficulty = difficulty
@@ -358,7 +372,9 @@ class EndgameViewModel @Inject constructor(
             // učita pre nego što se sazna da se vežba bez ekrana, pa bi umesto
             // čitanja krenula faza pamćenja koju bez ekrana nije čime završiti.
             settings = settingsRepository.settings.first()
-            _isEyesFree.value = settings.eyesFree
+            val wanted = requestedSupport
+                ?: if (settings.eyesFree) ENDGAME_PLAY_OUT.hardest else Support.FULL
+            _support.value = ENDGAME_PLAY_OUT.nearestSupport(wanted)
 
             val loaded = runCatching { catalog.puzzles(difficulty) }
             val failure = loaded.exceptionOrNull()
@@ -690,10 +706,9 @@ class EndgameViewModel @Inject constructor(
             mistakes = state.mistakes,
             elapsedMillis = System.currentTimeMillis() - startedAtMillis,
             completed = state.isFinished,
-            // Prečka na kojoj je sesija stvarno odrađena. Zasad su zauzeti samo
-            // krajevi lestvice — modul još ne prima porudžbinu, nego čita
-            // podešavanje, ali profil od sada zna koliko uspeh vredi.
-            support = if (_isEyesFree.value) Support.NONE else Support.FULL,
+            // Prečka na kojoj je sesija stvarno odrađena — ona koju je modul
+            // dobio porudžbinom ili izveo iz podešavanja, ne pretpostavka.
+            support = _support.value,
             taskId = ENDGAME_PLAY_OUT.id,
             bySkill = mapOf(
                 ENDGAME_PLAY_OUT.measures to SkillTally(
