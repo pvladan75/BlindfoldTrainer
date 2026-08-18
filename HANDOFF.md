@@ -120,6 +120,142 @@ animacija sme da drži staro stanje dok prikazuje novo.
 
 ---
 
+## Veštine su kičma, moduli su alat
+
+Dogovoreno **18. avgusta 2026**. Ništa od ovoga još nije napisano u kodu; ovaj
+odeljak postoji da se ne izmišlja iznova pri svakom sledećem modulu.
+
+Do sada su moduli bili polazište, a to šta se njima razvija posledica. Odluka je
+da bude obrnuto: **veština je ono što se meri i prati, a modul je samo način da
+se do nje dođe.**
+
+### Osam veština
+
+Prve dve su znanje koje mora da postane automatizam; ostale su rad u radnoj
+memoriji.
+
+| # | veština | šta znači „imam je" | gde se danas radi |
+|---|---|---|---|
+| 1 | koordinatna automatika | „e4" ne računaš — znaš boju, susede, dijagonale | Geometrija |
+| 2 | geometrija figure | sa datog polja odmah vidiš kuda figura ide | Putanja skakača |
+| 3 | držanje pozicije | držiš veze figura–polje stabilno, bez curenja | Zapamti poziciju, Diktat |
+| 4 | **ažuriranje pozicije** | primeniš potez a da sliku ne pokvariš | Prati partiju, Parovi, Završnica |
+| 5 | prevod zapis ↔ slika | čuješ „g1 f3" i vidiš; i obrnuto | Diktat, Prati partiju |
+| 6 | oporavak slike | primetiš da se raspala i sastaviš je ponovo | **nigde** — samo se meri |
+| 7 | kontrola polja | znaš šta protivnik drži, i koje je polje vruće | **nigde** |
+| 8 | računanje naslepo | vodiš varijantu bez table | Završnica, uzgred |
+
+**Četvrta je usko grlo, ne treća.** Statična pozicija se pamti relativno lako;
+greška se gomila pri ažuriranju, jer svaki potez nosi priliku da nešto ispadne, a
+greške se ne poništavaju nego slažu.
+
+**Šesta i sedma su prazne**, i to je najveći nalaz ove analize. U pravoj partiji
+naslepo se figure ne gube zato što se zaboravi gde stoje, nego zato što se
+zaboravi **šta drže**.
+
+### Veština pripada zadatku, ne modulu
+
+Prvi pokušaj je veštine kačio na modul. To je pogrešan nivo, i obara ga jedno
+pitanje: u „Prati partiju" se sme pitati i „gde je beli skakač" i „koje crne
+figure napadaju skakača na e5". Isti modul, isti ulaz, ista podrška — a prvo je
+ažuriranje, drugo je kontrola polja na leđima držanja.
+
+Zadatak određuje **pet nezavisnih činilaca**:
+
+| činilac | šta određuje |
+|---|---|
+| **ulaz** | kako pozicija ulazi u glavu — vidi se, čuje se, sklapa se iz poteza |
+| **pitanje** | šta se traži — boja polja, gde je figura, ko napada, put, rekonstrukcija |
+| **izlaz** | čime se odgovara — dodir, glas, paleta |
+| **podrška** | koliko slike aplikacija drži umesto tebe |
+| **povratna informacija** | šta sledi posle odgovora |
+
+Modul je **svežanj** ovih pet, i zato je porodica vežbi a ne jedna vežba.
+
+> **Pitanje kaže šta se meri. Podrška kaže šta se uz to nosi.**
+
+Pitanje o napadu na e5 **sa vidljivom tablom** meri samo čitanje linija; **bez
+table** meri čitanje linija i držanje pozicije zajedno.
+
+### Podrška je lestvica, ne prekidač
+
+Danas težina znači koliko zadataka i koliko vremena — to skalira napor, ne
+veštinu. Prava lestvica je koliko slike aplikacija drži umesto tebe:
+
+```
+cela tabla vidljiva  →  vidi se samo figura koja se pomera  →  vide se samo polja  →  ništa
+   najlakše                                                                        najteže
+```
+
+„Bez ekrana" je do sada bio **skok sa prve prečke na poslednju** — otud i osećaj
+da neki modul bez ekrana ne može. Kao prečka unutar zadatka, prestaje da bude
+prekidač u Podešavanjima kome neki modul „ne radi".
+
+Sitnica sa velikom posledicom, iz istog reda: **da li osvetljeno polje ostaje ili
+se ugasi.** Ako ostaje, tabla postaje trag i pola posla ažuriranja radi ona.
+
+### Test ili vežba — razlika je u povratnoj informaciji
+
+> **Test kaže da li si pogodio. Vežba pokaže istinu — i to u onom kanalu kojim
+> veština radi.**
+
+Geometrija je danas **test**: pokaže „e4", ti kažeš boju, i to je sve. Ako bi
+posle odgovora prikazala tablu sa poljem, postala bi vežba — ali **druge**
+veštine: „nađi e4 na tabli" je preslikavanje, a ne automatizam. Ako se hoće
+automatizam koji preživi zatvorene oči, istina se saopštava **govorom**, ne
+tablom.
+
+### Provera i vežba traže suprotnu podršku
+
+Ovo je razlog zbog kog povremena provera nije trivijalna:
+
+> **Kad podrška padne, veštine prestaju da budu razdvojive.** Pogrešan odgovor
+> bez table ne kaže da li je otkazala kontrola polja ili je pozicija iscurela.
+
+Odatle:
+
+- **provera se radi uz visoku podršku** — svaka veština odgovara za sebe, profil
+  je čitljiv;
+- **vežba se radi uz nisku podršku** — veština se gradi tek pod teretom.
+
+Provera mora da bude kratka, uvek ista i **bez poena** — čim nosi poene, prestaje
+da meri i počne da se juri.
+
+### Šta ovo traži od merenja
+
+`SessionResult` danas zna modul, težinu i skorove — to je „koliko si dobro
+prošao", ne „koja ti veština klizi". Moduli usput računaju prave pokazatelje i
+bacaju ih na vratima:
+
+| pokazatelj | gde postoji | šta meri |
+|---|---|---|
+| broj čitanja | Diktat | stabilnost slike (6) |
+| „Čitaj poziciju" | Završnica | učestalost oporavka (6) |
+| poništavanje poteza | Završnica | tačnost ažuriranja (4) |
+| vreme po pitanju | Geometrija | automatizam (1) |
+| **dubina do prve greške** | Prati partiju — **ne računa se** | najdijagnostičniji broj u naslepo (4) |
+
+Najjeftiniji pošten oblik: sesija ostaje jedan red u bazi, ali nosi **razlaganje
+po veštinama** — pokušano i pogođeno za svaku veštinu koju je dodirnula. Tek tada
+„savladanost" ima smisla, i to **po veštini, a ne po modulu**.
+
+### Šta iz ovoga sledi, po redu
+
+1. `Skill` (osam) i `podrška` ulaze u ugovor zadatka; modul prijavljuje **uniju**
+   veština svojih zadataka, izvedeno a ne prepisano.
+2. Razlaganje po veštinama u `SessionResult`.
+3. Nova pitanja u „Prati partiju" — počev od „ko napada ovu figuru", koje prvo
+   dodiruje veštinu 7.
+4. **Skakač kroz minsko polje**: crne figure na tabli, beli skakač treba do
+   ciljnog polja bez uzimanja — ili bez stajanja na napadnuto polje. Prvi modul
+   za kontrolu polja; `Attacks.kt` i `KnightPath` već postoje, sadržaj se
+   generiše. Napad se računa **statično** (crne figure se ne pomeraju) i to mora
+   da piše, da ne deluje kao da protivnik spava.
+5. Ekran napretka i savladanost — po veštinama.
+6. Podsetnici — biraju **najslabiju veštinu**, ne najstariji modul.
+
+---
+
 ## Ispravljeni bagovi iz stare aplikacije
 
 Sva tri su pokrivena testovima u `:core:chess`:
