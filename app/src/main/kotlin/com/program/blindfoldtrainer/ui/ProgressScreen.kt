@@ -145,18 +145,15 @@ private fun SkillCard(
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Bez težine duži naslov pregazi ono desno od sebe: red ih ređa
-                // jedno pored drugog i ne skraćuje nijedno samo od sebe.
+            // Naslov i nivo idu **jedno ispod drugog**, ne jedno pored drugog.
+            // U redu su se prvo preklapali, a kad je naslov dobio težinu, počeo
+            // je da se lomi nasred reči — „Koordinatn / a / automatik / a".
+            // Nijedna raspodela širine ne radi kad su oba teksta dugačka.
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = stringResource(skill.labelRes()),
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f).padding(end = 8.dp)
+                    fontWeight = FontWeight.Bold
                 )
 
                 // Nivo dolazi **iz provere** — jedinog merenja koje je svima
