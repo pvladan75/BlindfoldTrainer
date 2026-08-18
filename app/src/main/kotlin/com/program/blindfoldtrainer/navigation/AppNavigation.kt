@@ -85,8 +85,8 @@ fun AppNavigation(registry: ModuleRegistry) {
     // prvi kadar bi dobio zatečenu vrednost i bez ekrana bi bljesnuo dijalog.
     // Koju proveru ponuditi: prvo neproverenu veštinu, pa onu najstariju.
     // Provera je predlog, ne obaveza — meni ostaje netaknut ispod nje.
-    val nextCheckup = remember(progress) {
-        Checkups.ALL.minByOrNull { progress.lastCheckup(it.skill)?.atMillis ?: 0L }
+    val nextCheckup = remember(progress, registry) {
+        registry.offerableCheckups.minByOrNull { progress.lastCheckup(it.skill)?.atMillis ?: 0L }
     }
 
     // Predlog puta: cilj iz onoga što se zna, korak iz poslednje vežbe. Računa
@@ -175,6 +175,7 @@ fun AppNavigation(registry: ModuleRegistry) {
             // prečke o kojima piše su iste one po kojima aplikacija radi.
             GuideScreen(
                 modules = registry.all,
+                checkups = registry.offerableCheckups,
                 onBack = { navController.popBackStack() }
             )
         }

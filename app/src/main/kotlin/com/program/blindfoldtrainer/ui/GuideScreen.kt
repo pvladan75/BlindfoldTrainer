@@ -28,7 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.program.blindfoldtrainer.R
-import com.program.blindfoldtrainer.core.model.Checkups
+import com.program.blindfoldtrainer.core.model.Checkup
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.TaskSpec
 import com.program.blindfoldtrainer.core.model.requires
@@ -53,6 +53,12 @@ import com.program.blindfoldtrainer.core.moduleapi.TrainingModule
 @Composable
 fun GuideScreen(
     modules: List<TrainingModule>,
+    /**
+     * Provere koje se u ovoj verziji zaista mogu ponuditi — ne spisak namera.
+     * Uputstvo tvrdi korisniku šta je merljivo, pa mora da gleda isto ono što se
+     * i nudi na kartici.
+     */
+    checkups: List<Checkup>,
     onBack: () -> Unit
 ) {
     // Ko šta meri — po tome se zna čime se veština vežba. Zadatak nosi više
@@ -67,6 +73,10 @@ fun GuideScreen(
         .flatMap { it.supports }
         .distinct()
         .sortedBy { it.ordinal }
+
+    // Veštine za koje provera postoji. Isti spisak koji se i nudi na kartici,
+    // da uputstvo ne obeća merenje kog nema.
+    val checked = checkups.mapTo(mutableSetOf()) { it.skill }
 
     Scaffold(
         topBar = {
@@ -102,7 +112,11 @@ fun GuideScreen(
             }
 
             items(Skill.entries.toList(), key = { "skill_${it.key}" }) { skill ->
-                SkillEntry(skill = skill, measuredBy = byMeasuredSkill[skill].orEmpty())
+                SkillEntry(
+                    skill = skill,
+                    measuredBy = byMeasuredSkill[skill].orEmpty(),
+                    hasCheckup = skill in checked
+                )
             }
 
             // ---- Preduslovi ------------------------------------------------
@@ -159,7 +173,7 @@ fun GuideScreen(
                     Spacer(Modifier.height(10.dp))
                     // Koje veštine provera pokriva se čita iz `Checkups`. Da je
                     // prepisano, prvi dodatak provere bi ovde ostavio laž.
-                    val covered = Checkups.measurableSkills
+                    val covered = checked
                     val rows = Skill.entries.map { skill ->
                         val mark = if (skill in covered) "✓" else "—"
                         "$mark  ${stringResource(skill.labelRes())}"
@@ -196,7 +210,8 @@ fun GuideScreen(
 @Composable
 private fun SkillEntry(
     skill: Skill,
-    measuredBy: List<Pair<TrainingModule, TaskSpec>>
+    measuredBy: List<Pair<TrainingModule, TaskSpec>>,
+    hasCheckup: Boolean
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -244,11 +259,7 @@ private fun SkillEntry(
             )
             Text(
                 text = stringResource(
-                    if (skill in Checkups.measurableSkills) {
-                        R.string.guide_has_checkup
-                    } else {
-                        R.string.guide_no_checkup
-                    }
+                    if (hasCheckup) R.string.guide_has_checkup else R.string.guide_no_checkup
                 ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant

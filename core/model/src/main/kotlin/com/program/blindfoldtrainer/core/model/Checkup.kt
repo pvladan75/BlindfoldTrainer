@@ -37,10 +37,17 @@ data class Checkup(
 /**
  * Provere koje postoje.
  *
- * **Nema ih za svih osam veština, i to se ne krije.** Provera mora da stane u
- * minut-dva, a zadaci koji mere ažuriranje, kontrolu polja ili računanje traju
- * mnogo duže — tu merenje tek treba smisliti. Veština bez provere ostaje na
- * „nije mereno", što je tačno stanje.
+ * **Nema ih za svih osam veština, i to se ne krije.** Veština bez provere ostaje
+ * na „nije mereno", što je tačno stanje.
+ *
+ * Ono što fali fali iz **dva različita razloga**, i to se ne meša:
+ *
+ * - **Oporavak slike** i **računanje naslepo** nemaju proveru zato što ih
+ *   nijedan zadatak ne meri. Tu ne fali provera nego **vežba**, a to je nov
+ *   modul, ne unos u ovaj spisak.
+ * - **Prevod zapisa** ima zadatak, ali Diktat na najlakšoj težini traje oko šest
+ *   minuta — predugo za merenje koje se ne sme izbegavati. Njemu fali ručica za
+ *   dužinu, ne merenje.
  */
 object Checkups {
 
@@ -66,6 +73,30 @@ object Checkups {
             skill = Skill.POSITION_HOLD,
             moduleId = ModuleId.RECALL,
             taskId = "reconstruct",
+            difficulty = Difficulty.EASY
+        ),
+
+        // Pet pitanja „gde stoji figura" na razmaku od četiri poteza — oko dva
+        // minuta, isti red veličine kao putanja skakača.
+        //
+        // Ovde se **uz tablu** ne znači da se pozicija vidi: u „Prati partiju" je
+        // tabla prazna na svakoj prečki, a razlika je u tome da li potez piše na
+        // ekranu ili se samo čuje. Visoka podrška je zato baš ono što provera
+        // traži — meri se ažuriranje slike, a ne to koliko dobro čuješ.
+        Checkup(
+            skill = Skill.POSITION_UPDATE,
+            moduleId = ModuleId.FOLLOW_GAME,
+            taskId = "where_is_piece",
+            difficulty = Difficulty.EASY
+        ),
+
+        // Pet pitanja „ko napada ovu figuru" — isti ulaz kao gore, druga veština.
+        // Broj napadača se kaže unapred, pa se ne meri i pogađanje trenutka kad je
+        // odgovor gotov.
+        Checkup(
+            skill = Skill.SQUARE_CONTROL,
+            moduleId = ModuleId.FOLLOW_GAME,
+            taskId = "attackers",
             difficulty = Difficulty.EASY
         )
     )
