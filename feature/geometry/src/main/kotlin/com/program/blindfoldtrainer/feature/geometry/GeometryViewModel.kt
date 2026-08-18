@@ -147,11 +147,15 @@ class GeometryViewModel @Inject constructor(
      * vežbanje iz menija — prečka se izvodi iz podešavanja: ko vežba zatvorenih
      * očiju kreće od najniže koju zadatak ume.
      */
-    fun startOnce(difficulty: Difficulty, requestedSupport: Support? = null) {
+    fun startOnce(
+        difficulty: Difficulty,
+        requestedSupport: Support? = null,
+        rounds: Int? = null
+    ) {
         if (isStarted) return
         isStarted = true
         this.difficulty = difficulty
-        setup = setupFor(difficulty)
+        setup = setupFor(difficulty).shortenedTo(rounds)
 
         viewModelScope.launch {
             // Prvo podešavanje se sačeka: bez toga bi prvo pitanje prošlo pre
@@ -325,3 +329,12 @@ class GeometryViewModel @Inject constructor(
         speaker.stop()
     }
 }
+
+/**
+ * Kraća sesija na zahtev provere. `null` — koliko težina kaže.
+ *
+ * Skraćuje se **samo broj krugova**, ne i njihova težina: provera koja bi uz to
+ * olakšala i sadržaj merila bi nešto drugo nego vežba.
+ */
+private fun Setup.shortenedTo(rounds: Int?): Setup =
+    if (rounds == null || rounds <= 0) this else copy(questionCount = rounds)

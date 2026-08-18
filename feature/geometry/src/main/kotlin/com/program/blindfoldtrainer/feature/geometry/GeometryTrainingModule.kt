@@ -30,6 +30,7 @@ class GeometryTrainingModule @Inject constructor() : TrainingModule {
         GeometryScreen(
             difficulty = args.difficulty,
             onFinish = onFinish,
+            rounds = args.rounds,
             support = args.support
         )
     }

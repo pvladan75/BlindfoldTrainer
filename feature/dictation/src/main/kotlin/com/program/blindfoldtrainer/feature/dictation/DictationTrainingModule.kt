@@ -37,6 +37,7 @@ class DictationTrainingModule @Inject constructor() : TrainingModule {
         DictationScreen(
             difficulty = args.difficulty,
             support = args.support,
+            rounds = args.rounds,
             onFinish = onFinish
         )
     }

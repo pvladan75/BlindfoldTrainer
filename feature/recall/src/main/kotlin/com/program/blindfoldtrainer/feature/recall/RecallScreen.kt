@@ -43,11 +43,13 @@ fun RecallScreen(
     /** Porudžbina puta; bez nje modul bira prečku po podešavanju. */
     support: Support? = null,
     onFinish: (SessionResult) -> Unit,
+    /** Koliko krugova; bez porudžbine koliko težina kaže. */
+    rounds: Int? = null,
     viewModel: RecallViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty, support) }
+    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty, support, rounds) }
 
     LaunchedEffect(uiState.isFinished) {
         if (uiState.isFinished) onFinish(viewModel.buildResult())

@@ -116,5 +116,16 @@ interface TrainingModule {
 data class ModuleArgs(
     val difficulty: Difficulty = Difficulty.EASY,
     val taskId: String? = null,
-    val support: Support? = null
+    val support: Support? = null,
+    /**
+     * Koliko krugova sesija traje — pitanja, pozicija, putanja, već po modulu.
+     * `null` znači da modul odlučuje sam, po [difficulty].
+     *
+     * Postoji zbog **provere**, koja mora da bude i uvek ista i kratka. Dužina je
+     * do sada dolazila od težine, a težina služi drugoj svrsi: Diktat na najlakšoj
+     * težini traje oko šest minuta, što je za merenje koje se ne sme izbegavati
+     * predugo — a lakše od najlakšeg nema. Provera zato sama kaže koliko traje,
+     * umesto da to nasleđuje.
+     */
+    val rounds: Int? = null
 )

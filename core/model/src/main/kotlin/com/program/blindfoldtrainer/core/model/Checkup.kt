@@ -31,7 +31,14 @@ data class Checkup(
     /** Uvek ista težina, da bi dva merenja bila uporediva. */
     val difficulty: Difficulty,
     /** Uvek visoka podrška — dijagnoza traži da veštine budu razdvojive. */
-    val support: Support = Support.FULL
+    val support: Support = Support.FULL,
+    /**
+     * Koliko krugova, ako težina daje predugu sesiju. `null` — koliko modul da.
+     *
+     * Kratkoća je svojstvo provere, ne težine: merenje koje se izbegava ne meri
+     * ništa. Gde je najlakša težina već dovoljno kratka, ovo ostaje prazno.
+     */
+    val rounds: Int? = null
 )
 
 /**
@@ -40,14 +47,12 @@ data class Checkup(
  * **Nema ih za svih osam veština, i to se ne krije.** Veština bez provere ostaje
  * na „nije mereno", što je tačno stanje.
  *
- * Ono što fali fali iz **dva različita razloga**, i to se ne meša:
+ * Ono što fali, fali zato što veštinu **nijedan zadatak ne meri** — a ne zato
+ * što merenje nije upisano:
  *
  * - **Oporavak slike** i **računanje naslepo** nemaju proveru zato što ih
  *   nijedan zadatak ne meri. Tu ne fali provera nego **vežba**, a to je nov
  *   modul, ne unos u ovaj spisak.
- * - **Prevod zapisa** ima zadatak, ali Diktat na najlakšoj težini traje oko šest
- *   minuta — predugo za merenje koje se ne sme izbegavati. Njemu fali ručica za
- *   dužinu, ne merenje.
  */
 object Checkups {
 
@@ -98,6 +103,20 @@ object Checkups {
             moduleId = ModuleId.FOLLOW_GAME,
             taskId = "attackers",
             difficulty = Difficulty.EASY
+        ),
+
+        // Dve izdiktirane pozicije od po tri figure — oko dva i po minuta.
+        //
+        // Najlakša težina daje pet pozicija, dakle oko šest minuta, a lakšeg nema:
+        // manje od tri figure ne bi merilo isto. Zato provera ovde skraćuje sesiju
+        // umesto da traži novu težinu — dužina je svojstvo merenja, težina je
+        // svojstvo vežbe.
+        Checkup(
+            skill = Skill.NOTATION,
+            moduleId = ModuleId.DICTATION,
+            taskId = "place_position",
+            difficulty = Difficulty.EASY,
+            rounds = 2
         )
     )
 

@@ -31,6 +31,7 @@ class FollowGameTrainingModule @Inject constructor() : TrainingModule {
             difficulty = args.difficulty,
             support = args.support,
             taskId = args.taskId,
+            rounds = args.rounds,
             onFinish = onFinish
         )
     }

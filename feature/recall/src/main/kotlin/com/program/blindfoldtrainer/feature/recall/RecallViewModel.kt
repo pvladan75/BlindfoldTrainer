@@ -112,12 +112,16 @@ class RecallViewModel @Inject constructor() : ViewModel() {
      */
     private var resolvedSupport = Support.FULL
 
-    fun startOnce(difficulty: Difficulty, requestedSupport: Support? = null) {
+    fun startOnce(
+        difficulty: Difficulty,
+        requestedSupport: Support? = null,
+        rounds: Int? = null
+    ) {
         resolvedSupport = RECALL_RECONSTRUCT.nearestSupport(requestedSupport ?: Support.FULL)
         if (isStarted) return
         isStarted = true
         this.difficulty = difficulty
-        setup = setupFor(difficulty)
+        setup = setupFor(difficulty).shortenedTo(rounds)
         startedAtMillis = System.currentTimeMillis()
         _uiState.value = RecallUiState(
             taskCount = setup.taskCount,
@@ -301,3 +305,12 @@ internal val RECALL_RECONSTRUCT = TaskSpec(
         Support.FULL to Benchmark(millisPerAttempt = 60_000, minAccuracy = 0.8f)
     )
 )
+
+/**
+ * Kraća sesija na zahtev provere. `null` — koliko težina kaže.
+ *
+ * Skraćuje se **samo broj krugova**, ne i njihova težina: provera koja bi uz to
+ * olakšala i sadržaj merila bi nešto drugo nego vežba.
+ */
+private fun Setup.shortenedTo(rounds: Int?): Setup =
+    if (rounds == null || rounds <= 0) this else copy(taskCount = rounds)

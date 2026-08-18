@@ -30,6 +30,7 @@ class KnightPathTrainingModule @Inject constructor() : TrainingModule {
         KnightPathScreen(
             difficulty = args.difficulty,
             support = args.support,
+            rounds = args.rounds,
             onFinish = onFinish
         )
     }

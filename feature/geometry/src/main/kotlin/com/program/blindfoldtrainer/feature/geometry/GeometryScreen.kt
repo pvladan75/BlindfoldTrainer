@@ -52,12 +52,14 @@ fun GeometryScreen(
     difficulty: Difficulty,
     onFinish: (SessionResult) -> Unit,
     support: Support? = null,
+    /** Koliko krugova; bez porudžbine koliko težina kaže. */
+    rounds: Int? = null,
     viewModel: GeometryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val isEyesFree by viewModel.isEyesFree.collectAsState()
 
-    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty, support) }
+    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty, support, rounds) }
 
     LaunchedEffect(uiState.isFinished) {
         if (uiState.isFinished) onFinish(viewModel.buildResult())

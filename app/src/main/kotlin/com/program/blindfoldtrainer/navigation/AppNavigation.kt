@@ -40,6 +40,7 @@ private const val ARG_MODULE = "module"
 private const val ARG_DIFFICULTY = "difficulty"
 private const val ARG_TASK = "task"
 private const val ARG_SUPPORT = "support"
+private const val ARG_ROUNDS = "rounds"
 private const val ARG_CHECKUP = "checkup"
 
 /**
@@ -57,12 +58,15 @@ private fun moduleRoute(
     difficulty: Difficulty,
     taskId: String? = null,
     support: Support? = null,
-    isCheckup: Boolean = false
+    isCheckup: Boolean = false,
+    rounds: Int? = null
 ): String = buildString {
     append("module/$moduleKey/${difficulty.name}")
     append("?$ARG_TASK=${taskId.orEmpty()}")
     append("&$ARG_SUPPORT=${support?.key.orEmpty()}")
     append("&$ARG_CHECKUP=$isCheckup")
+    // Nula znači „nije poručeno" — `NavType.IntType` ne ume `null`.
+    append("&$ARG_ROUNDS=${rounds ?: 0}")
 }
 
 /**
@@ -153,7 +157,8 @@ fun AppNavigation(registry: ModuleRegistry) {
                             difficulty = checkup.difficulty,
                             taskId = checkup.taskId,
                             support = checkup.support,
-                            isCheckup = true
+                            isCheckup = true,
+                            rounds = checkup.rounds
                         )
                     )
                 }
@@ -195,7 +200,8 @@ fun AppNavigation(registry: ModuleRegistry) {
                 navArgument(ARG_DIFFICULTY) { type = NavType.StringType },
                 navArgument(ARG_TASK) { type = NavType.StringType; defaultValue = "" },
                 navArgument(ARG_SUPPORT) { type = NavType.StringType; defaultValue = "" },
-                navArgument(ARG_CHECKUP) { type = NavType.BoolType; defaultValue = false }
+                navArgument(ARG_CHECKUP) { type = NavType.BoolType; defaultValue = false },
+                navArgument(ARG_ROUNDS) { type = NavType.IntType; defaultValue = 0 }
             )
         ) { backStackEntry ->
             val moduleKey = backStackEntry.arguments?.getString(ARG_MODULE)
@@ -218,6 +224,7 @@ fun AppNavigation(registry: ModuleRegistry) {
                 ?.getString(ARG_SUPPORT)
                 ?.let { key -> Support.entries.find { it.key == key } }
             val isCheckup = backStackEntry.arguments?.getBoolean(ARG_CHECKUP) == true
+            val rounds = backStackEntry.arguments?.getInt(ARG_ROUNDS)?.takeIf { it > 0 }
 
             var result by remember { mutableStateOf<SessionResult?>(null) }
 
@@ -225,7 +232,8 @@ fun AppNavigation(registry: ModuleRegistry) {
                 args = ModuleArgs(
                     difficulty = difficulty,
                     taskId = taskId,
-                    support = support
+                    support = support,
+                    rounds = rounds
                 ),
                 onFinish = { sessionResult ->
                     // Da je ovo bila provera zna **školjka**, ne modul: modul ne

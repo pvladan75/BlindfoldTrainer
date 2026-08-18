@@ -35,6 +35,7 @@ class RecallTrainingModule @Inject constructor() : TrainingModule {
         RecallScreen(
             difficulty = args.difficulty,
             support = args.support,
+            rounds = args.rounds,
             onFinish = onFinish
         )
     }

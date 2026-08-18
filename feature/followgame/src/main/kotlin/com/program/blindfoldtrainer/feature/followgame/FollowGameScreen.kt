@@ -52,13 +52,15 @@ fun FollowGameScreen(
     /** Koji zadatak se radi; bez porudžbine se radi zatečeni. */
     taskId: String? = null,
     onFinish: (SessionResult) -> Unit,
+    /** Koliko krugova; bez porudžbine koliko težina kaže. */
+    rounds: Int? = null,
     viewModel: FollowGameViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val voiceState by viewModel.voiceState.collectAsState()
     val isEyesFree by viewModel.isEyesFree.collectAsState()
 
-    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty, support, taskId) }
+    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty, support, taskId, rounds) }
 
     LaunchedEffect(uiState.isFinished) {
         if (uiState.isFinished) onFinish(viewModel.buildResult())

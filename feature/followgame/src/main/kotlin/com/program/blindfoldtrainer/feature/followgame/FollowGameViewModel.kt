@@ -170,13 +170,14 @@ class FollowGameViewModel @Inject constructor(
     fun startOnce(
         difficulty: Difficulty,
         requestedSupport: Support? = null,
-        taskId: String? = null
+        taskId: String? = null,
+        rounds: Int? = null
     ) {
         task = FOLLOW_TASKS.find { it.id == taskId } ?: FOLLOW_WHERE_IS_PIECE
         if (isStarted) return
         isStarted = true
         this.difficulty = difficulty
-        setup = setupFor(difficulty)
+        setup = setupFor(difficulty).shortenedTo(rounds)
 
         viewModelScope.launch {
             // Prvo podešavanje se sačeka: bez toga bi prvi potez mogao da prođe
@@ -436,3 +437,12 @@ internal val FOLLOW_WHERE_IS_PIECE = TaskSpec(
 
 /** Oba zadatka ovog modula. Sesija radi jedan, a modul prijavljuje oba. */
 internal val FOLLOW_TASKS = listOf(FOLLOW_WHERE_IS_PIECE, FOLLOW_ATTACKERS)
+
+/**
+ * Kraća sesija na zahtev provere. `null` — koliko težina kaže.
+ *
+ * Skraćuje se **samo broj krugova**, ne i njihova težina: provera koja bi uz to
+ * olakšala i sadržaj merila bi nešto drugo nego vežba.
+ */
+private fun Setup.shortenedTo(rounds: Int?): Setup =
+    if (rounds == null || rounds <= 0) this else copy(questionCount = rounds)

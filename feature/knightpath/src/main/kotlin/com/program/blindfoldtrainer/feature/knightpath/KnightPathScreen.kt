@@ -51,13 +51,15 @@ fun KnightPathScreen(
     /** Porudžbina puta; bez nje modul bira prečku po podešavanju. */
     support: Support? = null,
     onFinish: (SessionResult) -> Unit,
+    /** Koliko krugova; bez porudžbine koliko težina kaže. */
+    rounds: Int? = null,
     viewModel: KnightPathViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val voiceState by viewModel.voiceState.collectAsState()
     val isEyesFree by viewModel.isEyesFree.collectAsState()
 
-    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty, support) }
+    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty, support, rounds) }
 
     LaunchedEffect(uiState.isFinished) {
         if (uiState.isFinished) onFinish(viewModel.buildResult())

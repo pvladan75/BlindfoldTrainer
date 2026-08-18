@@ -151,11 +151,15 @@ class KnightPathViewModel @Inject constructor(
     fun onGiveUpArmed() = speaker.say { confirmGiveUp }
 
     /** Bezbedno je zvati više puta — pokreće sesiju samo prvi put. */
-    fun startOnce(difficulty: Difficulty, requestedSupport: Support? = null) {
+    fun startOnce(
+        difficulty: Difficulty,
+        requestedSupport: Support? = null,
+        rounds: Int? = null
+    ) {
         if (isStarted) return
         isStarted = true
         this.difficulty = difficulty
-        setup = setupFor(difficulty)
+        setup = setupFor(difficulty).shortenedTo(rounds)
 
         viewModelScope.launch {
             // Prvo podešavanje se sačeka: bez toga bi prvi zadatak stigao pre
@@ -371,3 +375,12 @@ internal val KNIGHT_SHORTEST_PATH = TaskSpec(
         Support.NONE to Benchmark(millisPerAttempt = 30_000, minAccuracy = 0.8f)
     )
 )
+
+/**
+ * Kraća sesija na zahtev provere. `null` — koliko težina kaže.
+ *
+ * Skraćuje se **samo broj krugova**, ne i njihova težina: provera koja bi uz to
+ * olakšala i sadržaj merila bi nešto drugo nego vežba.
+ */
+private fun Setup.shortenedTo(rounds: Int?): Setup =
+    if (rounds == null || rounds <= 0) this else copy(taskCount = rounds)
