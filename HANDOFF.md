@@ -323,6 +323,65 @@ provera → put.
 naslepo (8). Njih ne puštati u automatski put dok se ne smisli kako se mere;
 bolje ih ponuditi kao svestan izbor nego ih lažno rangirati.
 
+### Profil se pokazuje, ne samo koristi
+
+Vežbanje po svojoj volji ostaje — meni je uvek tu i ništa se ne zaključava. Ali
+korisnik mora da **zna gde stoji**: šta mu je jako, šta slabo, i da li se to
+pomera. Bez toga slobodan izbor nije sloboda nego pogađanje.
+
+Time profil prestaje da bude samo ulaz za preporuku i postaje **ono što se
+isporučuje**, a to je stroži zahtev: mora da bude pošten i kad je podatak mršav.
+
+#### Nivo je prečka, ne procenat
+
+Veština se ne prikazuje kao „73%". Takav broj izgleda tačno a nije — sastavljen
+je od nejednakih zadataka i menja se od jedne loše večeri.
+
+Nivo je **prečka na lestvici podrške koju veština drži**, uz smer kretanja:
+
+```
+Ažuriranje pozicije     nivo 2 od 4  ▲   slika drži do 6. poteza (bilo 4)
+Držanje pozicije        nivo 3 od 4  ▬   7 figura bez greške
+Kontrola polja          nije mereno
+```
+
+**„Nije mereno" je pun i pošten odgovor**, i mora da se pojavi umesto nule.
+Nula bi rekla „loš si u tome", a istina je „o tome još ništa ne znamo" — to je
+ista ona razlika koju je ovaj projekat već triput platio kroz nemi otkaz.
+
+Isto važi i za **ustajao podatak**: ako veština nije proveravana tri nedelje, uz
+nju stoji koliko je stara, a ne vrednost kao da je jutrošnja. Naslepo vene, pa
+stara mera nije mera.
+
+#### Brojevi u jeziku same vežbe
+
+Uz svaku veštinu ide **jedan konkretan broj iz njenog sveta**, ne apstraktna
+ocena — takav broj korisnik razume bez objašnjenja i sam vidi kad se pomeri:
+
+| veština | broj koji je opisuje |
+|---|---|
+| ažuriranje | u kom potezu se slika prvi put raspala |
+| držanje | koliko figura drži bez greške |
+| oporavak | koliko čitanja po sesiji |
+| automatika | prosečno vreme do odgovora |
+
+#### Zid crvenog je otkaz
+
+Profil u kom šest od osam veština stoji kao slabost je tačan i **beskoristan** —
+takav ekran se otvori jednom.
+
+Zato: istaknuta je **jedna slabost — ona koja je trenutni cilj** — a ostalo stoji
+mirno, bez bojenja u neuspeh. I gde god ima podataka, pokazuje se **pomeraj**, a
+ne samo stanje: napredak je ono što drži čoveka, a on se vidi samo u poređenju sa
+prošlim merenjem.
+
+#### Tri mesta na kojima se profil vidi
+
+- **Ekran napretka** — cela slika, po veštinama a ne po modulima.
+- **Kartica modula** — šta ovaj modul razvija, da se vidi da nije tek tako.
+- **Sažetak sesije** — jedan red: **šta je ova sesija pomerila.** To je najvažnije
+  od tri, jer stiže u trenutku kad je zaslužen, i bez otvaranja ijednog ekrana.
+
 ### Šta iz ovoga sledi, po redu
 
 1. `Skill` (osam) i `podrška` ulaze u ugovor zadatka; modul prijavljuje **uniju**
@@ -335,7 +394,8 @@ bolje ih ponuditi kao svestan izbor nego ih lažno rangirati.
    za kontrolu polja; `Attacks.kt` i `KnightPath` već postoje, sadržaj se
    generiše. Napad se računa **statično** (crne figure se ne pomeraju) i to mora
    da piše, da ne deluje kao da protivnik spava.
-5. Ekran napretka i savladanost — po veštinama.
+5. Ekran napretka i savladanost — po veštinama, uz „nije mereno“ kao punu
+   vrednost (vidi „Profil se pokazuje, ne samo koristi“).
 6. **Provera** — kratka, uvek ista, bez poena; daje profil po veštinama.
 7. **Put** — cilj iz provere, korak iz sesije (vidi „Put se pravi, ne crta").
 8. Podsetnici — biraju **najslabiju veštinu**, ne najstariji modul; isti račun kao
