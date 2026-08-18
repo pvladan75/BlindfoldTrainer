@@ -45,7 +45,8 @@ import com.program.blindfoldtrainer.core.progress.SkillEntry
  * ### Zašto ne ispod tri sesije
  *
  * Kriva kroz dve tačke nije trend nego nagoveštaj koji ume da slaže u oba
- * pravca.
+ * pravca. Dotle **piše koliko ih ima** — prazno mesto se čita kao da grafika
+ * nema, a on samo čeka treću sesiju.
  */
 @Composable
 fun ProgressChart(
@@ -63,7 +64,19 @@ fun ProgressChart(
         perAttempt to accuracy
     }
 
-    if (points.size < MIN_POINTS) return
+    if (points.size < MIN_POINTS) {
+        // **Odsustvo krive se ne prećutkuje.** Prazno mesto izgleda kao da
+        // grafika za taj oslonac uopšte nema, a on samo čeka treću sesiju. Isti
+        // razlog zbog kog „nije mereno" stoji ispisano umesto nule: ćutanje se
+        // čita kao „ne postoji", a istina je „još se ne zna".
+        Text(
+            text = stringResource(R.string.chart_too_few, points.size),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = modifier
+        )
+        return
+    }
 
     val best = points.minOf { it.first }
     val target = benchmark?.millisPerAttempt

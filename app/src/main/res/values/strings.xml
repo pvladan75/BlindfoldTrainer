@@ -146,6 +146,7 @@
     <string name="progress_foundation_open">Vežbaj to</string>
     <string name="chart_scale">%1$s–%2$s s po zadatku</string>
     <string name="chart_sessions">%1$d sesija</string>
+    <string name="chart_too_few">kriva se crta od treće sesije na ovom osloncu (do sada: %1$d)</string>
     <string name="chart_best">— tvoj najbolji: %1$s s</string>
     <string name="chart_target">- - - orijentir: %1$s s</string>
     <string name="progress_target_reached">orijentir dostignut</string>
