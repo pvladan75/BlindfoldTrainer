@@ -45,7 +45,7 @@ blindfold animacija i raspakivanje ViewModel-a. Stari projekat se odatle napušt
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **sedam** modula za trening. Poslednji build
-je prošao čisto, bez upozorenja. **207 testova, nijedan ne pada.**
+je prošao čisto, bez upozorenja. **216 testova, nijedan ne pada.**
 
 **Svih sedam modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -881,6 +881,45 @@ ostali odgovori ne mere isto. Prikazuje se poslednje i najbolje do sada.
 Meri se zasad **samo u Prati partiju**, jer je to jedini zadatak u kom se greška
 gomila kroz desetine poteza. Ostali vraćaju `null`, što znači „ne meri se" a ne
 nulu.
+
+### Kontrola polja ima svoj zadatak
+
+Prva prazna vrsta u tabeli veština je popunjena: „Prati partiju“ sad ume da pita
+i **„ko napada ovu figuru“**, uz postojeće „gde stoji figura“.
+
+**Prvi put jedan modul nosi dva zadatka**, i to je bila cela poenta razdvajanja:
+isti ulaz, ista podrška, a mere različite stvari — mesto figure je ažuriranje
+slike, napadači su kontrola polja.
+
+#### Odgovor su polja, ne imena figura
+
+Razmatrano je troje: „pešak i lovac“, „pešak sa d6 i lovac sa g7“, ili samo
+polja. Izabrana su **polja**:
+
+- **jednoznačno je** — dva topa se po imenu ne razlikuju;
+- **unos već postoji** — dodir po tabli i glasovno prepoznavanje polja rade od
+  prvog dana, pa nema novih kontrola;
+- **tako se pitanje i postavlja u partiji**: „šta gađa e5“ rešava se traženjem
+  linija do tog polja, a odgovor je odakle.
+
+#### Broj napadača se kaže unapred
+
+U pitanju piše koliko ih se traži. Bez toga se ne zna kad je odgovor gotov, pa bi
+se merilo i pogađanje trenutka umesto same veštine — a težina zadatka je u tome
+da se napadači **nađu**, ne da se pogodi koliko ih ima.
+
+Odgovori se skupljaju dok se ne nađu svi; na ekranu piše dokle se stiglo (2/3), a
+bez ekrana se svako pogođeno polje izgovori.
+
+#### Jedna sesija — jedan zadatak
+
+Rezultat nosi **jedan** `taskId`, pa mešanje pitanja u istoj sesiji ne bi znalo
+šta je mereno. Bez porudžbine modul radi zatečeni zadatak; put i provera traže
+izričito — a pošto kontrola polja nikad nije merena, put je odmah i nudi.
+
+`Board.attackersOf` je dodat u `:core:chess`, uz osam testova. Postojeći
+`isAttackedBy` odgovara na drugo pitanje: za pravila je dovoljno znati **da li**
+je polje napadnuto, za vežbu je potrebno **odakle**.
 
 ### Šta iz ovoga sledi, po redu
 
