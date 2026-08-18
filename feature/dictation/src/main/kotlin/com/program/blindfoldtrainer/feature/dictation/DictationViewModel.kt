@@ -291,7 +291,10 @@ class DictationViewModel @Inject constructor(
             bySkill = mapOf(
                 DICTATION_PLACE_POSITION.measures to SkillTally(
                     attempted = state.taskNumber,
-                    solved = state.solved
+                    solved = state.solved,
+                    // Vreme je deo mere: tačno a sporo znači da veština
+                    // još nije automatska, pa se na njoj ne može graditi dalje.
+                    millis = System.currentTimeMillis() - startedAtMillis
                 )
             )
         )

@@ -62,14 +62,32 @@ enum class Capability {
  * nejednakih zadataka. Dva broja se sabiraju kroz istoriju i tek iz njih se
  * računa ono što se prikazuje.
  */
-data class SkillTally(val attempted: Int, val solved: Int) {
+data class SkillTally(
+    val attempted: Int,
+    val solved: Int,
+    /**
+     * Koliko je vremena na to otišlo.
+     *
+     * Bez vremena se ne razlikuje **znam** od **znam automatski**, a to su dve
+     * različite stvari: ko boju polja računa pet sekundi ima tačan odgovor i
+     * zauzetu radnu memoriju, pa se na tome ne može graditi ništa dalje.
+     */
+    val millis: Long = 0
+) {
     init {
         require(attempted >= 0) { "attempted ne može biti negativan" }
         require(solved in 0..attempted) { "solved ($solved) mora biti u 0..attempted ($attempted)" }
+        require(millis >= 0) { "millis ne može biti negativan" }
     }
 
-    operator fun plus(other: SkillTally) =
-        SkillTally(attempted + other.attempted, solved + other.solved)
+    /** Prosečno vreme po pokušaju, ili `null` dok se nema šta prosečiti. */
+    val millisPerAttempt: Long? get() = if (attempted == 0) null else millis / attempted
+
+    operator fun plus(other: SkillTally) = SkillTally(
+        attempted = attempted + other.attempted,
+        solved = solved + other.solved,
+        millis = millis + other.millis
+    )
 }
 
 /**
@@ -115,7 +133,15 @@ data class SessionResult(
      * `null` znači **ne zna se**: sesije upisane pre ove izmene. Takve u profil
      * po veštinama ne ulaze, umesto da se pretvaraju da su bile na najlakšoj.
      */
-    val support: Support? = null
+    val support: Support? = null,
+
+    /**
+     * Kad je sesija završena. Popunjava ga **skladište**, ne modul.
+     *
+     * Postoji zato što se bez vremena ne može reći „nekad si radio ovako, sad
+     * ovako" — a snimak koji sabije celu istoriju u jedan broj upravo to ne ume.
+     */
+    val finishedAtMillis: Long? = null
 ) {
     init {
         require(attempted >= 0) { "attempted ne može biti negativan" }

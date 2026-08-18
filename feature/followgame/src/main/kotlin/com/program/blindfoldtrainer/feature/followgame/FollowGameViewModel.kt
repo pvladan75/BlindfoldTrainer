@@ -307,7 +307,10 @@ class FollowGameViewModel @Inject constructor(
             bySkill = mapOf(
                 FOLLOW_WHERE_IS_PIECE.measures to SkillTally(
                     attempted = state.questionNumber,
-                    solved = state.solved
+                    solved = state.solved,
+                    // Vreme je deo mere: tačno a sporo znači da veština
+                    // još nije automatska, pa se na njoj ne može graditi dalje.
+                    millis = System.currentTimeMillis() - startedAtMillis
                 )
             )
         )

@@ -413,7 +413,10 @@ class PairsViewModel @Inject constructor(
             bySkill = mapOf(
                 PAIRS_MEETING_SQUARE.measures to SkillTally(
                     attempted = state.puzzleNumber,
-                    solved = solvedPuzzles
+                    solved = solvedPuzzles,
+                    // Vreme je deo mere: tačno a sporo znači da veština
+                    // još nije automatska, pa se na njoj ne može graditi dalje.
+                    millis = System.currentTimeMillis() - startedAtMillis
                 )
             )
         )

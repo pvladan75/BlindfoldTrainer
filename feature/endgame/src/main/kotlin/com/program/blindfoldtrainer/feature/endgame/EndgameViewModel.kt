@@ -696,7 +696,10 @@ class EndgameViewModel @Inject constructor(
             bySkill = mapOf(
                 ENDGAME_PLAY_OUT.measures to SkillTally(
                     attempted = state.puzzleNumber,
-                    solved = solvedCount
+                    solved = solvedCount,
+                    // Vreme je deo mere: tačno a sporo znači da veština
+                    // još nije automatska, pa se na njoj ne može graditi dalje.
+                    millis = System.currentTimeMillis() - startedAtMillis
                 )
             )
         )

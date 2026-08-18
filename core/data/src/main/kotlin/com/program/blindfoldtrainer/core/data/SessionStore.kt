@@ -116,7 +116,7 @@ abstract class TrainerDatabase : RoomDatabase() {
 /** `coordinates:10/8;position_hold:5/4` — po jedan unos za svaku dodirnutu veštinu. */
 internal fun Map<Skill, SkillTally>.toStored(): String =
     entries.joinToString(";") { (skill, tally) ->
-        "${skill.key}:${tally.attempted}/${tally.solved}"
+        "${skill.key}:${tally.attempted}/${tally.solved}/${tally.millis}"
     }
 
 /**
@@ -131,11 +131,19 @@ internal fun String.toSkillTallies(): Map<Skill, SkillTally> {
 
     return split(";").mapNotNull { entry ->
         val (key, numbers) = entry.split(":").takeIf { it.size == 2 } ?: return@mapNotNull null
-        val (attempted, solved) = numbers.split("/").takeIf { it.size == 2 } ?: return@mapNotNull null
+        val parts = numbers.split("/")
+
+        // Zapisi bez vremena su iz verzije pre nego što se vreme merilo; čitaju
+        // se i dalje, samo bez njega.
+        if (parts.size !in 2..3) return@mapNotNull null
 
         val skill = Skill.entries.find { it.key == key } ?: return@mapNotNull null
         val tally = runCatching {
-            SkillTally(attempted.toInt(), solved.toInt())
+            SkillTally(
+                attempted = parts[0].toInt(),
+                solved = parts[1].toInt(),
+                millis = parts.getOrNull(2)?.toLong() ?: 0
+            )
         }.getOrNull() ?: return@mapNotNull null
 
         skill to tally
@@ -176,7 +184,8 @@ internal fun SessionEntity.toResult(): SessionResult? {
             elapsedMillis = elapsedMillis,
             completed = completed,
             bySkill = skillTallies.toSkillTallies(),
-            support = Support.entries.find { it.key == supportKey }
+            support = Support.entries.find { it.key == supportKey },
+            finishedAtMillis = finishedAtMillis
         )
     }.getOrNull()
 }

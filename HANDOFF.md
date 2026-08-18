@@ -45,7 +45,7 @@ blindfold animacija i raspakivanje ViewModel-a. Stari projekat se odatle napušt
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **sedam** modula za trening. Poslednji build
-je prošao čisto, bez upozorenja. **181 test, nijedan ne pada.**
+je prošao čisto, bez upozorenja. **186 testova, nijedan ne pada.**
 
 **Svih sedam modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -610,6 +610,69 @@ Tri praktične stvari:
 - **ne penje se niz lestvicu podrške** — bez table nema šta da se okrene, jer je
   u govoru „e4" isto sa obe strane. Ovaj zadatak živi pri vrhu lestvice i to je
   u redu.
+
+### Redosled veština i praćenje kroz vreme
+
+Urađeno **18. avgusta 2026**, iz primedbe da se neke veštine moraju razviti pre
+drugih i da treba videti „nekad ovako, sad ovako".
+
+#### Preduslov nije „tačno" nego „automatski"
+
+Razlog nije pedagoški nego mehanički: **radna memorija je jedna.** Ako traženje
+polja e4 troši pažnju, nema se čime držati pozicija — pa držanje ne napreduje ma
+koliko se vežbalo.
+
+```
+KOORDINATE ──┬──> DRŽANJE ──┬──> AŽURIRANJE ──┐
+             │              │                 ├──> RAČUNANJE
+             └──> ZAPIS     └──> OPORAVAK     │
+GEOMETRIJA ──┬──> AŽURIRANJE                  │
+             └──> KONTROLA POLJA ─────────────┘
+```
+
+Zbog toga je moralo da se meri i **vreme**: `SkillTally` sad nosi i milisekunde,
+jer se bez njih ne razlikuje *znam* od *znam automatski*. Automatska je veština
+koja **drži prečku i na njoj je brza**; pragovi po veštini su prvi predlog, kao i
+brojevi bodovanja.
+
+**Preduslov ništa ne zaključava.** Ulazi u preporuku i u jednu rečenicu na
+kartici veštine — pogrešna procena se tako ignoriše, dok bi zaključavanje
+ostavilo čoveka pred vratima. Isto pravilo po kom rang ništa ne otključava.
+
+#### Čuva se sirovo, izvodi se sve ostalo
+
+Snimak je do sada sabijao istoriju u jedan broj i zato nije umeo da kaže kako je
+bilo ranije. Sad nosi **spisak zapisa** `(kad, veština, prečka, učinak, vreme)`,
+a profil i trend se iz njega računaju — isto pravilo po kom se poeni ne pamte
+nego računaju.
+
+Sesija ulazi u profil samo ako ima **sve troje**: razlaganje, prečku i vreme
+završetka. Svako od to troje je deo podatka, ne ukras.
+
+#### Prozor je po broju pokušaja, ne po danima
+
+„Poslednja tri dana" je prazno kod onoga ko vežba dvaput nedeljno — a baš njemu
+trend najviše treba. Zato se poredi **poslednjih dvadeset pokušaja sa prethodnim
+dvadeset**; datum stoji uz to kao podatak, ne kao mera.
+
+Na kartici veštine to izgleda ovako:
+
+```
+Držanje pozicije            drži: bez table
+pre:  6/10  ·  3,4 s po zadatku
+sad:  9/10  ·  1,9 s po zadatku
+```
+
+**Vreme je tu važnije od procenta**: procenat ume da bude dobar odavno, a vežba i
+dalje spora — i to je tačno stanje „znam, ali nije automatski".
+
+#### Šta ovo još ne ume
+
+Beleži se samo veština koju zadatak **meri**, ne i one koje nosi uz nju. Zato
+veština koja se uvek vežba uz punu podršku — kao držanje, koje mere samo Zapamti
+poziciju i Diktat — ne može da pokaže da je automatska bez pomoći. To nije greška
+u meri nego posledica toga koji zadaci postoje; popraviće se kad zadaci pokriju
+prazne vrste.
 
 ### Šta iz ovoga sledi, po redu
 

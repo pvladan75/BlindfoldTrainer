@@ -33,6 +33,7 @@ import com.program.blindfoldtrainer.R
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.progress.ProgressSnapshot
 import com.program.blindfoldtrainer.core.progress.SkillProfile
+import com.program.blindfoldtrainer.core.progress.SkillTrend
 
 /**
  * Profil: šta je jako, šta slabo, a šta se još ne zna.
@@ -89,6 +90,9 @@ fun ProgressScreen(progress: ProgressSnapshot, onBack: () -> Unit) {
                 SkillCard(
                     skill = skill,
                     profile = progress.bySkill[skill],
+                    trend = progress.trendFor(skill),
+                    isAutomatic = progress.isAutomatic(skill),
+                    foundationsMissing = progress.foundationsMissing(skill),
                     isWeakest = skill == weakest
                 )
             }
@@ -105,7 +109,14 @@ fun ProgressScreen(progress: ProgressSnapshot, onBack: () -> Unit) {
 }
 
 @Composable
-private fun SkillCard(skill: Skill, profile: SkillProfile?, isWeakest: Boolean) {
+private fun SkillCard(
+    skill: Skill,
+    profile: SkillProfile?,
+    trend: SkillTrend?,
+    isAutomatic: Boolean,
+    foundationsMissing: Set<Skill>,
+    isWeakest: Boolean
+) {
     val held = profile?.heldRung()
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -142,6 +153,15 @@ private fun SkillCard(skill: Skill, profile: SkillProfile?, isWeakest: Boolean) 
                 )
             }
 
+            if (isAutomatic) {
+                Text(
+                    text = stringResource(R.string.progress_automatic),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
             Spacer(Modifier.height(6.dp))
 
             Text(
@@ -151,6 +171,46 @@ private fun SkillCard(skill: Skill, profile: SkillProfile?, isWeakest: Boolean) 
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            // Trend: bez poređenja sa ranijim, broj ne kaže da li se pomeraš.
+            // Vreme je ovde važnije od procenta — procenat ume da bude dobar
+            // odavno, a vežba i dalje spora, i to je tačno stanje „znam, ali
+            // nije automatski".
+            if (trend != null && trend.hasComparison) {
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    text = stringResource(
+                        R.string.progress_trend_earlier,
+                        trend.earlier.solved,
+                        trend.earlier.attempted,
+                        secondsLabel(trend.earlier.millisPerAttempt)
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(
+                        R.string.progress_trend_recent,
+                        trend.recent.solved,
+                        trend.recent.attempted,
+                        secondsLabel(trend.recent.millisPerAttempt)
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            // Preduslovi **ne zaključavaju ništa** — samo objasne zašto ovo ide
+            // teško i ponude prečicu do onoga što bi pomoglo.
+            if (foundationsMissing.isNotEmpty()) {
+                val names = foundationsMissing.map { stringResource(it.labelRes()) }
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    text = stringResource(R.string.progress_foundation, names.joinToString(", ")),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
 
             // Po jedan red za svaku prečku na kojoj je veština probana. Zbir bi
             // sakrio ono jedino što ovde nešto znači — gde si to postigao.
@@ -193,4 +253,16 @@ private fun SkillCard(skill: Skill, profile: SkillProfile?, isWeakest: Boolean) 
             }
         }
     }
+}
+
+/**
+ * Vreme po zadatku, u sekundama sa jednom decimalom.
+ *
+ * Milisekunde se ne pokazuju: razlika od 1900 i 2000 ms nikome ništa ne znači, a
+ * „1,9 s" i „3,4 s" se razlikuju na prvi pogled.
+ */
+@Composable
+private fun secondsLabel(millisPerAttempt: Long?): String {
+    val seconds = (millisPerAttempt ?: 0L) / 1000f
+    return stringResource(R.string.progress_seconds, String.format("%.1f", seconds))
 }

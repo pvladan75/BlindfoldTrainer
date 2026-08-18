@@ -6,6 +6,7 @@ import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.SkillTally
 import com.program.blindfoldtrainer.core.model.Support
+import com.program.blindfoldtrainer.core.model.requires
 
 /** Napredak u jednom modulu. */
 data class ModuleProgress(
@@ -60,16 +61,13 @@ data class ProgressSnapshot(
     val bestPerfectStreak: Int = 0,
 
     /**
-     * Profil: koliko je svaka veština vežbana i sa kojim uspehom.
+     * Sirovi zapisi o veštinama, hronološki.
      *
-     * Zbir razlaganja iz sesija, i **jedino mesto** odakle se zna šta je
-     * korisniku jako a šta slabo. Veština koje ovde nema **nije mereno** — ne
-     * znači nula, nego da o njoj još ništa ne znamo.
-     *
-     * Razlaže se i **po prečkama**: isti procenat uz tablu i bez nje nije isti
-     * podatak, pa se ne sme sabrati u jedan broj.
+     * **Čuva se sirovo, izvodi se sve ostalo** — isto pravilo po kom se poeni ne
+     * pamte nego računaju. Zbir sabijen u jedan broj ne ume da kaže „nekad si
+     * radio ovako, sad ovako", a baš to je ono što korisniku pokazuje napredak.
      */
-    val bySkill: Map<Skill, SkillProfile> = emptyMap()
+    val skillHistory: List<SkillEntry> = emptyList()
 ) {
     val rank: Rank get() = Rank.forXp(totalXp)
     val rankProgress: RankProgress get() = RankProgress.forXp(totalXp)
@@ -80,8 +78,72 @@ data class ProgressSnapshot(
     /** Osvojena dostignuća. Izvedena su iz stanja, pa se nigde ne pamte. */
     val achievements: Set<Achievement> get() = Achievement.earnedIn(this)
 
+    /**
+     * Profil: koliko je svaka veština vežbana, sa kojim uspehom i na kojoj
+     * prečki. Izvedeno iz [skillHistory].
+     *
+     * Veština koje ovde nema **nije merena** — ne znači nula, nego da o njoj još
+     * ništa ne znamo.
+     */
+    val bySkill: Map<Skill, SkillProfile> by lazy {
+        skillHistory.fold(emptyMap()) { profiles, entry ->
+            val current = profiles[entry.skill] ?: SkillProfile()
+            profiles + (entry.skill to current.plus(entry.support, entry.tally))
+        }
+    }
+
     /** Veštine o kojima uopšte ima podatka. Ostale stoje kao „nije mereno". */
     val measuredSkills: Set<Skill> get() = bySkill.keys
+
+    /**
+     * Da li je veština **automatska**, a ne samo tačna.
+     *
+     * Traži se oboje: prečka koju drži i brzina na njoj. Tačan ali spor odgovor
+     * znači da veština još troši pažnju — a na takvoj se ne može graditi
+     * sledeća, jer je radna memorija jedna.
+     */
+    fun isAutomatic(skill: Skill): Boolean {
+        val profile = bySkill[skill] ?: return false
+        val rung = profile.heldRung() ?: return false
+        val perAttempt = profile.at(rung)?.millisPerAttempt ?: return false
+
+        return perAttempt <= automaticMillisFor(skill)
+    }
+
+    /**
+     * Temelji koji ovoj veštini fale — preduslovi koji još nisu automatski.
+     *
+     * Prazan skup ne znači da je veština laka, nego da je ništa ne koči.
+     */
+    fun foundationsMissing(skill: Skill): Set<Skill> =
+        skill.requires.filterNotTo(mutableSetOf()) { isAutomatic(it) }
+
+    /**
+     * Kako je veština stajala **ranije** naspram toga kako stoji **sada**.
+     *
+     * Prozor je po **broju pokušaja, ne po danima**: ko vežba dvaput nedeljno
+     * nema šta da vidi u „poslednja tri dana", a baš njemu trend najviše treba.
+     * Datum se prikazuje uz to, kao podatak a ne kao mera.
+     */
+    fun trendFor(skill: Skill, window: Int = TREND_WINDOW): SkillTrend? {
+        val entries = skillHistory.filter { it.skill == skill }
+        if (entries.isEmpty()) return null
+
+        val recent = mutableListOf<SkillEntry>()
+        var counted = 0
+        for (entry in entries.asReversed()) {
+            if (counted >= window) break
+            recent += entry
+            counted += entry.tally.attempted
+        }
+
+        val earlier = entries.dropLast(recent.size)
+        return SkillTrend(
+            recent = recent.fold(SkillTally(0, 0)) { sum, entry -> sum + entry.tally },
+            earlier = earlier.fold(SkillTally(0, 0)) { sum, entry -> sum + entry.tally },
+            recentSinceMillis = recent.minOfOrNull { it.atMillis }
+        )
+    }
 
     /**
      * Veština sa najslabijim učinkom, među **merenima**.
@@ -117,21 +179,74 @@ data class ProgressSnapshot(
             },
             perfectStreak = streak,
             bestPerfectStreak = maxOf(bestPerfectStreak, streak),
-            // Sesije bez razlaganja ili bez upisane prečke profil **ne pomeraju**.
-            // Prečka je deo podatka, ne ukras: bez nje se ne zna koliko uspeh
-            // vredi, pa je bolje ne znati ništa nego znati pogrešno.
-            bySkill = result.support?.let { support ->
-                result.bySkill.entries.fold(bySkill) { profile, (skill, tally) ->
-                    val current = profile[skill] ?: SkillProfile()
-                    profile + (skill to current.plus(support, tally))
-                }
-            } ?: bySkill
+            // Sesija bez razlaganja, bez prečke ili bez vremena ne ulazi u
+            // profil. Svako od to troje je deo podatka, ne ukras: bez njih se ne
+            // zna koliko uspeh vredi, pa je bolje ne znati nego znati pogrešno.
+            skillHistory = skillHistory + result.toSkillEntries()
         )
     }
 
     companion object {
         val EMPTY = ProgressSnapshot()
     }
+}
+
+/**
+ * Koliko sme da traje jedan pokušaj da bi se veština smatrala **automatskom**.
+ *
+ * Brojevi su **prvi predlog**, kao i pragovi rangova — menjaju se na jednom
+ * mestu i istorija se sama preračuna. Razlikuju se po veštini jer se razlikuje i
+ * ono što se broji kao pokušaj: jedno pitanje o boji polja naspram cele
+ * odigrane završnice.
+ */
+private fun automaticMillisFor(skill: Skill): Long = when (skill) {
+    Skill.COORDINATES -> 2_500
+    Skill.PIECE_GEOMETRY -> 8_000
+    Skill.NOTATION -> 25_000
+    Skill.POSITION_HOLD -> 25_000
+    Skill.POSITION_UPDATE -> 20_000
+    Skill.RECOVERY -> 25_000
+    Skill.SQUARE_CONTROL -> 12_000
+    Skill.CALCULATION -> 60_000
+}
+
+/**
+ * Jedan zapis: šta je jedna sesija donela jednoj veštini.
+ *
+ * Ovo je najsitniji podatak koji se čuva. Sve iznad — profil, prečke, trend —
+ * izvodi se iz spiska ovakvih zapisa.
+ */
+data class SkillEntry(
+    val atMillis: Long,
+    val skill: Skill,
+    val support: Support,
+    val tally: SkillTally
+)
+
+/** Kako veština stoji sada naspram toga kako je stajala ranije. */
+data class SkillTrend(
+    val recent: SkillTally,
+    val earlier: SkillTally,
+    /** Kad je počeo skorašnji prozor — za prikaz, ne za meru. */
+    val recentSinceMillis: Long?
+) {
+    /** Ima li se sa čim porediti; jedan prozor bez drugog nije trend. */
+    val hasComparison: Boolean get() = earlier.attempted > 0 && recent.attempted > 0
+}
+
+private const val TREND_WINDOW = 20
+
+/**
+ * Zapisi iz jedne sesije, ili prazno ako sesija nije merljiva.
+ *
+ * Traži se i razlaganje i prečka i vreme završetka — bez ijednog od to troje
+ * zapis ne bi umeo da odgovori na pitanje zbog kog postoji.
+ */
+private fun SessionResult.toSkillEntries(): List<SkillEntry> {
+    val support = support ?: return emptyList()
+    val at = finishedAtMillis ?: return emptyList()
+
+    return bySkill.map { (skill, tally) -> SkillEntry(at, skill, support, tally) }
 }
 
 /**

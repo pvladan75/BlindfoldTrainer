@@ -61,6 +61,37 @@ enum class Skill(val key: String) {
 }
 
 /**
+ * Veštine bez kojih ova ne može da napreduje.
+ *
+ * Razlog nije pedagoški nego mehanički: **radna memorija je jedna.** Ako
+ * traženje polja e4 troši pažnju, nema se čime držati pozicija — pa držanje ne
+ * napreduje ma koliko se vežbalo.
+ *
+ * Preduslov **ništa ne zaključava.** Ulazi samo u preporuku i u rečenicu na
+ * kartici veštine; pogrešna procena se tako ignoriše, dok bi zaključavanje
+ * ostavilo čoveka pred vratima. Isto pravilo po kom rang ništa ne otključava.
+ *
+ * ```
+ * KOORDINATE ──┬──> DRŽANJE ──┬──> AŽURIRANJE ──┐
+ *              │              │                 ├──> RAČUNANJE
+ *              └──> ZAPIS     └──> OPORAVAK     │
+ * GEOMETRIJA ──┬──> AŽURIRANJE                  │
+ *              └──> KONTROLA POLJA ─────────────┘
+ * ```
+ */
+val Skill.requires: Set<Skill>
+    get() = when (this) {
+        Skill.COORDINATES -> emptySet()
+        Skill.PIECE_GEOMETRY -> emptySet()
+        Skill.POSITION_HOLD -> setOf(Skill.COORDINATES)
+        Skill.NOTATION -> setOf(Skill.COORDINATES)
+        Skill.POSITION_UPDATE -> setOf(Skill.POSITION_HOLD, Skill.PIECE_GEOMETRY)
+        Skill.RECOVERY -> setOf(Skill.POSITION_HOLD)
+        Skill.SQUARE_CONTROL -> setOf(Skill.PIECE_GEOMETRY, Skill.POSITION_HOLD)
+        Skill.CALCULATION -> setOf(Skill.POSITION_UPDATE, Skill.SQUARE_CONTROL)
+    }
+
+/**
  * Koliko slike aplikacija drži **umesto tebe**.
  *
  * Ovo je prava lestvica težine za vežbu naslepo. Dotadašnja [Difficulty] skalira

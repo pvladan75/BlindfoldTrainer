@@ -28,13 +28,19 @@ class RoomProgressRepository @Inject constructor(
 
     override suspend fun record(result: SessionResult): SessionReward {
         val before = dao.all().mapNotNull { it.toResult() }.toProgressSnapshot()
-        dao.insert(result.toEntity(System.currentTimeMillis()))
+
+        // Vreme završetka popunjava skladište, ne modul — ali mora da uđe i u
+        // rezultat, jer bez njega sesija ne ulazi u profil ni ovde ni pri
+        // sledećem čitanju.
+        val now = System.currentTimeMillis()
+        val stamped = result.copy(finishedAtMillis = now)
+        dao.insert(stamped.toEntity(now))
 
         // Rang posle se računa iz snimka, ne iz baze: upis je već obavljen, a
         // ponovno čitanje bi samo dalo isti zbir.
-        val after = before + result
+        val after = before + stamped
         return SessionReward(
-            xp = Xp.forSession(result),
+            xp = Xp.forSession(stamped),
             rankBefore = before.rank,
             rankAfter = after.rank,
             newAchievements = after.achievements - before.achievements
