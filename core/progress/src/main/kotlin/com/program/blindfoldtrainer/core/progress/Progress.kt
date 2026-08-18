@@ -150,6 +150,22 @@ data class ProgressSnapshot(
     fun checkupsFor(skill: Skill): List<SkillEntry> =
         skillHistory.filter { it.isCheckup && it.skill == skill }
 
+    /**
+     * Dokle se izdržalo pre prve greške — **poslednji put i najbolje do sada**.
+     *
+     * Tačnost od 70% ne kaže kako izgleda partija: neko greši ravnomerno, a
+     * nekome se slika raspadne u šestom potezu pa dalje pogađa nasumično. Prvo
+     * se popravlja vežbom, drugo je granica onoga što glava trenutno drži.
+     */
+    fun depthFor(taskId: String): Depth? {
+        val measured = skillHistory.filter { !it.isCheckup && it.taskId == taskId }
+            .mapNotNull { entry -> entry.heldUntil }
+
+        if (measured.isEmpty()) return null
+
+        return Depth(last = measured.last(), best = measured.max())
+    }
+
     /** Poslednja provera veštine, ako je bilo ijedne. */
     fun lastCheckup(skill: Skill): SkillEntry? = checkupsFor(skill).lastOrNull()
 
@@ -257,8 +273,13 @@ data class SkillEntry(
     val support: Support,
     val tally: SkillTally,
     /** Provera daje **nivo**, vežba daje **napredak** — ne mešaju se. */
-    val isCheckup: Boolean = false
+    val isCheckup: Boolean = false,
+    /** Dokle je izdržano pre prve greške, gde se to meri. */
+    val heldUntil: Int? = null
 )
+
+/** Dokle se izdržalo pre prve greške: poslednji put i najbolje do sada. */
+data class Depth(val last: Int, val best: Int)
 
 /** Kako veština stoji sada naspram toga kako je stajala ranije. */
 data class SkillTrend(
@@ -285,7 +306,7 @@ private fun SessionResult.toSkillEntries(): List<SkillEntry> {
     val task = taskId ?: return emptyList()
 
     return bySkill.map { (skill, tally) ->
-        SkillEntry(at, skill, task, support, tally, isCheckup)
+        SkillEntry(at, skill, task, support, tally, isCheckup, heldUntil)
     }
 }
 

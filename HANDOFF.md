@@ -45,7 +45,7 @@ blindfold animacija i raspakivanje ViewModel-a. Stari projekat se odatle napušt
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **sedam** modula za trening. Poslednji build
-je prošao čisto, bez upozorenja. **203 testa, nijedan ne pada.**
+je prošao čisto, bez upozorenja. **207 testova, nijedan ne pada.**
 
 **Svih sedam modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -862,6 +862,25 @@ posledice, i ništa se ne zaključava.
 
 Time je zatvoreno i ono što je stajalo od prve sesije: **rang ništa ne
 otključava**, jer preporuka radi isti posao bez oduzimanja.
+
+### Dubina do prve greške
+
+Broj koji su moduli računali i **bacali na vratima**, a nazvali smo ga
+najdijagnostičnijim u naslepo. Sad se čuva (`SessionResult.heldUntil`, kolona u
+bazi, verzija 7) i prikazuje uz trend.
+
+Zašto je vredniji od tačnosti:
+
+> Tačnost od 70% ne kaže kako izgleda partija. Neko greši **ravnomerno**, a
+> nekome se slika raspadne u šestom potezu pa dalje pogađa nasumično. Prvo se
+> popravlja vežbom, drugo je granica onoga što glava trenutno drži.
+
+Pamti se **prva** greška, ne poslednja: posle nje je slika već pokvarena, pa
+ostali odgovori ne mere isto. Prikazuje se poslednje i najbolje do sada.
+
+Meri se zasad **samo u Prati partiju**, jer je to jedini zadatak u kom se greška
+gomila kroz desetine poteza. Ostali vraćaju `null`, što znači „ne meri se" a ne
+nulu.
 
 ### Šta iz ovoga sledi, po redu
 

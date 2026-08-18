@@ -71,8 +71,14 @@ data class SessionEntity(
      * Bez ovoga bi se ocu i sinu istorija slila u jednu, pa bi obojica gledala
      * broj koji ne opisuje nijednog od njih.
      */
-    val profileId: Long = DEFAULT_PROFILE_ID
+    val profileId: Long = DEFAULT_PROFILE_ID,
+
+    /** Dokle je izdržano pre prve greške; -1 kad se ne meri. */
+    val heldUntil: Int = NOT_MEASURED
 )
+
+/** Vrednost koja u bazi znači „ovo se ne meri", jer kolona ne sme biti prazna. */
+const val NOT_MEASURED = -1
 
 /**
  * Jedan korisnik na uređaju.
@@ -138,7 +144,7 @@ interface ProfileDao {
  * `fallbackToDestructiveMigration` se namerno **ne** koristi: napredak je jedino
  * što korisnik u ovoj aplikaciji ima, a on živi u ovoj tabeli.
  */
-@Database(entities = [SessionEntity::class, ProfileEntity::class], version = 6, exportSchema = false)
+@Database(entities = [SessionEntity::class, ProfileEntity::class], version = 7, exportSchema = false)
 abstract class TrainerDatabase : RoomDatabase() {
     abstract fun sessionDao(): SessionDao
 
@@ -179,6 +185,16 @@ abstract class TrainerDatabase : RoomDatabase() {
             override fun migrate(connection: SQLiteConnection) {
                 connection.execSQL(
                     "ALTER TABLE sessions ADD COLUMN isCheckup INTEGER NOT NULL DEFAULT 0"
+                )
+            }
+        }
+
+        /** Dubina do prve greške; sve zatečeno je bez nje. */
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "ALTER TABLE sessions ADD COLUMN heldUntil INTEGER NOT NULL " +
+                        "DEFAULT $NOT_MEASURED"
                 )
             }
         }
@@ -261,7 +277,8 @@ internal fun SessionResult.toEntity(finishedAtMillis: Long, profileId: Long) = S
     supportKey = support?.key.orEmpty(),
     taskId = taskId.orEmpty(),
     isCheckup = isCheckup,
-    profileId = profileId
+    profileId = profileId,
+    heldUntil = heldUntil ?: NOT_MEASURED
 )
 
 /**
@@ -288,7 +305,8 @@ internal fun SessionEntity.toResult(): SessionResult? {
             support = Support.entries.find { it.key == supportKey },
             finishedAtMillis = finishedAtMillis,
             taskId = taskId.ifBlank { null },
-            isCheckup = isCheckup
+            isCheckup = isCheckup,
+            heldUntil = heldUntil.takeIf { it != NOT_MEASURED }
         )
     }.getOrNull()
 }

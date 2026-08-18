@@ -33,6 +33,7 @@ import com.program.blindfoldtrainer.R
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.model.TaskSpec
+import com.program.blindfoldtrainer.core.progress.Depth
 import com.program.blindfoldtrainer.core.progress.ProgressSnapshot
 import com.program.blindfoldtrainer.core.progress.SkillEntry
 import com.program.blindfoldtrainer.core.progress.SkillProfile
@@ -106,6 +107,7 @@ fun ProgressScreen(
                     foundationsMissing = progress.foundationsMissing(skill),
                     isWeakest = skill == weakest,
                     trendFor = { taskId -> progress.trendFor(skill, taskId) },
+                    depthFor = { taskId -> progress.depthFor(taskId) },
                     specFor = { taskId -> tasks[taskId] },
                     sessionsFor = { taskId, rung -> progress.sessionsFor(skill, taskId, rung) }
                 )
@@ -131,6 +133,7 @@ private fun SkillCard(
     foundationsMissing: Set<Skill>,
     isWeakest: Boolean,
     trendFor: (String) -> SkillTrend?,
+    depthFor: (String) -> Depth?,
     specFor: (String) -> TaskSpec?,
     sessionsFor: (String, Support) -> List<SkillEntry>
 ) {
@@ -227,6 +230,7 @@ private fun SkillCard(
                     taskId = taskId,
                     task = task,
                     trend = trendFor(taskId),
+                    depth = depthFor(taskId),
                     spec = specFor(taskId),
                     sessionsFor = { rung -> sessionsFor(taskId, rung) }
                 )
@@ -254,6 +258,7 @@ private fun TaskRows(
     taskId: String,
     task: TaskProfile,
     trend: SkillTrend?,
+    depth: Depth?,
     spec: TaskSpec?,
     sessionsFor: (Support) -> List<SkillEntry>
 ) {
@@ -282,6 +287,16 @@ private fun TaskRows(
     }
 
     TaskTrend(trend)
+
+    // Dokle se izdržalo pre prve greške. Stoji uz trend jer odgovara na drugo
+    // pitanje od tačnosti: ne koliko si pogodio, nego dokle je slika držala.
+    depth?.let {
+        Text(
+            text = stringResource(R.string.progress_depth, it.last, it.best),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.primary
+        )
+    }
 
     task.triedRungs.forEach { rung ->
         val tally = task.at(rung) ?: return@forEach

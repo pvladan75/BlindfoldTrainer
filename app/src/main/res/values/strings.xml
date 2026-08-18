@@ -138,6 +138,7 @@
     <string name="progress_holds">drži: %1$s</string>
     <string name="progress_no_rung_held">još nije utvrđeno</string>
     <string name="progress_automatic">automatska</string>
+    <string name="progress_depth">slika je držala do %1$d. odgovora (najbolje: %2$d)</string>
     <string name="progress_trend_earlier">pre: %1$d/%2$d · %3$s</string>
     <string name="progress_trend_recent">sad: %1$d/%2$d · %3$s</string>
     <string name="progress_seconds">%1$s s po zadatku</string>

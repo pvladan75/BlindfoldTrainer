@@ -63,6 +63,13 @@ data class FollowGameUiState(
     val questionCount: Int = 0,
     val solved: Int = 0,
     val mistakes: Int = 0,
+    /**
+     * Dokle se izdržalo pre prve greške — broj tačnih odgovora pre nje.
+     *
+     * `null` dok greške nema. Ovo je jedini modul u kom se greška gomila kroz
+     * desetine poteza, pa je i jedini u kom ovaj broj nešto znači.
+     */
+    val heldUntil: Int? = null,
     val isLoading: Boolean = true,
     val infoMessage: String? = null,
     val isFinished: Boolean = false
@@ -247,7 +254,10 @@ class FollowGameViewModel @Inject constructor(
                 answerSquare = square,
                 wasCorrect = correct,
                 solved = it.solved + if (correct) 1 else 0,
-                mistakes = it.mistakes + if (correct) 0 else 1
+                mistakes = it.mistakes + if (correct) 0 else 1,
+                // Pamti se **prva** greška, ne poslednja: posle nje je slika već
+                // pokvarena, pa ostali odgovori ne mere isto.
+                heldUntil = it.heldUntil ?: if (correct) null else it.solved
             )
         }
 
@@ -322,6 +332,7 @@ class FollowGameViewModel @Inject constructor(
             mistakes = state.mistakes,
             elapsedMillis = System.currentTimeMillis() - startedAtMillis,
             completed = state.isFinished && !wasQuit,
+            heldUntil = state.heldUntil,
             // Prečka na kojoj je sesija stvarno odrađena — ona koju je modul
             // dobio porudžbinom ili izveo iz podešavanja, ne pretpostavka.
             support = _support.value,

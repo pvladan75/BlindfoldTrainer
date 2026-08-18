@@ -161,7 +161,21 @@ data class SessionResult(
      * se juri. Zato i stoji odvojeno od vežbi u profilu: vežba daje napredak,
      * provera daje nivo.
      */
-    val isCheckup: Boolean = false
+    val isCheckup: Boolean = false,
+
+    /**
+     * Koliko je zadataka **izdržano pre prve greške**, kod vežbi u kojima se
+     * greška gomila kroz niz.
+     *
+     * Ovo je najdijagnostičniji broj u naslepo. Tačnost od 70% ne kaže ništa o
+     * tome kako izgleda partija: neko greši ravnomerno, a nekome se slika
+     * raspadne u šestom potezu i posle toga pogađa nasumično. Prvo se popravlja
+     * vežbom, drugo je granica onoga što glava trenutno drži.
+     *
+     * `null` znači **ne meri se** — ili je zadatak nesekvencijalan, ili greške
+     * nije ni bilo.
+     */
+    val heldUntil: Int? = null
 ) {
     init {
         require(attempted >= 0) { "attempted ne može biti negativan" }

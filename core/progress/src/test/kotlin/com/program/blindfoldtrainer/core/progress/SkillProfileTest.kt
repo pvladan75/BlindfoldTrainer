@@ -28,6 +28,7 @@ class SkillProfileTest {
         solved: Int = 10,
         support: Support? = Support.FULL,
         isCheckup: Boolean = false,
+        heldUntil: Int? = null,
         finishedAtMillis: Long? = clock++,
         bySkill: Map<Skill, SkillTally> = emptyMap()
     ) = SessionResult(
@@ -41,8 +42,13 @@ class SkillProfileTest {
         support = support,
         finishedAtMillis = finishedAtMillis,
         taskId = taskId,
-        isCheckup = isCheckup
+        isCheckup = isCheckup,
+        heldUntil = heldUntil
     )
+
+    private fun coordinatesOf(attempted: Int, solved: Int, millis: Long = 0) =
+        mapOf(Skill.COORDINATES to SkillTally(attempted, solved, millis))
+
 
     @Test
     fun `profil se sabira kroz sesije, po preckama`() {
@@ -335,6 +341,32 @@ class SkillProfileTest {
 
         assertEquals(0, Xp.forSession(checkup))
         assertTrue("vežba i dalje nosi poene", Xp.forSession(training) > 0)
+    }
+
+    /**
+     * Dubina do prve greške odgovara na drugo pitanje od tačnosti: ne koliko si
+     * pogodio, nego dokle je slika držala.
+     */
+    @Test
+    fun `dubina pamti poslednje i najbolje`() {
+        val history = listOf(
+            session(taskId = "where_is_piece", heldUntil = 3, bySkill = coordinatesOf(8, 5)),
+            session(taskId = "where_is_piece", heldUntil = 7, bySkill = coordinatesOf(8, 6)),
+            session(taskId = "where_is_piece", heldUntil = 5, bySkill = coordinatesOf(8, 6))
+        )
+
+        val depth = history.toProgressSnapshot().depthFor("where_is_piece")!!
+
+        assertEquals(5, depth.last)
+        assertEquals(7, depth.best)
+    }
+
+    /** Zadatak u kom se greška ne gomila kroz niz nema šta da meri. */
+    @Test
+    fun `bez merene dubine nema ni broja`() {
+        val history = listOf(session(bySkill = coordinatesOf(10, 8)))
+
+        assertNull(history.toProgressSnapshot().depthFor("square_color"))
     }
 
     @Test
