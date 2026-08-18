@@ -3,6 +3,7 @@ package com.program.blindfoldtrainer.ui
 import com.program.blindfoldtrainer.R
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.Support
+import com.program.blindfoldtrainer.core.progress.Reason
 
 /**
  * Ime veštine na ekranu.
@@ -50,6 +51,19 @@ internal fun Support.labelRes(): Int = when (this) {
     Support.PARTIAL -> R.string.support_partial
     Support.TRACE -> R.string.support_trace
     Support.NONE -> R.string.support_none
+}
+
+/**
+ * Zašto je baš ovo predloženo.
+ *
+ * Razlog je obavezan deo predloga: preporuka bez razloga je proročanstvo, a
+ * proročanstvu se ne veruje kad promaši.
+ */
+internal fun Reason.labelRes(): Int = when (this) {
+    Reason.NEVER_TRIED -> R.string.reason_never_tried
+    Reason.WEAKEST -> R.string.reason_weakest
+    Reason.FOUNDATION -> R.string.reason_foundation
+    Reason.STRENGTH -> R.string.reason_strength
 }
 
 /**

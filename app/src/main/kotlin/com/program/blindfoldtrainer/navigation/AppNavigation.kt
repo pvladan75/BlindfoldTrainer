@@ -19,6 +19,7 @@ import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.moduleapi.ModuleArgs
 import com.program.blindfoldtrainer.ui.MainMenuScreen
+import com.program.blindfoldtrainer.core.progress.recommend
 import com.program.blindfoldtrainer.ui.ProgressScreen
 import com.program.blindfoldtrainer.ui.ProgressViewModel
 import com.program.blindfoldtrainer.ui.SessionSummaryDialog
@@ -83,6 +84,16 @@ fun AppNavigation(registry: ModuleRegistry) {
         Checkups.ALL.minByOrNull { progress.lastCheckup(it.skill)?.atMillis ?: 0L }
     }
 
+    // Predlog puta: cilj iz onoga što se zna, korak iz poslednje vežbe. Računa
+    // se ovde, uz ostali napredak, jer mu treba i registar zadataka.
+    val allTasks = remember(registry) { registry.all.flatMap { it.tasks } }
+    val recommendation = remember(progress, allTasks) {
+        progress.recommend(
+            tasks = allTasks,
+            lastTaskId = progress.skillHistory.lastOrNull { !it.isCheckup }?.taskId
+        )
+    }
+
     val summaryViewModel: SummaryViewModel = hiltViewModel()
     val eyesFree by summaryViewModel.eyesFree.collectAsState()
 
@@ -100,6 +111,20 @@ fun AppNavigation(registry: ModuleRegistry) {
                 },
                 onOpenSettings = { navController.navigate(ROUTE_SETTINGS) },
                 onOpenProgress = { navController.navigate(ROUTE_PROGRESS) },
+                recommendation = recommendation,
+                onStartRecommended = { suggestion ->
+                    val module = registry.all.first { module ->
+                        module.tasks.any { it.id == suggestion.taskId }
+                    }
+                    navController.navigate(
+                        moduleRoute(
+                            moduleKey = module.id.key,
+                            difficulty = Difficulty.EASY,
+                            taskId = suggestion.taskId,
+                            support = suggestion.support
+                        )
+                    )
+                },
                 checkup = nextCheckup,
                 onStartCheckup = { checkup ->
                     navController.navigate(

@@ -200,6 +200,20 @@ data class TaskSpec(
     fun benchmarkFor(support: Support): Benchmark? = benchmarks[support]
 
     /**
+     * Sledeća **teža** prečka koju ovaj zadatak ume, ili `null` ako je nema.
+     *
+     * Ne pomera se za jedan stepen nego na **sledeću koju zadatak zaista ima**:
+     * lestvica je zajednička, ali zadatak sme da preskoči prečke. Geometrija ima
+     * samo krajeve, pa je „niže" iz pune podrške odmah bez table.
+     */
+    fun harderThan(support: Support): Support? =
+        supports.filter { it.ordinal > support.ordinal }.minByOrNull { it.ordinal }
+
+    /** Sledeća **lakša** prečka koju zadatak ume, ili `null` ako je nema. */
+    fun easierThan(support: Support): Support? =
+        supports.filter { it.ordinal < support.ordinal }.maxByOrNull { it.ordinal }
+
+    /**
      * Najbliža prečka koju zadatak ume, kad tražena ne postoji.
      *
      * Pri jednakoj udaljenosti bira se **ona sa više pomoći**. Vežba koja je

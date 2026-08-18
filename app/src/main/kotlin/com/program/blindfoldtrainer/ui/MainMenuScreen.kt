@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.program.blindfoldtrainer.R
 import com.program.blindfoldtrainer.core.model.Capability
 import com.program.blindfoldtrainer.core.model.Checkup
+import com.program.blindfoldtrainer.core.progress.Recommendation
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.moduleapi.TrainingModule
 import com.program.blindfoldtrainer.core.progress.Achievement
@@ -54,7 +55,10 @@ fun MainMenuScreen(
     onOpenProgress: () -> Unit,
     /** Provera koja se nudi, ili `null` ako je nema. */
     checkup: Checkup?,
-    onStartCheckup: (Checkup) -> Unit
+    onStartCheckup: (Checkup) -> Unit,
+    /** Sledeći korak koji put predlaže, ili `null` dok se nema šta predložiti. */
+    recommendation: Recommendation?,
+    onStartRecommended: (Recommendation) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -101,7 +105,13 @@ fun MainMenuScreen(
                 RankCard(progress = progress, onOpenProgress = onOpenProgress)
             }
 
-            // Predlog, ne obaveza: stoji iznad spiska, a spisak ostaje netaknut.
+            // Predlozi, ne obaveze: stoje iznad spiska, a spisak ostaje netaknut.
+            recommendation?.let {
+                item(key = "path") {
+                    PathCard(recommendation = it, onStart = { onStartRecommended(it) })
+                }
+            }
+
             checkup?.let {
                 item(key = "checkup") {
                     CheckupCard(checkup = it, onStart = { onStartCheckup(it) })
@@ -117,6 +127,55 @@ fun MainMenuScreen(
             }
 
             item(key = "voice") { VoiceNotice(onOpenSettings = onOpenSettings) }
+        }
+    }
+}
+
+/**
+ * Sledeći korak koji put predlaže.
+ *
+ * **Presudan je drugi red — razlog.** Preporuka bez razloga je proročanstvo, a
+ * proročanstvu se ne veruje kad promaši; sa razlogom je argument i korisnik sme
+ * da se ne složi. Zato ispod naslova stoji i **koliko pomoći** korisnik dobija,
+ * jer je prečka pola predloga.
+ *
+ * Ništa se ne zaključava i odbijanje nema posledice: spisak modula stoji odmah
+ * ispod, netaknut.
+ */
+@Composable
+private fun PathCard(recommendation: Recommendation, onStart: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = stringResource(R.string.path_title),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = stringResource(
+                    R.string.path_offer,
+                    stringResource(taskLabelRes(recommendation.taskId)),
+                    stringResource(recommendation.support.labelRes())
+                ),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(
+                text = stringResource(recommendation.reason.labelRes()),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(12.dp))
+            FilledTonalButton(onClick = onStart) {
+                Text(stringResource(R.string.path_start))
+            }
         }
     }
 }

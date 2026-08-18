@@ -1,0 +1,194 @@
+package com.program.blindfoldtrainer.core.progress
+
+import com.program.blindfoldtrainer.core.model.Benchmark
+import com.program.blindfoldtrainer.core.model.Difficulty
+import com.program.blindfoldtrainer.core.model.ModuleId
+import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Skill
+import com.program.blindfoldtrainer.core.model.SkillTally
+import com.program.blindfoldtrainer.core.model.Support
+import com.program.blindfoldtrainer.core.model.TaskSpec
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertNotEquals
+import org.junit.Test
+
+/**
+ * Put se pravi, ne crta: cilj iz onoga što se zna, korak iz onoga što se
+ * poslednje dogodilo. Predlog, nikad prepreka.
+ */
+class RecommendationTest {
+
+    private val coordinates = TaskSpec(
+        id = "square_color",
+        skills = listOf(Skill.COORDINATES),
+        supports = listOf(Support.FULL, Support.NONE),
+        benchmarks = mapOf(
+            Support.FULL to Benchmark(3_000, 0.9f),
+            Support.NONE to Benchmark(4_500, 0.9f)
+        )
+    )
+
+    private val geometry = TaskSpec(
+        id = "shortest_path",
+        skills = listOf(Skill.PIECE_GEOMETRY),
+        supports = listOf(Support.FULL, Support.NONE)
+    )
+
+    private val hold = TaskSpec(
+        id = "reconstruct",
+        skills = listOf(Skill.POSITION_HOLD),
+        supports = listOf(Support.FULL)
+    )
+
+    private val tasks = listOf(coordinates, geometry, hold)
+
+    private var clock = 1_000_000L
+
+    private fun session(
+        skill: Skill,
+        taskId: String,
+        attempted: Int,
+        solved: Int,
+        support: Support = Support.FULL,
+        millis: Long = 10_000
+    ) = SessionResult(
+        moduleId = ModuleId.GEOMETRY,
+        difficulty = Difficulty.EASY,
+        attempted = attempted,
+        solved = solved,
+        mistakes = attempted - solved,
+        elapsedMillis = millis,
+        bySkill = mapOf(skill to SkillTally(attempted, solved, millis)),
+        support = support,
+        finishedAtMillis = clock++,
+        taskId = taskId
+    )
+
+    @Test
+    fun `bez zadataka nema predloga`() {
+        assertNull(ProgressSnapshot.EMPTY.recommend(emptyList()))
+    }
+
+    /**
+     * O neprobanom se ne zna ništa, a to je vrednije saznanje od još jedne
+     * potvrde da je nešto slabo.
+     */
+    @Test
+    fun `neprobano ide pre slabog`() {
+        val history = listOf(session(Skill.COORDINATES, "square_color", 10, 4))
+        val recommendation = history.toProgressSnapshot().recommend(tasks)!!
+
+        assertNotEquals("square_color", recommendation.taskId)
+        assertEquals(Reason.NEVER_TRIED, recommendation.reason)
+    }
+
+    /** Zastoj se ne probija ponavljanjem. */
+    @Test
+    fun `isti zadatak se ne predlaze dvaput zaredom`() {
+        val history = listOf(session(Skill.COORDINATES, "square_color", 10, 4))
+        val snapshot = history.toProgressSnapshot()
+
+        val recommendation = snapshot.recommend(tasks, lastTaskId = "shortest_path")!!
+        assertNotEquals("shortest_path", recommendation.taskId)
+    }
+
+    /** Kad je zadatak jedini, pravilo o ponavljanju ustupa — bolje isti nego ništa. */
+    @Test
+    fun `jedini zadatak se predlaze i kad je bio poslednji`() {
+        val recommendation = ProgressSnapshot.EMPTY
+            .recommend(listOf(coordinates), lastTaskId = "square_color")!!
+
+        assertEquals("square_color", recommendation.taskId)
+    }
+
+    /**
+     * Veština čiji temelji nisu automatski se **ne zabranjuje** nego pomera
+     * unazad — preporuka je predlog, ne kapija.
+     */
+    @Test
+    fun `vestina bez temelja ide iza onih koje nista ne koci`() {
+        // Sve tri su probane; držanje pozicije je najslabije, ali mu koordinate
+        // nisu automatske, pa prvo ide ono što ništa ne koči.
+        val history = listOf(
+            session(Skill.COORDINATES, "square_color", 10, 9, millis = 60_000),
+            session(Skill.PIECE_GEOMETRY, "shortest_path", 10, 8),
+            session(Skill.POSITION_HOLD, "reconstruct", 10, 3)
+        )
+
+        val recommendation = history.toProgressSnapshot().recommend(tasks)!!
+
+        assertNotEquals("reconstruct", recommendation.taskId)
+    }
+
+    /** Nov zadatak kreće od prečke sa najviše pomoći. */
+    @Test
+    fun `nov zadatak krece od pune podrske`() {
+        val recommendation = ProgressSnapshot.EMPTY.recommend(listOf(coordinates))!!
+
+        assertEquals(Support.FULL, recommendation.support)
+    }
+
+    /** Dva puta uspešno na istoj prečki — prečka niže. */
+    @Test
+    fun `dva uspeha spustaju precku`() {
+        val history = listOf(
+            session(Skill.COORDINATES, "square_color", 10, 10),
+            session(Skill.COORDINATES, "square_color", 10, 10)
+        )
+
+        val recommendation = history.toProgressSnapshot()
+            .recommend(listOf(coordinates))!!
+
+        assertEquals(Support.NONE, recommendation.support)
+    }
+
+    /** Jedan uspeh nije dovoljan; ostaje se gde se bilo. */
+    @Test
+    fun `jedan uspeh ne spusta precku`() {
+        val history = listOf(session(Skill.COORDINATES, "square_color", 10, 10))
+        val recommendation = history.toProgressSnapshot()
+            .recommend(listOf(coordinates))!!
+
+        assertEquals(Support.FULL, recommendation.support)
+    }
+
+    /** Promašaj vraća prečku nazad, bez kazne. */
+    @Test
+    fun `promasaj vraca precku nazad`() {
+        val history = listOf(
+            session(Skill.COORDINATES, "square_color", 10, 10),
+            session(Skill.COORDINATES, "square_color", 10, 10),
+            session(Skill.COORDINATES, "square_color", 10, 4, support = Support.NONE)
+        )
+
+        val recommendation = history.toProgressSnapshot()
+            .recommend(listOf(coordinates))!!
+
+        assertEquals(Support.FULL, recommendation.support)
+    }
+
+    /** Ispod najniže prečke se ne pada — zadatak nema šta dalje da ponudi. */
+    @Test
+    fun `promasaj na najlaksoj precki ostaje tu`() {
+        val history = listOf(session(Skill.POSITION_HOLD, "reconstruct", 10, 2))
+        val recommendation = history.toProgressSnapshot()
+            .recommend(listOf(hold))!!
+
+        assertEquals(Support.FULL, recommendation.support)
+    }
+
+    /**
+     * Preporuka koja uvek šalje na najgore je preporuka koja se prestane
+     * otvarati — na svakih pet sesija dolazi ono što ide dobro.
+     */
+    @Test
+    fun `povremeno se predlaze i ono sto ide dobro`() {
+        val history = (1..4).map { session(Skill.COORDINATES, "square_color", 10, 3) } +
+            listOf(session(Skill.PIECE_GEOMETRY, "shortest_path", 10, 10))
+
+        val recommendation = history.toProgressSnapshot().recommend(tasks)!!
+
+        assertEquals(Reason.STRENGTH, recommendation.reason)
+    }
+}

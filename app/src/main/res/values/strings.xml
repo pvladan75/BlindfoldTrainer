@@ -149,6 +149,14 @@
     <string name="chart_target">- - - orijentir: %1$s s</string>
     <string name="progress_target_reached">orijentir dostignut</string>
     <string name="progress_target">orijentir: %1$s uz %2$d%% tačnosti</string>
+    <string name="path_title">Sledeće</string>
+    <string name="path_offer">%1$s · %2$s</string>
+    <string name="path_start">Kreni</string>
+    <string name="reason_never_tried">Ovo još nisi probao — o njemu se ne zna ništa.</string>
+    <string name="reason_weakest">Trenutno ti ide najteže.</string>
+    <string name="reason_foundation">Temelj za ostale veštine; dok on ne postane automatski, iznad njega ide sporo.</string>
+    <string name="reason_strength">Ovo ti ide dobro — neka i tako bude ponekad.</string>
+
     <string name="checkup_title">Provera</string>
     <string name="checkup_offer">Izmeri gde stojiš: %1$s</string>
     <string name="checkup_hint">Kratko, uvek isto i bez poena — zato može da se poredi sa prošlim merenjem. Tabla se vidi, da bi se znalo šta je tačno otkazalo.</string>

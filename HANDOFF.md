@@ -45,7 +45,7 @@ blindfold animacija i raspakivanje ViewModel-a. Stari projekat se odatle napušt
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **sedam** modula za trening. Poslednji build
-je prošao čisto, bez upozorenja. **192 testa, nijedan ne pada.**
+je prošao čisto, bez upozorenja. **203 testa, nijedan ne pada.**
 
 **Svih sedam modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -817,6 +817,51 @@ jednako.
 Na kartici veštine to izgleda ovako: ko je proveren vidi **nivo**, ko je samo
 vežbao vidi napredak i uz njega „nije provereno" — jer bi inače obim vežbanja
 izgledao kao dokaz o nivou.
+
+### Put postoji
+
+Urađeno **18. avgusta 2026**, poslednja karika lanca: veština → zadatak → merenje
+→ provera → **put**.
+
+`ProgressSnapshot.recommend(tasks, lastTaskId)` u čistom Kotlinu, pa se cela
+odluka testira bez uređaja. Vraća **šta, kojim zadatkom i na kojoj prečki**, uz
+**razlog** — a razlog je obavezan deo, ne ukras.
+
+#### Kako bira cilj
+
+1. **Nikad dvaput isto zaredom** — osim ako je zadatak jedini. Zastoj se ne
+   probija ponavljanjem, a ostale veštine u međuvremenu venu.
+2. **Na svakih pet sesija ono što ide dobro.** Preporuka koja uvek šalje na
+   najgore je preporuka koja se prestane otvarati; uspeh je gorivo.
+3. **Temelj pre nadgradnje** — veština čiji preduslovi nisu automatski se **ne
+   zabranjuje** nego pomera unazad. Ako je sve ostalo pokriveno, doći će na red.
+4. **Neprobano pre slabog** — o neprobanom se ne zna ništa, a to je vrednije
+   saznanje od još jedne potvrde da je nešto slabo.
+5. Inače **najslabije**, po `standing` — gde prečka vredi više od procenta.
+
+#### Kako bira korak
+
+Prečka se pomera po onome što se poslednje dogodilo u **tom** zadatku:
+
+- **dva puta uspešno zaredom na istoj prečki → prečka niže**;
+- **promašaj → prečka nazad**, bez kazne i bez komentara;
+- inače se ostaje gde se bilo.
+
+Uspehom se smatra orijentir te prečke; gde ga nema, 80% tačnosti.
+
+**Prečka se pomera na sledeću koju zadatak zaista ima**, ne za jedan stepen —
+lestvica je zajednička, ali zadatak sme da preskoči prečke. Geometrija ima samo
+krajeve, pa je „niže" iz pune podrške odmah bez table. To je uhvatio test, a ne
+uređaj.
+
+#### Šta korisnik vidi
+
+Kartica **„Sledeće"** iznad spiska modula: zadatak, prečka i **razlog** u jednom
+redu. Ispod nje spisak modula ostaje netaknut — put je predlog, odbijanje nema
+posledice, i ništa se ne zaključava.
+
+Time je zatvoreno i ono što je stajalo od prve sesije: **rang ništa ne
+otključava**, jer preporuka radi isti posao bez oduzimanja.
 
 ### Šta iz ovoga sledi, po redu
 
