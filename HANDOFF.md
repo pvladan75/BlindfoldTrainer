@@ -45,7 +45,7 @@ blindfold animacija i raspakivanje ViewModel-a. Stari projekat se odatle napušt
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **sedam** modula za trening. Poslednji build
-je prošao čisto, bez upozorenja. **187 testova, nijedan ne pada.**
+je prošao čisto, bez upozorenja. **189 testova, nijedan ne pada.**
 
 **Svih sedam modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -711,6 +711,49 @@ Podela koja je dotad bila mutna:
 
 Provera nije ukras nego **jedini pošten izvor nivoa**. Dok je nema, „najslabija
 veština" je **procena**, i na ekranu tako i piše.
+
+### Orijentir i kriva kroz vreme
+
+**Orijentir** je rezultat kom se teži — ne „maksimum": nije gornja granica skale
+i sme da se pređe. Stoji na `TaskSpec`, **po prečki**, jer modul zna kako izgleda
+vladanje njegovim zadatkom.
+
+**Par, a ne broj.** Da stoji samo vreme, merilo bi pozivalo na žurbu, a žurba
+obara tačnost — koja je pola veštine. Priznaje se tek kad su ispunjena oba, i uz
+dovoljno pokušaja.
+
+Jedno priznanje uz brojeve: **vreme je ceo krug zadatka**, ne čisto razmišljanje
+— u njemu su i izgovor i pauza posle odgovora. Zato je orijentir izdašniji nego
+što bi se očekivalo, a na težoj prečki i veći, jer se bez ekrana ista stvar mora
+i izgovoriti. Brojevi su prvi predlog, kao i pragovi rangova.
+
+#### Kriva
+
+Jedan grafik **po zadatku i prečki** — linija koja meša prečke ponovila bi grešku
+zbog koje se prečka uopšte i upisuje.
+
+- **Vodoravno: redni broj sesije, ne datum.** Ko vežba dvaput nedeljno dobio bi
+  grafik od samih praznina.
+- **Uspravno: vreme, ne procenat.** Tačnost se zasiti brzo i linija umre; vreme
+  pada mnogo duže i pokazuje napredak i kad procenat miruje. Tačnost nosi **sama
+  tačka** — puna kad je sesija stigla do tražene, šuplja kad nije. Jedan grafik,
+  oba podatka.
+- **Dve vodoravne linije: tvoj najbolji i orijentir.** Orijentir sam, pet puta
+  ispod početnikove krive, nije cilj nego **zid** — takav grafik se otvori
+  jednom. „Tvoj najbolji" je dostižan i pomera se sa tobom, pa je rastojanje
+  između njih priča o napretku umesto podsetnika koliko fali.
+- **Ispod tri sesije nema grafika**, samo brojevi: kriva kroz dve tačke ume da
+  slaže u oba pravca.
+
+Crta se `Canvas`-om, bez biblioteke — pedesetak linija u aplikaciji koja pazi na
+veličinu APK-a.
+
+#### Prelazak orijentira je signal
+
+Kad se orijentir pređe, prestaje da bude horizont i **postaje pod**: preuzima ga
+orijentir sledeće prečke. To je isti signal koji petlji puta treba — „ovo je
+savladano, spusti podršku" — pa linija nije ukras nego **vidljivi oblik pravila
+koje već postoji**.
 
 ### Šta iz ovoga sledi, po redu
 

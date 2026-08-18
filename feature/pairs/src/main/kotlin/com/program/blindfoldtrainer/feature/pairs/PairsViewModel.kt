@@ -14,6 +14,7 @@ import com.program.blindfoldtrainer.core.designsystem.board.PieceVisibility
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Benchmark
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.SkillTally
 import com.program.blindfoldtrainer.core.model.Support
@@ -443,5 +444,9 @@ class PairsViewModel @Inject constructor(
 internal val PAIRS_MEETING_SQUARE = TaskSpec(
     id = "meeting_square",
     skills = listOf(Skill.POSITION_UPDATE, Skill.POSITION_HOLD),
-    supports = listOf(Support.FULL, Support.NONE)
+    supports = listOf(Support.FULL, Support.NONE),
+    benchmarks = mapOf(
+        Support.FULL to Benchmark(millisPerAttempt = 25_000, minAccuracy = 0.85f),
+        Support.NONE to Benchmark(millisPerAttempt = 40_000, minAccuracy = 0.8f)
+    )
 )

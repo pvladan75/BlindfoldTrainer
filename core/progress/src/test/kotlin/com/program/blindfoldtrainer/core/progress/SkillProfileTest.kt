@@ -1,5 +1,6 @@
 package com.program.blindfoldtrainer.core.progress
 
+import com.program.blindfoldtrainer.core.model.Benchmark
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
@@ -255,6 +256,42 @@ class SkillProfileTest {
         assertEquals(10, trend.recent.attempted)
         assertEquals(0, trend.earlier.attempted)
         assertTrue("jedan prozor nije trend", !trend.hasComparison)
+    }
+
+    /**
+     * Orijentir se priznaje tek kad su **oba** ispunjena. Da stoji samo vreme,
+     * merilo bi pozivalo na žurbu, a žurba obara tačnost.
+     */
+    @Test
+    fun `orijentir trazi i vreme i tacnost`() {
+        val target = Benchmark(millisPerAttempt = 3_000, minAccuracy = 0.9f)
+
+        val fastAndAccurate = TaskProfile().plus(Support.FULL, SkillTally(10, 10, 25_000))
+        val fastButSloppy = TaskProfile().plus(Support.FULL, SkillTally(10, 7, 25_000))
+        val accurateButSlow = TaskProfile().plus(Support.FULL, SkillTally(10, 10, 90_000))
+
+        assertTrue(fastAndAccurate.hasReached(Support.FULL, target))
+        assertTrue("žurba se ne priznaje", !fastButSloppy.hasReached(Support.FULL, target))
+        assertTrue("sporo se ne priznaje", !accurateButSlow.hasReached(Support.FULL, target))
+
+        // Jedna dobra večer nije dokaz.
+        val tooFew = TaskProfile().plus(Support.FULL, SkillTally(3, 3, 6_000))
+        assertTrue("premalo pokušaja", !tooFew.hasReached(Support.FULL, target))
+    }
+
+    /** Građa za grafik ide po zadatku **i** prečki. */
+    @Test
+    fun `serija za grafik ne mesa precke`() {
+        val history = listOf(
+            session(bySkill = mapOf(Skill.COORDINATES to SkillTally(10, 8))),
+            session(support = Support.NONE, bySkill = mapOf(Skill.COORDINATES to SkillTally(10, 5))),
+            session(bySkill = mapOf(Skill.COORDINATES to SkillTally(10, 9)))
+        )
+
+        val snapshot = history.toProgressSnapshot()
+
+        assertEquals(2, snapshot.sessionsFor(Skill.COORDINATES, "square_color", Support.FULL).size)
+        assertEquals(1, snapshot.sessionsFor(Skill.COORDINATES, "square_color", Support.NONE).size)
     }
 
     @Test

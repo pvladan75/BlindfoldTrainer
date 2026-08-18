@@ -12,6 +12,7 @@ import com.program.blindfoldtrainer.core.chess.randomSparsePosition
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Benchmark
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.SkillTally
 import com.program.blindfoldtrainer.core.model.Support
@@ -320,5 +321,8 @@ class DictationViewModel @Inject constructor(
 internal val DICTATION_PLACE_POSITION = TaskSpec(
     id = "place_position",
     skills = listOf(Skill.NOTATION, Skill.POSITION_HOLD),
-    supports = listOf(Support.FULL)
+    supports = listOf(Support.FULL),
+    benchmarks = mapOf(
+        Support.FULL to Benchmark(millisPerAttempt = 75_000, minAccuracy = 0.8f)
+    )
 )

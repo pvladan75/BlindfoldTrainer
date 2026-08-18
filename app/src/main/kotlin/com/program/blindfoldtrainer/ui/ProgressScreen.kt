@@ -31,7 +31,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.program.blindfoldtrainer.R
 import com.program.blindfoldtrainer.core.model.Skill
+import com.program.blindfoldtrainer.core.model.Support
+import com.program.blindfoldtrainer.core.model.TaskSpec
 import com.program.blindfoldtrainer.core.progress.ProgressSnapshot
+import com.program.blindfoldtrainer.core.progress.SkillEntry
 import com.program.blindfoldtrainer.core.progress.SkillProfile
 import com.program.blindfoldtrainer.core.progress.TaskProfile
 import com.program.blindfoldtrainer.core.progress.SkillTrend
@@ -53,7 +56,12 @@ import com.program.blindfoldtrainer.core.progress.SkillTrend
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProgressScreen(progress: ProgressSnapshot, onBack: () -> Unit) {
+fun ProgressScreen(
+    progress: ProgressSnapshot,
+    /** Zadaci iz registra — po njima se znaju orijentiri. Modul ih prijavljuje. */
+    tasks: Map<String, TaskSpec>,
+    onBack: () -> Unit
+) {
     val weakest = progress.weakestSkill
 
     Scaffold(
@@ -94,7 +102,9 @@ fun ProgressScreen(progress: ProgressSnapshot, onBack: () -> Unit) {
                     isAutomatic = progress.isAutomatic(skill),
                     foundationsMissing = progress.foundationsMissing(skill),
                     isWeakest = skill == weakest,
-                    trendFor = { taskId -> progress.trendFor(skill, taskId) }
+                    trendFor = { taskId -> progress.trendFor(skill, taskId) },
+                    specFor = { taskId -> tasks[taskId] },
+                    sessionsFor = { taskId, rung -> progress.sessionsFor(skill, taskId, rung) }
                 )
             }
 
@@ -116,7 +126,9 @@ private fun SkillCard(
     isAutomatic: Boolean,
     foundationsMissing: Set<Skill>,
     isWeakest: Boolean,
-    trendFor: (String) -> SkillTrend?
+    trendFor: (String) -> SkillTrend?,
+    specFor: (String) -> TaskSpec?,
+    sessionsFor: (String, Support) -> List<SkillEntry>
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -183,7 +195,13 @@ private fun SkillCard(
             // pokušaj", a nemaju ni istu cenu ni istu težinu.
             profile?.tasks?.forEach { (taskId, task) ->
                 Spacer(Modifier.height(14.dp))
-                TaskRows(taskId = taskId, task = task, trend = trendFor(taskId))
+                TaskRows(
+                    taskId = taskId,
+                    task = task,
+                    trend = trendFor(taskId),
+                    spec = specFor(taskId),
+                    sessionsFor = { rung -> sessionsFor(taskId, rung) }
+                )
             }
 
             if (isWeakest) {
@@ -204,7 +222,13 @@ private fun SkillCard(
 }
 
 @Composable
-private fun TaskRows(taskId: String, task: TaskProfile, trend: SkillTrend?) {
+private fun TaskRows(
+    taskId: String,
+    task: TaskProfile,
+    trend: SkillTrend?,
+    spec: TaskSpec?,
+    sessionsFor: (Support) -> List<SkillEntry>
+) {
     val held = task.heldRung()
 
     Row(
@@ -251,6 +275,35 @@ private fun TaskRows(taskId: String, task: TaskProfile, trend: SkillTrend?) {
                 modifier = Modifier.fillMaxWidth().height(6.dp)
             )
         }
+
+        val benchmark = spec?.benchmarkFor(rung)
+        if (benchmark != null) {
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = if (task.hasReached(rung, benchmark)) {
+                    stringResource(R.string.progress_target_reached)
+                } else {
+                    // Orijentir se kaže i pre nego što je dostignut — cilj koji
+                    // se ne vidi ne vuče nikuda.
+                    stringResource(
+                        R.string.progress_target,
+                        secondsLabel(benchmark.millisPerAttempt),
+                        (benchmark.minAccuracy * 100).toInt()
+                    )
+                },
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        // Kriva ide po prečki, ne preko njih: linija koja meša prečke ponovila
+        // bi grešku zbog koje se prečka uopšte i upisuje.
+        Spacer(Modifier.height(6.dp))
+        ProgressChart(
+            sessions = sessionsFor(rung),
+            benchmark = benchmark,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 
     // Trend se gleda unutar istog zadatka — inače bi poredio dve sekunde po

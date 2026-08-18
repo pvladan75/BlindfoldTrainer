@@ -10,6 +10,7 @@ import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
+import com.program.blindfoldtrainer.core.model.Benchmark
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.SkillTally
 import com.program.blindfoldtrainer.core.model.Support
@@ -71,7 +72,13 @@ data class GeometryUiState(
 internal val SQUARE_COLOR = TaskSpec(
     id = "square_color",
     skills = listOf(Skill.COORDINATES),
-    supports = listOf(Support.FULL, Support.NONE)
+    supports = listOf(Support.FULL, Support.NONE),
+    // Deset polja za desetak sekundi je ono čemu se teži; uz punu podršku se
+    // računa i pauza dok se tabla pokaže, bez table i izgovor istine.
+    benchmarks = mapOf(
+        Support.FULL to Benchmark(millisPerAttempt = 3_000, minAccuracy = 0.9f),
+        Support.NONE to Benchmark(millisPerAttempt = 4_500, minAccuracy = 0.9f)
+    )
 )
 
 /**

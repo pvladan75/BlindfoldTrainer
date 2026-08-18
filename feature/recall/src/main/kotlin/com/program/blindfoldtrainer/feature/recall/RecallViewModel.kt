@@ -11,6 +11,7 @@ import com.program.blindfoldtrainer.core.chess.randomSparsePosition
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Benchmark
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.SkillTally
 import com.program.blindfoldtrainer.core.model.Support
@@ -286,5 +287,8 @@ class RecallViewModel @Inject constructor() : ViewModel() {
 internal val RECALL_RECONSTRUCT = TaskSpec(
     id = "reconstruct",
     skills = listOf(Skill.POSITION_HOLD),
-    supports = listOf(Support.FULL)
+    supports = listOf(Support.FULL),
+    benchmarks = mapOf(
+        Support.FULL to Benchmark(millisPerAttempt = 60_000, minAccuracy = 0.8f)
+    )
 )

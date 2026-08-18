@@ -18,6 +18,7 @@ import com.program.blindfoldtrainer.core.engine.ChessEngine
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Benchmark
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.SkillTally
 import com.program.blindfoldtrainer.core.model.Support
@@ -731,5 +732,11 @@ internal val ENDGAME_PLAY_OUT = TaskSpec(
         Skill.CALCULATION,
         Skill.RECOVERY
     ),
-    supports = listOf(Support.FULL, Support.NONE)
+    supports = listOf(Support.FULL, Support.NONE),
+    // Cela pozicija privedena kraju, sa protivnikom koji se brani — otud minuti
+    // a ne sekunde.
+    benchmarks = mapOf(
+        Support.FULL to Benchmark(millisPerAttempt = 150_000, minAccuracy = 0.8f),
+        Support.NONE to Benchmark(millisPerAttempt = 240_000, minAccuracy = 0.7f)
+    )
 )

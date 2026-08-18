@@ -13,6 +13,7 @@ import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Benchmark
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.SkillTally
 import com.program.blindfoldtrainer.core.model.Support
@@ -339,5 +340,9 @@ class FollowGameViewModel @Inject constructor(
 internal val FOLLOW_WHERE_IS_PIECE = TaskSpec(
     id = "where_is_piece",
     skills = listOf(Skill.POSITION_UPDATE, Skill.NOTATION),
-    supports = listOf(Support.FULL, Support.NONE)
+    supports = listOf(Support.FULL, Support.NONE),
+    benchmarks = mapOf(
+        Support.FULL to Benchmark(millisPerAttempt = 20_000, minAccuracy = 0.85f),
+        Support.NONE to Benchmark(millisPerAttempt = 30_000, minAccuracy = 0.8f)
+    )
 )

@@ -11,6 +11,7 @@ import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Benchmark
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.SkillTally
 import com.program.blindfoldtrainer.core.model.Support
@@ -344,5 +345,9 @@ class KnightPathViewModel @Inject constructor(
 internal val KNIGHT_SHORTEST_PATH = TaskSpec(
     id = "shortest_path",
     skills = listOf(Skill.PIECE_GEOMETRY, Skill.CALCULATION),
-    supports = listOf(Support.FULL, Support.NONE)
+    supports = listOf(Support.FULL, Support.NONE),
+    benchmarks = mapOf(
+        Support.FULL to Benchmark(millisPerAttempt = 20_000, minAccuracy = 0.8f),
+        Support.NONE to Benchmark(millisPerAttempt = 30_000, minAccuracy = 0.8f)
+    )
 )

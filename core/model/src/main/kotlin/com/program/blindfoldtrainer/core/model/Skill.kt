@@ -127,6 +127,31 @@ enum class Support(val key: String) {
 }
 
 /**
+ * **Orijentir** — rezultat kom se teži na jednoj prečki jednog zadatka.
+ *
+ * Nije „maksimum": nije gornja granica skale i sme da se pređe. To je tačka po
+ * kojoj se čovek upravlja, a kad je pređe, prestaje da bude horizont i postaje
+ * pod — preuzima ga orijentir sledeće prečke.
+ *
+ * **Par, a ne broj.** Da stoji samo vreme, merilo bi pozivalo na žurbu, a žurba
+ * obara tačnost — koja je pola veštine. Priznaje se tek kad su ispunjena oba.
+ *
+ * Vreme je **ceo krug jednog zadatka**, ne čisto razmišljanje: u njemu su i
+ * izgovor i pauza posle odgovora. Zato je orijentir na istoj prečki uvek
+ * izdašniji nego što bi se očekivalo, a na težoj prečki i veći — bez ekrana se
+ * ista stvar mora i izgovoriti.
+ *
+ * Brojevi su **prvi predlog**, kao i pragovi rangova: stoje na jednom mestu i
+ * menjaju se bez diranja istorije.
+ */
+data class Benchmark(val millisPerAttempt: Long, val minAccuracy: Float) {
+    init {
+        require(millisPerAttempt > 0) { "orijentir bez vremena ne bi značio ništa" }
+        require(minAccuracy in 0f..1f) { "tačnost je udeo, dobijeno $minAccuracy" }
+    }
+}
+
+/**
  * Šta je jedna vrsta zadatka: šta pita, šta razvija i koliko podrške ume.
  *
  * Modul je **svežanj** ovakvih zadataka, a ne jedna vežba. Zato se veštine
@@ -147,7 +172,12 @@ data class TaskSpec(
      * ne ume nije neispravan — samo ima nižu granicu, i školjka to kaže umesto
      * da korisnik sazna unutra.
      */
-    val supports: List<Support>
+    val supports: List<Support>,
+
+    /**
+     * Kome se teži, po prečki. Prečka bez orijentira ga naprosto ne prikazuje.
+     */
+    val benchmarks: Map<Support, Benchmark> = emptyMap()
 ) {
     init {
         require(id.isNotBlank()) { "zadatak mora imati ključ" }
@@ -166,6 +196,8 @@ data class TaskSpec(
     val hardest: Support get() = supports.maxByOrNull { it.ordinal } ?: Support.FULL
 
     fun supports(support: Support): Boolean = support in supports
+
+    fun benchmarkFor(support: Support): Benchmark? = benchmarks[support]
 
     /**
      * Najbliža prečka koju zadatak ume, kad tražena ne postoji.

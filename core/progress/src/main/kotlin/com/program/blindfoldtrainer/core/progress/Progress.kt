@@ -3,6 +3,7 @@ package com.program.blindfoldtrainer.core.progress
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Benchmark
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.SkillTally
 import com.program.blindfoldtrainer.core.model.Support
@@ -128,6 +129,17 @@ data class ProgressSnapshot(
      * Gleda se **unutar jednog zadatka**. Trend preko modula bi poredio dve
      * sekunde po pitanju sa tri minuta po poziciji.
      */
+    /**
+     * Sesije jednog zadatka na jednoj prečki, hronološki — građa za grafik.
+     *
+     * Prečka je deo ključa, ne filter preko koga se prelazi: kriva koja meša
+     * prečke ponovila bi grešku zbog koje se prečka uopšte i upisuje.
+     */
+    fun sessionsFor(skill: Skill, taskId: String, support: Support): List<SkillEntry> =
+        skillHistory.filter {
+            it.skill == skill && it.taskId == taskId && it.support == support
+        }
+
     fun trendFor(skill: Skill, taskId: String, window: Int = TREND_WINDOW): SkillTrend? {
         val entries = skillHistory.filter { it.skill == skill && it.taskId == taskId }
         if (entries.isEmpty()) return null
@@ -304,6 +316,23 @@ data class TaskProfile(val bySupport: Map<Support, SkillTally> = emptyMap()) {
                 (accuracy * (support.ordinal + 1) * tally.attempted)
             }.toFloat() / bySupport.values.sumOf { it.attempted }
         }
+
+    /**
+     * Da li je orijentir na ovoj prečki **dostignut**.
+     *
+     * Traži se i vreme i tačnost — da stoji samo vreme, merilo bi pozivalo na
+     * žurbu. Traži se i dovoljno pokušaja, iz istog razloga iz kog se traži i za
+     * držanu prečku: jedna dobra večer nije dokaz.
+     */
+    fun hasReached(support: Support, benchmark: Benchmark, minAttempts: Int = 8): Boolean {
+        val tally = bySupport[support] ?: return false
+        if (tally.attempted < minAttempts) return false
+
+        val perAttempt = tally.millisPerAttempt ?: return false
+        val accuracy = tally.solved.toFloat() / tally.attempted
+
+        return perAttempt <= benchmark.millisPerAttempt && accuracy >= benchmark.minAccuracy
+    }
 
     internal fun plus(support: Support, tally: SkillTally): TaskProfile =
         TaskProfile(bySupport + (support to ((bySupport[support] ?: SkillTally(0, 0)) + tally)))

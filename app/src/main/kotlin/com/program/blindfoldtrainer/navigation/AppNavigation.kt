@@ -74,7 +74,13 @@ fun AppNavigation(registry: ModuleRegistry) {
         }
 
         composable(ROUTE_PROGRESS) {
-            ProgressScreen(progress = progress, onBack = { navController.popBackStack() })
+            // Zadaci stižu iz registra: modul prijavljuje svoje, a ekran iz
+            // njih zna orijentire. Nigde se ne prepisuju.
+            ProgressScreen(
+                progress = progress,
+                tasks = registry.all.flatMap { it.tasks }.associateBy { it.id },
+                onBack = { navController.popBackStack() }
+            )
         }
 
         composable(ROUTE_SETTINGS) {
