@@ -1865,6 +1865,87 @@ jedno i drugo računa iz istorije.
 
 ---
 
+## Server, nalozi i naplata
+
+Dogovoreno **18. avgusta 2026**. Ništa od ovoga nije početo; ovde stoji zato što
+određuje redosled svega daljeg.
+
+### Pravilo koje seče kroz sva tri pitanja
+
+> **Merilo koje nagrađuje prestaje da meri i počne da se juri.**
+
+Zbog toga provera ne nosi poene. **Lestvica je najjača moguća nagrada zakačena za
+merilo:** rangiranje po poenima tera na mlaćenje lakog, a rangiranje po nivou iz
+provere pretvara proveru u ispit koji se ponavlja dok ne ispadne lepo.
+
+Takmičenje zato **ne sme da se zakači za profil veština**.
+
+### Server — da, za tri stvari
+
+1. **Čuvanje napretka.** Najvažnije, iako najmanje uzbudljivo: ceo profil danas
+   živi u jednoj tabeli na jednom telefonu, pa je promena telefona — nula. To je
+   jedina stvar u aplikaciji koja se ne može povratiti.
+2. **Dnevni zadatak.** Isti zadatak svima, isti dan. Uporedivo bez ijedne zamke,
+   jer meri **jedan pokušaj**, a ne veštinu.
+3. **Takmičenje po istrajnosti** — nizovi dana, minuti, broj sesija. Ko to
+   „lažira", samo je vežbao.
+
+**Ne pravi se lestvica po veštinama.** To je jedini oblik koji direktno napada
+instrument.
+
+### Nalog se kači na profil, ne zamenjuje ga
+
+Dva različita problema koja se lako pobrkaju:
+
+| | čemu služi |
+|---|---|
+| **lokalni profil** | otac i sin na istom telefonu, brzo prebacivanje, bez lozinke |
+| **nalog** | čuvanje napretka, dnevni zadatak, takmičenje |
+
+Dete od deset godina najčešće nema Google nalog, a prebacivanje naloga na
+telefonu je težak postupak — nikako nešto pred svaku vežbu. Nalozi **umesto**
+profila razbili bi baš onaj slučaj zbog kog profili i postoje.
+
+Zato: lokalni profili ostaju, a nalog se **po želji kači** na profil.
+
+### Naplata
+
+**Bez reklama.** Glavni režim je vežba zatvorenih očiju: čovek leži i drži tablu
+u glavi. Reklama tu ne prekida udobnost nego **ruši samu vežbu**. Uz to je
+publika uska — reklame donesu sitninu, a odnesu ono zbog čega ljudi ostaju.
+
+**Freemium, sa podelom po trošku, ne po lepoti:**
+
+| besplatno | plaćeno |
+|---|---|
+| svi moduli i vežbanje | čuvanje napretka i prelazak na drugi telefon |
+| profil, provera, put | istorija i grafici unazad, dnevni zadatak i lestvica |
+| režim bez ekrana | više profila na uređaju |
+
+Iskušenje je naplatiti profil i put jer su najlepši; to je greška, jer bez njih
+besplatna verzija nema šta da pokaže. **Alat je besplatan, plaća se ono što košta
+nas** — server. To se i objasni u jednoj rečenici.
+
+**Jednokratna kupovina, ne pretplata.** Publika je uska i uporna, server već
+postoji zbog druge aplikacije, pa marginalni trošak po korisniku ne traži mesečnu
+naplatu. Pretplata za šahovsku vežbalicu odbija više nego što donosi.
+
+### Redosled
+
+1. **Profili — sad.** Jedina stvar koja poskupljuje ako se odloži.
+2. **Nekoliko nedelja korišćenja.** Sve od 18. avgusta ima dva dana i nije ga
+   probao niko osim autora: orijentiri su prvi predlog, pragovi automatizma
+   nagađanje, a put nikog nije vodio kroz mesec dana.
+3. **Server** — prvo čuvanje napretka, pa dnevni zadatak, pa lestvica po
+   istrajnosti.
+4. **Naplata poslednja**, kad postoji nešto što se ne bi dalo ni za pare.
+
+Razlog za ovaj redosled nije opreznost: **lestvica i cena postavljene pre nego
+što se aplikacija pokaže rešavaju pogrešan problem.** Nedostatak korisnika se ne
+leči takmičenjem među korisnicima kojih nema.
+
+---
+
 ## Šta bi aplikacija još mogla da bude
 
 Zapisano **18. avgusta 2026** kao mogućnost, ne kao plan. Ništa od ovoga nije
