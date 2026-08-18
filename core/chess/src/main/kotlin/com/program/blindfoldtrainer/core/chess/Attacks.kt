@@ -73,6 +73,71 @@ private fun Board.isAttackedBySlider(target: Square, by: Color): Boolean {
 }
 
 /** Da li je kralj date boje u šahu. */
+/**
+ * **Odakle** je polje napadnuto — sva polja sa kojih boja [by] gađa [target].
+ *
+ * Postoji uz [isAttackedBy] jer odgovara na drugo pitanje. Za pravila je
+ * dovoljno znati **da li** je polje napadnuto; za vežbu je potrebno znati
+ * **odakle**, jer se baš to u partiji naslepo zaboravlja: ne gde figure stoje,
+ * nego šta drže.
+ *
+ * Računa se iz ugla svake protivničke figure, a ne iz ugla mete, jer je odgovor
+ * spisak polja sa kojih se gađa.
+ */
+fun Board.attackersOf(target: Square, by: Color): Set<Square> =
+    occupied()
+        .filter { (square, piece) -> piece.color == by && attacks(square, target) }
+        .mapTo(mutableSetOf()) { (square, _) -> square }
+
+/** Da li figura sa [from] gađa [target]. Prazno polje ne gađa ništa. */
+private fun Board.attacks(from: Square, target: Square): Boolean {
+    val piece = this[from] ?: return false
+    if (from == target) return false
+
+    val fileStep = target.fileIndex - from.fileIndex
+    val rankStep = target.rankIndex - from.rankIndex
+
+    return when (piece.type) {
+        // Pešak gađa dijagonalu ispred sebe — i kad je polje prazno. Upravo se
+        // na toj razlici u staroj aplikaciji izgubio ceo bag sa kraljem.
+        PieceType.PAWN ->
+            rankStep == piece.color.pawnDirection && (fileStep == 1 || fileStep == -1)
+
+        PieceType.KNIGHT ->
+            KNIGHT_OFFSETS.any { (file, rank) -> file == fileStep && rank == rankStep }
+
+        PieceType.KING -> fileStep in -1..1 && rankStep in -1..1
+
+        PieceType.ROOK -> (fileStep == 0 || rankStep == 0) && isPathClear(from, target)
+
+        PieceType.BISHOP ->
+            kotlin.math.abs(fileStep) == kotlin.math.abs(rankStep) && isPathClear(from, target)
+
+        PieceType.QUEEN ->
+            (fileStep == 0 || rankStep == 0 ||
+                kotlin.math.abs(fileStep) == kotlin.math.abs(rankStep)) &&
+                isPathClear(from, target)
+    }
+}
+
+/** Ima li ijedne figure između dva polja na istoj liniji ili dijagonali. */
+private fun Board.isPathClear(from: Square, target: Square): Boolean {
+    val fileStep = (target.fileIndex - from.fileIndex).coerceIn(-1, 1)
+    val rankStep = (target.rankIndex - from.rankIndex).coerceIn(-1, 1)
+
+    var fileIndex = from.fileIndex + fileStep
+    var rankIndex = from.rankIndex + rankStep
+
+    while (true) {
+        val square = Square.of(fileIndex, rankIndex) ?: return false
+        if (square == target) return true
+        if (this[square] != null) return false
+
+        fileIndex += fileStep
+        rankIndex += rankStep
+    }
+}
+
 fun Board.isKingInCheck(color: Color): Boolean {
     val kingSquare = kingSquare(color) ?: return false
     return isAttackedBy(kingSquare, color.opposite)

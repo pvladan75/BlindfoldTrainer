@@ -49,6 +49,8 @@ fun FollowGameScreen(
     difficulty: Difficulty,
     /** Porudžbina puta; bez nje modul bira prečku po podešavanju. */
     support: Support? = null,
+    /** Koji zadatak se radi; bez porudžbine se radi zatečeni. */
+    taskId: String? = null,
     onFinish: (SessionResult) -> Unit,
     viewModel: FollowGameViewModel = hiltViewModel()
 ) {
@@ -56,7 +58,7 @@ fun FollowGameScreen(
     val voiceState by viewModel.voiceState.collectAsState()
     val isEyesFree by viewModel.isEyesFree.collectAsState()
 
-    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty, support) }
+    LaunchedEffect(difficulty) { viewModel.startOnce(difficulty, support, taskId) }
 
     LaunchedEffect(uiState.isFinished) {
         if (uiState.isFinished) onFinish(viewModel.buildResult())
@@ -180,7 +182,7 @@ fun FollowGameScreen(
 private fun buildTints(uiState: FollowGameUiState): Map<Square, SquareTint> = buildMap {
     if (uiState.phase != FollowPhase.FEEDBACK) return@buildMap
 
-    uiState.question?.let { put(it.square, SquareTint.SUCCESS) }
+    uiState.question?.expected?.forEach { put(it, SquareTint.SUCCESS) }
     uiState.answerSquare?.takeIf { !uiState.wasCorrect }?.let { put(it, SquareTint.ERROR) }
 }
 
@@ -231,12 +233,22 @@ private fun MovePanel(uiState: FollowGameUiState) {
 
     val text = when (uiState.phase) {
         FollowPhase.FOLLOWING -> uiState.lastMoveLabel.ifBlank { "Pritisni za prvi potez" }
-        FollowPhase.QUESTION -> question?.prompt.orEmpty()
+        FollowPhase.QUESTION -> {
+            // Kod pitanja sa više odgovora se vidi i dokle se stiglo: bez toga
+            // se ne zna da li je dodir uopšte primljen.
+            val found = uiState.found.size
+            val wanted = question?.expected?.size ?: 0
+            if (wanted > 1 && found > 0) {
+                "${question?.prompt.orEmpty()}  ($found/$wanted)"
+            } else {
+                question?.prompt.orEmpty()
+            }
+        }
+
         FollowPhase.FEEDBACK -> if (uiState.wasCorrect) {
-            "Tačno — ${question?.square}"
+            "Tačno"
         } else {
-            "Nije tu. ${question?.piece?.spokenName()?.replaceFirstChar { it.uppercase() }} " +
-                "je na ${question?.square}"
+            question?.correction.orEmpty()
         }
     }
 

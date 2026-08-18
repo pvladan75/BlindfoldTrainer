@@ -70,6 +70,8 @@ data class FollowGameUiState(
      * desetine poteza, pa je i jedini u kom ovaj broj nešto znači.
      */
     val heldUntil: Int? = null,
+    /** Polja koja su već pogođena u pitanju sa više odgovora. */
+    val found: Set<Square> = emptySet(),
     val isLoading: Boolean = true,
     val infoMessage: String? = null,
     val isFinished: Boolean = false
@@ -156,7 +158,21 @@ class FollowGameViewModel @Inject constructor(
     /** Sesija je prekinuta pre kraja — ne sme da se prijavi kao završena. */
     private var wasQuit = false
 
-    fun startOnce(difficulty: Difficulty, requestedSupport: Support? = null) {
+    /**
+     * Koji zadatak ova sesija radi.
+     *
+     * **Jedna sesija — jedan zadatak.** Rezultat nosi jedan `taskId`, pa bi
+     * mešanje pitanja u istoj sesiji značilo da se ne zna šta je mereno. Bez
+     * porudžbine se radi zatečeni zadatak; put i provera traže izričito.
+     */
+    private var task: TaskSpec = FOLLOW_WHERE_IS_PIECE
+
+    fun startOnce(
+        difficulty: Difficulty,
+        requestedSupport: Support? = null,
+        taskId: String? = null
+    ) {
+        task = FOLLOW_TASKS.find { it.id == taskId } ?: FOLLOW_WHERE_IS_PIECE
         if (isStarted) return
         isStarted = true
         this.difficulty = difficulty
@@ -170,8 +186,8 @@ class FollowGameViewModel @Inject constructor(
             // Rezim vise nije prekidac nego polazna precka.
             // prečka — najniža koju zadatak ume.
             val wanted = requestedSupport
-                ?: if (eyesFree) FOLLOW_WHERE_IS_PIECE.hardest else Support.FULL
-            _support.value = FOLLOW_WHERE_IS_PIECE.nearestSupport(wanted)
+                ?: if (eyesFree) task.hardest else Support.FULL
+            _support.value = task.nearestSupport(wanted)
 
             val loaded = runCatching { catalog.games() }
             val failure = loaded.exceptionOrNull()
@@ -247,7 +263,19 @@ class FollowGameViewModel @Inject constructor(
         if (state.phase != FollowPhase.QUESTION) return
         val question = state.question ?: return
 
-        val correct = square == question.square
+        val correct = square in question.expected
+
+        // Pitanje sa više odgovora se ne zaključuje na prvom pogotku: skupljaju
+        // se polja dok se ne nađu sva. Isto polje dvaput ne znači ništa.
+        if (correct && square !in state.found) {
+            val found = state.found + square
+            if (found.size < question.expected.size) {
+                _uiState.update { it.copy(found = found) }
+                if (_support.value == Support.NONE) speaker.say(square)
+                return
+            }
+        }
+
         _uiState.update {
             it.copy(
                 phase = FollowPhase.FEEDBACK,
@@ -257,7 +285,8 @@ class FollowGameViewModel @Inject constructor(
                 mistakes = it.mistakes + if (correct) 0 else 1,
                 // Pamti se **prva** greška, ne poslednja: posle nje je slika već
                 // pokvarena, pa ostali odgovori ne mere isto.
-                heldUntil = it.heldUntil ?: if (correct) null else it.solved
+                heldUntil = it.heldUntil ?: if (correct) null else it.solved,
+                found = emptySet()
             )
         }
 
@@ -269,8 +298,9 @@ class FollowGameViewModel @Inject constructor(
                 // istog imena iz prijemnika.
                 speaker.say { this.correct }
             } else {
-                speaker.say { wrongPieceIsOn(nameOf(question.piece)) }
-                speaker.say(question.square, interrupt = false)
+                // Ispravka je deo pitanja, jer se razlikuje po vrsti: kod mesta
+                // se kaže gde figura jeste, kod napada ko sve gađa.
+                speaker.say(question.correction)
             }
         }
 
@@ -288,7 +318,11 @@ class FollowGameViewModel @Inject constructor(
     }
 
     private fun askQuestion() {
-        val question = questionFor(position) ?: return
+        val question = if (task.id == FOLLOW_ATTACKERS.id) {
+            attackersQuestionFor(position)
+        } else {
+            questionFor(position)
+        } ?: return
         _uiState.update {
             it.copy(
                 phase = FollowPhase.QUESTION,
@@ -299,7 +333,9 @@ class FollowGameViewModel @Inject constructor(
         }
 
         // Čeka svoj red, da ne preseče izgovor poteza koji ga je izazvao.
-        if (_support.value == Support.NONE) speaker.say(interrupt = false) { whereIsPiece(nameOf(question.piece)) }
+        // Pitanje se izgovara onako kako i piše — tekst zna sámo pitanje, jer se
+        // dve vrste razlikuju i po tome šta traže i po tome koliko odgovora ima.
+        if (_support.value == Support.NONE) speaker.say(question.prompt, interrupt = false)
     }
 
     /** „21. bxc5" za belog, „21... Bg7" za crnog. */
@@ -336,9 +372,9 @@ class FollowGameViewModel @Inject constructor(
             // Prečka na kojoj je sesija stvarno odrađena — ona koju je modul
             // dobio porudžbinom ili izveo iz podešavanja, ne pretpostavka.
             support = _support.value,
-            taskId = FOLLOW_WHERE_IS_PIECE.id,
+            taskId = task.id,
             bySkill = mapOf(
-                FOLLOW_WHERE_IS_PIECE.measures to SkillTally(
+                task.measures to SkillTally(
                     attempted = state.questionNumber,
                     solved = state.solved,
                     // Vreme je deo mere: tačno a sporo znači da veština
@@ -368,6 +404,26 @@ class FollowGameViewModel @Inject constructor(
  * Ovde će stati i pitanja koja još ne postoje — „ko napada ovu figuru" meri
  * kontrolu polja i biće **zaseban zadatak**, ne druga težina ovog.
  */
+/**
+ * „Ko napada ovu figuru?"
+ *
+ * Meri **kontrolu polja** — prvu praznu vrstu u tabeli veština. U pravoj partiji
+ * naslepo se figure ne gube zato što se zaboravi gde stoje, nego zato što se
+ * zaboravi **šta drže**.
+ *
+ * Isti modul, isti ulaz i ista podrška kao i pitanje o mestu figure — a mere
+ * različite stvari. To je i bio razlog da veština pripada zadatku, a ne modulu.
+ */
+internal val FOLLOW_ATTACKERS = TaskSpec(
+    id = "attackers",
+    skills = listOf(Skill.SQUARE_CONTROL, Skill.POSITION_HOLD),
+    supports = listOf(Support.FULL, Support.NONE),
+    benchmarks = mapOf(
+        Support.FULL to Benchmark(millisPerAttempt = 25_000, minAccuracy = 0.8f),
+        Support.NONE to Benchmark(millisPerAttempt = 40_000, minAccuracy = 0.7f)
+    )
+)
+
 internal val FOLLOW_WHERE_IS_PIECE = TaskSpec(
     id = "where_is_piece",
     skills = listOf(Skill.POSITION_UPDATE, Skill.NOTATION),
@@ -377,3 +433,6 @@ internal val FOLLOW_WHERE_IS_PIECE = TaskSpec(
         Support.NONE to Benchmark(millisPerAttempt = 30_000, minAccuracy = 0.8f)
     )
 )
+
+/** Oba zadatka ovog modula. Sesija radi jedan, a modul prijavljuje oba. */
+internal val FOLLOW_TASKS = listOf(FOLLOW_WHERE_IS_PIECE, FOLLOW_ATTACKERS)
