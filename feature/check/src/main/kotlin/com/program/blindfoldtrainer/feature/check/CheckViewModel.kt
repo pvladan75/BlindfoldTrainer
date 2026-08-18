@@ -1,15 +1,15 @@
-package com.program.blindfoldtrainer.feature.minefield
+package com.program.blindfoldtrainer.feature.check
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.program.blindfoldtrainer.core.audio.Speaker
 import com.program.blindfoldtrainer.core.audio.VoiceInput
-import com.program.blindfoldtrainer.core.audio.listenForSquare
 import com.program.blindfoldtrainer.core.audio.VoiceState
+import com.program.blindfoldtrainer.core.audio.listenForSquare
+import com.program.blindfoldtrainer.core.chess.CheckPuzzle
 import com.program.blindfoldtrainer.core.chess.KnightPath
-import com.program.blindfoldtrainer.core.chess.Minefield
 import com.program.blindfoldtrainer.core.chess.Square
-import com.program.blindfoldtrainer.core.chess.randomMinefield
+import com.program.blindfoldtrainer.core.chess.randomCheckPuzzle
 import com.program.blindfoldtrainer.core.model.Benchmark
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
@@ -21,6 +21,7 @@ import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.model.TaskSpec
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -33,13 +34,24 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /** Zašto potez nije prošao. Razlog se kaže, jer se iz njega uči. */
-enum class Refusal { OCCUPIED, ATTACKED, NOT_KNIGHT_MOVE }
+enum class Refusal { OCCUPIED, ATTACKED, NOT_KNIGHT_MOVE, ALREADY_THERE }
 
-data class MinefieldUiState(
-    val puzzle: Minefield? = null,
+/**
+ * Faza zadatka.
+ *
+ * [MEMORIZE] postoji samo na srednjoj prečki: pozicija se vidi dok korisnik ne
+ * kaže da ju je zapamtio, pa se sakriva. Granica je **potvrda**, ne sat — isti
+ * razlog kao u „Postavi po diktatu": sa figurama pred očima vežba se svede na
+ * čitanje, a slika u glavi se nikad ne sastavi.
+ */
+enum class CheckPhase { MEMORIZE, SOLVE }
+
+data class CheckUiState(
+    val puzzle: CheckPuzzle? = null,
     val current: Square? = null,
     /** Polja kroz koja se prošlo, uključujući polazno. */
     val walked: List<Square> = emptyList(),
+    val phase: CheckPhase = CheckPhase.SOLVE,
     val taskNumber: Int = 0,
     val taskCount: Int = 0,
     val solved: Int = 0,
@@ -55,30 +67,29 @@ data class MinefieldUiState(
 }
 
 /**
- * Skakač kroz polja koja protivnik drži.
+ * Skakač koji mora da da šah, i da dotle ostane živ.
  *
  * Prvi modul koji pita **šta protivnik kontroliše**, a ne gde su figure. U
  * pravoj partiji naslepo se figure ne gube zato što se zaboravi gde stoje, nego
  * zato što se zaboravi šta drže.
  *
- * Zaseban modul, a ne težina u „Putanja skakača", jer se menja uputstvo: tamo je
- * „stigni u najmanje poteza", ovde „stigni živ". Menja se i veština — skakačeva
- * geometrija naspram protivnikove kontrole.
+ * Cilj **proizlazi iz pozicije**: nema saopštenog polja koje bi se pamtilo uz
+ * sve ostalo, nego se gleda gde je kralj i traži polje sa kog se napada a da se
+ * ne stane pod udar.
  */
 @HiltViewModel
-class MinefieldViewModel @Inject constructor(
+class CheckViewModel @Inject constructor(
     private val speaker: Speaker,
     private val voiceInput: VoiceInput,
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(MinefieldUiState())
-    val uiState: StateFlow<MinefieldUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(CheckUiState())
+    val uiState: StateFlow<CheckUiState> = _uiState.asStateFlow()
 
     private val _support = MutableStateFlow(Support.FULL)
     val support: StateFlow<Support> = _support.asStateFlow()
 
-    /** Zadržano za ekran: najniža prečka znači da se tabla ne crta. */
     val isEyesFree: StateFlow<Boolean> = _support
         .map { it == Support.NONE }
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
@@ -87,7 +98,7 @@ class MinefieldViewModel @Inject constructor(
 
     private var difficulty: Difficulty = Difficulty.EASY
     private var setup: Setup = setupFor(Difficulty.EASY)
-    private var task: TaskSpec = MINEFIELD_SAFE_PATH
+    private var task: TaskSpec = CHECK_SAFE_PATH
     private var startedAtMillis = 0L
     private var isStarted = false
     private var wasQuit = false
@@ -102,7 +113,7 @@ class MinefieldViewModel @Inject constructor(
         isStarted = true
         this.difficulty = difficulty
         setup = setupFor(difficulty)
-        task = MINEFIELD_TASKS.find { it.id == taskId } ?: MINEFIELD_SAFE_PATH
+        task = CHECK_TASKS.find { it.id == taskId } ?: CHECK_SAFE_PATH
 
         viewModelScope.launch {
             val eyesFree = settingsRepository.settings.first().eyesFree
@@ -110,7 +121,7 @@ class MinefieldViewModel @Inject constructor(
             _support.value = task.nearestSupport(wanted)
 
             startedAtMillis = System.currentTimeMillis()
-            _uiState.value = MinefieldUiState(taskCount = setup.taskCount)
+            _uiState.value = CheckUiState(taskCount = setup.taskCount)
             nextPuzzle()
         }
     }
@@ -132,17 +143,35 @@ class MinefieldViewModel @Inject constructor(
     }
 
     /**
+     * „Zapamtio sam" — figure nestaju i tek tada počinje zadatak.
+     *
+     * Granica je potvrda a ne sat, jer se time deli vežba na pola: dok se gleda,
+     * gradi se slika; posle toga se po njoj radi.
+     */
+    fun onMemorized() {
+        if (_uiState.value.phase != CheckPhase.MEMORIZE) return
+        _uiState.update { it.copy(phase = CheckPhase.SOLVE) }
+    }
+
+    /**
      * Jedan skok.
      *
-     * Odbijen potez **kaže zašto** je odbijen: „tu stoji figura" i „to polje je
-     * napadnuto" su dve različite greške, a iz druge se uči ono zbog čega modul
-     * i postoji.
+     * Odbijen potez **kaže zašto**: „tu stoji figura" i „to polje je napadnuto"
+     * su dve različite greške, a iz druge se uči ono zbog čega modul postoji.
      */
     fun onSquareClicked(square: Square) {
         val state = _uiState.value
         val puzzle = state.puzzle ?: return
         val current = state.current ?: return
-        if (state.isSolved || state.isFinished) return
+        if (state.phase == CheckPhase.MEMORIZE || state.isSolved || state.isFinished) return
+
+        // Dodir po polju na kom skakač stoji nije promašaj nego omaška: ne broji
+        // se kao greška i ne kaže se pogrešan razlog.
+        if (square == current) {
+            _uiState.update { it.copy(refusal = Refusal.ALREADY_THERE) }
+            speaker.say { alreadyThere }
+            return
+        }
 
         if (!KnightPath.isKnightMove(current, square)) {
             refuse(Refusal.NOT_KNIGHT_MOVE)
@@ -160,7 +189,7 @@ class MinefieldViewModel @Inject constructor(
         }
 
         val walked = state.walked + square
-        val reached = square == puzzle.target
+        val reached = puzzle.isCheck(square)
 
         _uiState.update {
             it.copy(
@@ -172,7 +201,7 @@ class MinefieldViewModel @Inject constructor(
             )
         }
 
-        if (_support.value == Support.NONE) speaker.say(square)
+        if (_support.value != Support.FULL) speaker.say(square)
 
         if (reached) {
             speaker.say(interrupt = false) { correctInMoves(walked.size - 1) }
@@ -190,6 +219,7 @@ class MinefieldViewModel @Inject constructor(
                 Refusal.OCCUPIED -> pieceInTheWay
                 Refusal.ATTACKED -> squareIsAttacked
                 Refusal.NOT_KNIGHT_MOVE -> notKnightMove
+                Refusal.ALREADY_THERE -> alreadyThere
             }
         }
     }
@@ -197,7 +227,7 @@ class MinefieldViewModel @Inject constructor(
     private fun scheduleNext() {
         nextJob?.cancel()
         nextJob = viewModelScope.launch {
-            kotlinx.coroutines.delay(SOLVED_PAUSE_MILLIS)
+            delay(SOLVED_PAUSE_MILLIS)
             if (_uiState.value.taskNumber >= setup.taskCount) {
                 _uiState.update { it.copy(isFinished = true) }
             } else {
@@ -209,21 +239,22 @@ class MinefieldViewModel @Inject constructor(
     private fun nextPuzzle() {
         // Nerešiv raspored se odbacuje pri pravljenju; ako se ipak ne nađe
         // nijedan, olakšava se umesto da modul stane bez zadatka.
-        val puzzle = randomMinefield(
-            pieceCount = setup.pieceCount,
-            avoidAttacked = task.id == MINEFIELD_SAFE_PATH.id,
-            minMoves = setup.minMoves
-        ) ?: randomMinefield(
-            pieceCount = setup.pieceCount / 2,
-            avoidAttacked = task.id == MINEFIELD_SAFE_PATH.id,
-            minMoves = 2
-        ) ?: return
+        val avoidAttacked = task.id == CHECK_SAFE_PATH.id
+        val puzzle = randomCheckPuzzle(setup.pieceCount, avoidAttacked, setup.minMoves)
+            ?: randomCheckPuzzle(setup.pieceCount / 2, avoidAttacked, minMoves = 2)
+            ?: return
 
         _uiState.update {
             it.copy(
                 puzzle = puzzle,
                 current = puzzle.start,
                 walked = listOf(puzzle.start),
+                // Faza pamćenja postoji samo tamo gde ima šta da nestane.
+                phase = if (_support.value == Support.PARTIAL) {
+                    CheckPhase.MEMORIZE
+                } else {
+                    CheckPhase.SOLVE
+                },
                 taskNumber = it.taskNumber + 1,
                 refusal = null,
                 isSolved = false
@@ -233,20 +264,19 @@ class MinefieldViewModel @Inject constructor(
         announce(puzzle)
     }
 
-    private fun announce(puzzle: Minefield) {
+    private fun announce(puzzle: CheckPuzzle) {
         speaker.say { knightIsOn }
         speaker.say(puzzle.start, interrupt = false)
-        speaker.say(interrupt = false) { goal }
-        speaker.say(puzzle.target, interrupt = false)
 
-        // Bez table se pozicija mora i čuti, inače se ne zna šta se izbegava.
+        // Bez table se pozicija mora i čuti, inače se ne zna šta se izbegava ni
+        // gde je kralj. Uz tablu je čitanje pozicije sam zadatak.
         if (_support.value == Support.NONE) speaker.say(puzzle.board, interrupt = false)
     }
 
     fun buildResult(): SessionResult {
         val state = _uiState.value
         return SessionResult(
-            moduleId = ModuleId.MINEFIELD,
+            moduleId = ModuleId.CHECK,
             difficulty = difficulty,
             attempted = state.taskNumber,
             solved = state.solved,
@@ -275,23 +305,28 @@ class MinefieldViewModel @Inject constructor(
 private data class Setup(val taskCount: Int, val pieceCount: Int, val minMoves: Int)
 
 private fun setupFor(difficulty: Difficulty) = when (difficulty) {
-    Difficulty.EASY -> Setup(taskCount = 5, pieceCount = 4, minMoves = 2)
-    Difficulty.MEDIUM -> Setup(taskCount = 6, pieceCount = 7, minMoves = 3)
-    Difficulty.HARD -> Setup(taskCount = 6, pieceCount = 10, minMoves = 3)
+    Difficulty.EASY -> Setup(taskCount = 5, pieceCount = 3, minMoves = 2)
+    Difficulty.MEDIUM -> Setup(taskCount = 6, pieceCount = 5, minMoves = 2)
+    Difficulty.HARD -> Setup(taskCount = 6, pieceCount = 8, minMoves = 3)
 }
 
 /**
- * Stigni do cilja **ne stajući na polje koje crni drži**.
+ * Daj šah **ne stajući na polje koje crni drži**.
  *
  * Meri **kontrolu polja**: put se ne bira po tome kuda skakač može, nego po tome
  * šta protivnik pokriva. Uz to ide računanje, jer se put mora sagledati unapred.
+ *
+ * Tri prečke, i ovo je prvi zadatak koji koristi **srednju**: uz punu podršku se
+ * tabla vidi sve vreme, uz srednju se vidi dok ne kažeš da si zapamtio, a bez
+ * podrške se samo čuje.
  */
-internal val MINEFIELD_SAFE_PATH = TaskSpec(
+internal val CHECK_SAFE_PATH = TaskSpec(
     id = "safe_path",
     skills = listOf(Skill.SQUARE_CONTROL, Skill.CALCULATION, Skill.POSITION_HOLD),
-    supports = listOf(Support.FULL, Support.NONE),
+    supports = listOf(Support.FULL, Support.PARTIAL, Support.NONE),
     benchmarks = mapOf(
         Support.FULL to Benchmark(millisPerAttempt = 45_000, minAccuracy = 0.8f),
+        Support.PARTIAL to Benchmark(millisPerAttempt = 60_000, minAccuracy = 0.75f),
         Support.NONE to Benchmark(millisPerAttempt = 90_000, minAccuracy = 0.7f)
     )
 )
@@ -302,16 +337,17 @@ internal val MINEFIELD_SAFE_PATH = TaskSpec(
  * Meri geometriju skakača kroz prorešetanu tablu; kontrola polja tu još ne
  * ulazi, pa je ovo prirodan ulaz u teži zadatak.
  */
-internal val MINEFIELD_NO_CAPTURE = TaskSpec(
+internal val CHECK_NO_CAPTURE = TaskSpec(
     id = "no_capture",
     skills = listOf(Skill.PIECE_GEOMETRY, Skill.POSITION_HOLD),
-    supports = listOf(Support.FULL, Support.NONE),
+    supports = listOf(Support.FULL, Support.PARTIAL, Support.NONE),
     benchmarks = mapOf(
         Support.FULL to Benchmark(millisPerAttempt = 30_000, minAccuracy = 0.85f),
+        Support.PARTIAL to Benchmark(millisPerAttempt = 45_000, minAccuracy = 0.8f),
         Support.NONE to Benchmark(millisPerAttempt = 60_000, minAccuracy = 0.75f)
     )
 )
 
-internal val MINEFIELD_TASKS = listOf(MINEFIELD_NO_CAPTURE, MINEFIELD_SAFE_PATH)
+internal val CHECK_TASKS = listOf(CHECK_NO_CAPTURE, CHECK_SAFE_PATH)
 
 private const val SOLVED_PAUSE_MILLIS = 1_500L

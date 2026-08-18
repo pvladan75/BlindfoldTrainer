@@ -61,7 +61,7 @@ dependencies {
     implementation(project(":feature:pairs"))
     implementation(project(":feature:endgame"))
     implementation(project(":feature:knightpath"))
-    implementation(project(":feature:minefield"))
+    implementation(project(":feature:check"))
     implementation(project(":feature:recall"))
     implementation(project(":feature:followgame"))
     implementation(project(":feature:dictation"))

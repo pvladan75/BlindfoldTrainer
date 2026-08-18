@@ -1,4 +1,4 @@
-package com.program.blindfoldtrainer.feature.minefield
+package com.program.blindfoldtrainer.feature.check
 
 import androidx.compose.runtime.Composable
 import com.program.blindfoldtrainer.core.model.Capability
@@ -14,20 +14,20 @@ import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoSet
 import javax.inject.Inject
 
-class MinefieldTrainingModule @Inject constructor() : TrainingModule {
+class CheckTrainingModule @Inject constructor() : TrainingModule {
 
-    override val id = ModuleId.MINEFIELD
-    override val titleRes = R.string.minefield_title
-    override val descriptionRes = R.string.minefield_description
-    override val iconRes = R.drawable.ic_minefield
-    override val tasks = MINEFIELD_TASKS
+    override val id = ModuleId.CHECK
+    override val titleRes = R.string.check_title
+    override val descriptionRes = R.string.check_description
+    override val iconRes = R.drawable.ic_check
+    override val tasks = CHECK_TASKS
 
     override val difficulties = listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD)
     override val needs = setOf(Capability.SPEECH_OUTPUT, Capability.VOICE_INPUT)
 
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {
-        MinefieldScreen(
+        CheckScreen(
             difficulty = args.difficulty,
             onFinish = onFinish,
             support = args.support,
@@ -39,9 +39,9 @@ class MinefieldTrainingModule @Inject constructor() : TrainingModule {
 /** Prijava u registar; meni i navigacija se dalje popune sami. */
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class MinefieldModuleBindings {
+abstract class CheckModuleBindings {
 
     @Binds
     @IntoSet
-    abstract fun bindMinefieldModule(module: MinefieldTrainingModule): TrainingModule
+    abstract fun bindCheckModule(module: CheckTrainingModule): TrainingModule
 }

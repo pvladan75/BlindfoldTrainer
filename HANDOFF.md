@@ -45,7 +45,7 @@ blindfold animacija i raspakivanje ViewModel-a. Stari projekat se odatle napušt
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **osam** modula za trening. Poslednji build
-je prošao čisto, bez upozorenja. **222 testa, nijedan ne pada.**
+je prošao čisto, bez upozorenja. **224 testa, nijedan ne pada.**
 
 **Svih sedam modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -78,7 +78,7 @@ adb install -r C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer\app\build\o
 | `:feature:recall` | Zapamti poziciju | — |
 | `:feature:followgame` | Prati partiju | **5** |
 | `:feature:dictation` | Postavi po diktatu | — |
-| `:feature:minefield` | Kroz minsko polje | — |
+| `:feature:check` | Daj šah | — |
 | `:app` | registar, navigacija, meni, sažetak sesije | — |
 
 `:core:model`, `:core:chess` i `:core:progress` su **čist Kotlin, bez Androida** —
@@ -922,54 +922,61 @@ izričito — a pošto kontrola polja nikad nije merena, put je odmah i nudi.
 `isAttackedBy` odgovara na drugo pitanje: za pravila je dovoljno znati **da li**
 je polje napadnuto, za vežbu je potrebno **odakle**.
 
-### Skakač kroz minsko polje
+### Daj šah
 
-Osmi modul, `:feature:minefield`. Crne figure drže tablu, beli skakač mora do
-zadatog polja — **na lakšem zadatku ne sme da uzme nijednu figuru, na težem ni
-da stane na polje koje neka od njih drži.**
+Osmi modul, `:feature:check`. Crne figure drže tablu, beli skakač treba da **dâ
+šah crnom kralju** — bez uzimanja figura, a na težem zadatku i ne stajući na
+polje koje neka od njih drži.
 
 Prvi modul koji pita **šta protivnik kontroliše**, a ne gde su figure. Time je i
 druga prazna vrsta u tabeli veština dobila pravi zadatak — u Prati partiju se
 kontrola polja **prepoznaje**, ovde se po njoj **planira**.
 
-**Zaseban modul, a ne težina u „Putanja skakača“**, jer se menja uputstvo: tamo je
-„stigni u najmanje poteza“, ovde „stigni živ“. Menja se i veština.
+#### Cilj proizlazi iz pozicije
 
-#### Dva zadatka, jedan lakši ulaz u drugi
+Prva verzija je saopštavala ciljno polje („stigni na e2“). Sa uređaja je stiglo da
+je bolji cilj **šah**, i to je tačno: tada se ne pamti još jedan podatak uz sve
+ostalo, nego se gleda gde je kralj i traži polje sa kog se napada a da se ne
+stane pod udar. Modul je po tome i nazvan.
 
-| zadatak | meri | uz to nosi |
-|---|---|---|
-| `no_capture` | geometrija figure | držanje pozicije |
-| `safe_path` | **kontrola polja** | računanje, držanje |
+Ako ikad bude varijante iz ugla crnog, ime i dalje stoji.
 
-Prvi je prirodan ulaz: tabla je prorešetana, ali se ništa ne mora znati o tome
-šta protivnik drži. Drugi je ono zbog čega modul postoji.
+#### Prvi zadatak koji koristi srednju prečku
 
-#### Napad se računa statično
+Sa uređaja je stiglo i pitanje koje pogađa suštinu: **šta se vežba ako se crne
+figure vide?** Odgovor je bio u lestvici od početka — vidljiva tabla je najviša
+prečka, a `PARTIAL` i `TRACE` su stajale prazne od prvog dana.
 
-Crne figure se ne pomeraju, i **to piše na ekranu**. Drugačije se ne može — svaki
-skok bi menjao poziciju i zadatak bi postao partija — ali bez te rečenice bi
-izgledalo kao da protivnik spava.
+| prečka | šta se vidi |
+|---|---|
+| `FULL` | tabla sve vreme — zadatak je čitanje linija |
+| `PARTIAL` | tabla dok ne kažeš da si zapamtio, pa **ostaje samo skakač** |
+| `NONE` | ništa; pozicija se čuje |
 
-#### Zadatak se proverava pre nego što se ponudi
+Granica je **potvrda, ne sat** — isti razlog kao u „Postavi po diktatu“: sa
+figurama pred očima vežba se svede na čitanje, a slika u glavi se nikad ne
+sastavi.
 
-Za razliku od prazne table, gde je svako polje dostupno iz svakog, ovde put ume i
-**da ne postoji**: skakač se ume zatvoriti sopstvenim skokovima. Zato se raspored
-postavlja nasumično pa **proverava**, a nerešiv se odbacuje.
+Posle potvrde ostaje vidljiv samo skakač: **gde si znaš, šta te okružuje moraš da
+držiš u glavi.** To je i cela razlika između čitanja linija i kontrole polja.
 
-Provera je jeftinija od pametnog postavljanja, a i poštenija: zadaci ostaju
-raznoliki umesto da svi liče na obrazac po kom su građeni.
+#### Zašto samo skakač
 
-#### Odbijen potez kaže zašto
+Skakačev skok se **ne može blokirati**, pa je pretraga puta čista i zadatak meri
+baš kontrolu polja. Čim uđu top ili lovac, ulazi i zaklanjanje linija — dobra
+vežba, ali **druga**, i zaslužuje svoj zadatak umesto da se pomeša u isti.
 
-„Tu stoji figura“ i „to polje je napadnuto“ su **dve različite greške**, a iz
-druge se uči ono zbog čega modul postoji. Razlog se izgovara i kad se tabla vidi,
-jer je on ovde sama pouka a ne potvrda da je dodir primljen.
+#### Ostalo isto
 
-Napadnuta polja se **ne boje na tabli** — to je baš ono što treba znati napamet.
-
-`Board.attackersOf`, `safeKnightPath` i `randomMinefield` stoje u `:core:chess`,
-uz trinaest testova u čistom Kotlinu.
+- **Napad se računa statično**, i to piše na ekranu. Drugačije se ne može, jer bi
+  svaki skok menjao poziciju i zadatak bi postao partija.
+- **Zadatak se proverava pre nego što se ponudi**: skakač se ume zatvoriti
+  sopstvenim skokovima, pa put ume i da ne postoji. Nerešiv raspored se odbacuje.
+- **Odbijen potez kaže zašto.** „Tu stoji figura“ i „to polje je napadnuto“ su dve
+  različite greške, a iz druge se uči. Dodir po polju na kom skakač već stoji nije
+  promašaj nego omaška — ne broji se.
+- **Napadnuta polja se ne boje**, kao ni polja sa kojih se daje šah: to je baš ono
+  što treba znati, a ne pročitati sa table.
 
 ### Šta iz ovoga sledi, po redu
 

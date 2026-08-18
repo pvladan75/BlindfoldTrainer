@@ -1,4 +1,4 @@
-package com.program.blindfoldtrainer.feature.minefield
+package com.program.blindfoldtrainer.feature.check
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -26,32 +27,34 @@ import com.program.blindfoldtrainer.core.audio.EyesFreeControls
 import com.program.blindfoldtrainer.core.audio.EyesFreeRow
 import com.program.blindfoldtrainer.core.audio.EyesFreeZone
 import com.program.blindfoldtrainer.core.audio.HELPER_ZONE_WEIGHT
-import com.program.blindfoldtrainer.core.audio.MAIN_ZONE_WEIGHT
 import com.program.blindfoldtrainer.core.audio.MicrophoneZone
 import com.program.blindfoldtrainer.core.audio.VoiceState
 import com.program.blindfoldtrainer.core.audio.ZoneTone
 import com.program.blindfoldtrainer.core.chess.Board
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.designsystem.board.ChessBoard
+import com.program.blindfoldtrainer.core.designsystem.board.PieceVisibility
 import com.program.blindfoldtrainer.core.designsystem.board.SquareTint
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.model.Support
 
 /**
- * Skakač kroz minsko polje.
+ * Daj šah.
  *
- * Uz punu podršku se vidi tabla sa crnim figurama — zadatak je onda čitanje
- * linija. Bez table se pozicija čuje jednom, pa se dalje drži u glavi; tek tamo
- * kontrola polja postaje ono što u partiji zaista jeste.
+ * Tri prečke, i ovo je prvi zadatak koji koristi **srednju**:
+ *
+ * - uz punu podršku se tabla vidi sve vreme — zadatak je čitanje linija;
+ * - uz srednju se vidi dok ne kažeš da si zapamtio, pa crne figure nestaju;
+ * - bez podrške se pozicija samo čuje.
  */
 @Composable
-fun MinefieldScreen(
+fun CheckScreen(
     difficulty: Difficulty,
     onFinish: (SessionResult) -> Unit,
     support: Support? = null,
     taskId: String? = null,
-    viewModel: MinefieldViewModel = hiltViewModel()
+    viewModel: CheckViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val isEyesFree by viewModel.isEyesFree.collectAsState()
@@ -85,7 +88,7 @@ fun MinefieldScreen(
                 EyesFreeRow(
                     weight = HELPER_ZONE_WEIGHT,
                     zone = EyesFreeZone(
-                        label = stringResource(R.string.minefield_give_up),
+                        label = stringResource(R.string.check_give_up),
                         fontSize = 16.sp,
                         buzz = Buzz.LONG,
                         onClick = viewModel::onGiveUp,
@@ -101,9 +104,10 @@ fun MinefieldScreen(
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         val puzzle = uiState.puzzle
+        val memorizing = uiState.phase == CheckPhase.MEMORIZE
 
         LinearProgressIndicator(
             progress = { uiState.progress.coerceIn(0f, 1f) },
@@ -111,36 +115,52 @@ fun MinefieldScreen(
         )
 
         Text(
-            text = stringResource(R.string.minefield_target, puzzle?.target?.toString().orEmpty()),
+            text = stringResource(
+                if (memorizing) R.string.check_memorize else R.string.check_goal
+            ),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
 
         Text(
-            text = stringResource(
-                R.string.minefield_moves,
-                uiState.moves,
-                puzzle?.optimalMoves ?: 0
-            ),
+            text = stringResource(R.string.check_moves, uiState.moves, puzzle?.optimalMoves ?: 0),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
+        // Posle potvrde ostaje vidljiv **samo skakač**: gde si znaš, šta te
+        // okružuje moraš da držiš u glavi. To je i cela razlika između čitanja
+        // linija i kontrole polja.
+        val visibility = when {
+            uiState.phase == CheckPhase.MEMORIZE -> PieceVisibility.All
+            viewModel.support.collectAsState().value == Support.PARTIAL ->
+                PieceVisibility.Only(setOfNotNull(uiState.current))
+
+            else -> PieceVisibility.All
+        }
+
         ChessBoard(
             board = puzzle?.board ?: Board.EMPTY,
             tints = buildTints(uiState),
+            visibility = visibility,
             onSquareClick = viewModel::onSquareClicked,
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Odbijen potez kaže **zašto**: „tu stoji figura" i „to polje je
-        // napadnuto" su dve različite greške, a iz druge se uči.
+        if (memorizing) {
+            FilledTonalButton(onClick = viewModel::onMemorized) {
+                Text(stringResource(R.string.check_memorized))
+            }
+            return@Column
+        }
+
         val message = when {
-            uiState.isSolved -> stringResource(R.string.minefield_solved)
-            uiState.refusal == Refusal.OCCUPIED -> stringResource(R.string.minefield_captured)
-            uiState.refusal == Refusal.ATTACKED -> stringResource(R.string.minefield_attacked)
-            uiState.refusal == Refusal.NOT_KNIGHT_MOVE ->
-                stringResource(R.string.minefield_not_knight)
+            uiState.isSolved -> stringResource(R.string.check_done)
+            uiState.refusal == Refusal.OCCUPIED -> stringResource(R.string.check_captured)
+            uiState.refusal == Refusal.ATTACKED -> stringResource(R.string.check_attacked)
+            uiState.refusal == Refusal.NOT_KNIGHT_MOVE -> stringResource(R.string.check_not_knight)
+            uiState.refusal == Refusal.ALREADY_THERE ->
+                stringResource(R.string.check_already_there)
 
             else -> " "
         }
@@ -158,7 +178,7 @@ fun MinefieldScreen(
         Spacer(Modifier.height(4.dp))
 
         Text(
-            text = stringResource(R.string.minefield_static),
+            text = stringResource(R.string.check_static),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -166,15 +186,12 @@ fun MinefieldScreen(
 }
 
 /**
- * Boje na tabli: gde je skakač sada, kuda je prošao i gde se ide.
+ * Boje na tabli: gde je skakač i kuda je prošao.
  *
- * Napadnuta polja se **ne boje** — to je baš ono što treba da se zna napamet, a
- * ne da se pročita sa table.
+ * Ni napadnuta polja ni polja sa kojih se daje šah se **ne boje** — to je baš
+ * ono što treba znati, a ne pročitati sa table.
  */
-private fun buildTints(uiState: MinefieldUiState): Map<Square, SquareTint> = buildMap {
-    val puzzle = uiState.puzzle ?: return@buildMap
-
+private fun buildTints(uiState: CheckUiState): Map<Square, SquareTint> = buildMap {
     uiState.walked.forEach { put(it, SquareTint.HINT) }
-    put(puzzle.target, SquareTint.SUCCESS)
     uiState.current?.let { put(it, SquareTint.HIGHLIGHT) }
 }

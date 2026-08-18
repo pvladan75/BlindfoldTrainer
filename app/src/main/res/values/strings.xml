@@ -184,15 +184,15 @@
     <string name="task_meeting_square">Polje susreta</string>
     <string name="task_where_is_piece">Gde stoji figura</string>
     <string name="task_attackers">Ko napada figuru</string>
-    <string name="task_safe_path">Kroz napadnuta polja</string>
-    <string name="task_no_capture">Bez uzimanja figura</string>
+    <string name="task_safe_path">Šah kroz držana polja</string>
+    <string name="task_no_capture">Šah bez uzimanja</string>
     <string name="task_play_out">Privođenje kraju</string>
     <string name="task_reconstruct">Rekonstrukcija viđenog</string>
     <string name="task_place_position">Slaganje po diktatu</string>
     <string name="task_unknown">Nepoznat zadatak</string>
 
     <string name="support_full">uz tablu</string>
-    <string name="support_partial">uz deo slike</string>
+    <string name="support_partial">pogledaj pa zapamti</string>
     <string name="support_trace">samo tragovi</string>
     <string name="support_none">bez table</string>
     <string name="progress_empty">Nijedna sesija još nije merena po veštinama. Odradi jednu vežbu pa se vrati.</string>

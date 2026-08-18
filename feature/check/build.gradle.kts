@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.program.blindfoldtrainer.feature.minefield"
+    namespace = "com.program.blindfoldtrainer.feature.check"
     compileSdk = 36
 
     defaultConfig {

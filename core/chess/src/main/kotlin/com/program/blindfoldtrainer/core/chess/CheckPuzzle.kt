@@ -3,32 +3,38 @@ package com.program.blindfoldtrainer.core.chess
 import kotlin.random.Random
 
 /**
- * Zadatak u kom skakač mora da stigne do cilja **živ**.
+ * Zadatak u kom skakač mora da **da šah** — i da stigne dotle živ.
+ *
+ * Cilj **proizlazi iz pozicije**, a ne iz koordinate koju neko saopšti: gledaš
+ * gde je kralj i tražiš polje sa kog ga napadaš, a da sam ne staneš pod udar.
+ * Time se pamti jedan podatak manje, a traži jedan uvid više.
  *
  * Razlika u odnosu na `KnightPath` nije u pretrazi nego u tome šta se traži:
  * tamo se pita kuda skakač može, ovde šta protivnik **drži**. U pravoj partiji
  * naslepo se figure ne gube zato što se zaboravi gde stoje, nego zato što se
- * zaboravi šta drže — a to je jedina veština koju do sada nijedan zadatak nije
- * ni dodirnuo.
+ * zaboravi šta drže.
  *
  * **Napad se računa statično:** crne figure se ne pomeraju. Drugačije se ni ne
  * može, jer bi svaki skok menjao poziciju i zadatak bi postao partija. Zato to i
  * mora da piše korisniku, da protivnik ne bi izgledao kao da spava.
  */
-data class Minefield(
+data class CheckPuzzle(
     val board: Board,
     val start: Square,
-    val target: Square,
+    val king: Square,
+    /** Sva polja sa kojih skakač daje šah, a bezbedna su. */
+    val checkingSquares: Set<Square>,
     /** Da li se izbegavaju i **napadnuta** polja, ili samo zauzeta. */
     val avoidAttacked: Boolean,
-    /** Najkraći ispravan put, uključujući polazno i ciljno polje. */
+    /** Najkraći ispravan put do nekog od polja sa kojih se daje šah. */
     val solution: List<Square>
 ) {
-    /** Koliko poteza traži najkraće rešenje. */
     val optimalMoves: Int get() = (solution.size - 1).coerceAtLeast(0)
 
-    /** Da li se na ovo polje sme stati. */
     fun isSafe(square: Square): Boolean = board.isSafeForKnight(square, avoidAttacked)
+
+    /** Da li skakač sa ovog polja daje šah. */
+    fun isCheck(square: Square): Boolean = square in checkingSquares
 }
 
 /**
@@ -43,19 +49,19 @@ fun Board.isSafeForKnight(square: Square, avoidAttacked: Boolean): Boolean {
 }
 
 /**
- * Najkraći put skakača kroz polja na koja sme da stane.
+ * Najkraći put skakača kroz polja na koja sme da stane, do **bilo kog** cilja.
  *
- * Ista pretraga u širinu kao u `KnightPath`, ali kroz **prorešetanu** tablu —
- * pa put ume i da ne postoji, za razliku od prazne table gde je svako polje
- * dostupno iz svakog.
+ * Ista pretraga u širinu kao u `KnightPath`, ali kroz **prorešetanu** tablu — pa
+ * put ume i da ne postoji, za razliku od prazne table gde je svako polje
+ * dostupno iz svakog. Skakač se ume zatvoriti sopstvenim skokovima.
  */
 fun Board.safeKnightPath(
     from: Square,
-    to: Square,
+    targets: Set<Square>,
     avoidAttacked: Boolean
 ): List<Square> {
-    if (from == to) return listOf(from)
-    if (!isSafeForKnight(to, avoidAttacked)) return emptyList()
+    if (targets.isEmpty()) return emptyList()
+    if (from in targets) return listOf(from)
 
     val cameFrom = HashMap<Square, Square>()
     var frontier = listOf(from)
@@ -69,7 +75,7 @@ fun Board.safeKnightPath(
                 if (!isSafeForKnight(neighbour, avoidAttacked)) continue
 
                 cameFrom[neighbour] = current
-                if (neighbour == to) return rebuildPath(cameFrom, from, to)
+                if (neighbour in targets) return rebuildPath(cameFrom, from, neighbour)
                 next += neighbour
             }
         }
@@ -90,6 +96,17 @@ private fun rebuildPath(cameFrom: Map<Square, Square>, from: Square, to: Square)
 }
 
 /**
+ * Polja sa kojih skakač daje šah kralju na [king], a sme da stane na njih.
+ *
+ * Skakačev skok je uzajaman: sa kojih polja on gađa kralja, na ta ista polja
+ * kralj „gađa" njega — pa je spisak prosto njegov krug oko kralja, prorešetan
+ * onim što je zauzeto ili držano.
+ */
+fun Board.checkingSquaresFor(king: Square, avoidAttacked: Boolean): Set<Square> =
+    KnightPath.movesFrom(king)
+        .filterTo(mutableSetOf()) { isSafeForKnight(it, avoidAttacked) }
+
+/**
  * Pravi zadatak koji **sigurno ima rešenje**.
  *
  * Postavlja se nasumično pa proverava; nerešiv raspored se odbacuje i pokušava
@@ -99,36 +116,40 @@ private fun rebuildPath(cameFrom: Map<Square, Square>, from: Square, to: Square)
  * Vraća `null` ako se u zadatom broju pokušaja ne nađe rešiv raspored; pozivalac
  * tada sme da olakša uslove.
  */
-fun randomMinefield(
+fun randomCheckPuzzle(
     pieceCount: Int,
     avoidAttacked: Boolean,
     minMoves: Int = 2,
     random: Random = Random,
-    attempts: Int = 200
-): Minefield? {
+    attempts: Int = 300
+): CheckPuzzle? {
     repeat(attempts) {
         val squares = Square.ALL.shuffled(random)
         val start = squares[0]
-        val target = squares[1]
+        val king = squares[1]
 
         val occupied = squares.drop(2).take(pieceCount)
-        val board = Board.of(
-            occupied.associateWith { square ->
-                val types = if (square.rank == 1 || square.rank == 8) HEAVY else ALL_TYPES
-                Piece(types.random(random), Color.BLACK)
-            }
-        )
+        val pieces = occupied.associateWith { square ->
+            val types = if (square.rank == 1 || square.rank == 8) HEAVY else ALL_TYPES
+            Piece(types.random(random), Color.BLACK)
+        } + (king to Piece(PieceType.KING, Color.BLACK))
+
+        val board = Board.of(pieces)
 
         if (!board.isSafeForKnight(start, avoidAttacked)) return@repeat
-        if (!board.isSafeForKnight(target, avoidAttacked)) return@repeat
 
-        val path = board.safeKnightPath(start, target, avoidAttacked)
+        // Zadatak u kom je skakač već stigao nije zadatak.
+        val checking = board.checkingSquaresFor(king, avoidAttacked)
+        if (checking.isEmpty() || start in checking) return@repeat
+
+        val path = board.safeKnightPath(start, checking, avoidAttacked)
         if (path.size - 1 < minMoves) return@repeat
 
-        return Minefield(
+        return CheckPuzzle(
             board = board,
             start = start,
-            target = target,
+            king = king,
+            checkingSquares = checking,
             avoidAttacked = avoidAttacked,
             solution = path
         )
