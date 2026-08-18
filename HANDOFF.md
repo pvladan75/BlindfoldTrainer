@@ -27,12 +27,15 @@ poslednjeg probanja.
 
 ## Gde smo stali ovog trenutka
 
-**Poslednji komit: `09b0e53`.** Sve je komitovano; radno stablo je čisto.
+**Poslednji komit: `56781f4`.** Sve je komitovano i gurnuto; radno stablo je čisto.
 
-Stanje na **18. avgust 2026.** Prethodna sesija je napisala „Daj šah", ovo je
-prva sesija u kojoj je taj modul **viđen na uređaju** — i sa uređaja je stiglo
-troje, sve iz iste porodice: prečka je bila pola vežbe, a korisnik je nije mogao
-ni izabrati ni pročitati.
+Stanje na **18. avgust 2026.** Sesija ima dva dela. Prvi je „Daj šah" viđen na
+uređaju po prvi put, i tri ispravke koje su odatle stigle. Drugi je **uputstvo** —
+prvi tekst u aplikaciji koji objašnjava čemu sve ovo.
+
+Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac**. Ovaj
+fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
+otvoreno".
 
 ### Zadatak i prečka se sad biraju u meniju
 
@@ -93,6 +96,100 @@ oba pišu isti cilj. Sad ispod cilja stoji red sa pravilom.
 
 Iz menija i dalje ide strože — zatečeni zadatak modula je `safe_path`.
 
+### Uputstvo „Kako ovo radi"
+
+Aplikacija je imala osam modula i **nijednu rečenicu** o tome čemu služe. Profil
+je prikazivao veštine čija imena nigde nisu objašnjena, kartica „Sledeće" je
+davala razlog bez konteksta, a oslonac je bio pola vežbe koju niko nije predstavio.
+
+Ekran se otvara ikonicom u traci menija i ima sedam odeljaka: zašto naslepo,
+veštine, kako se oslanjaju jedna na drugu, modul/zadatak/oslonac, kako se meri,
+provera, kartica „Sledeće", pa spisak modula.
+
+#### Pravilo po kom je pisano
+
+**Proza stoji u `strings.xml`, struktura se čita iz registra.** Spisak veština,
+grane preduslova, ko šta meri, koji osloni uopšte postoje i za šta ima provere —
+ništa se ne prepisuje. Razlog je onaj isti zbog kog moduli idu kroz registar a ne
+kroz `when` blok: uputstvo koje prepisuje činjenice zastari čim se doda deveti
+modul, i to **niko ne primeti**, jer se tekst ne prevodi pa se ne buni.
+
+Da rizik nije teorijski pokazao je komentar uz `Skill.SQUARE_CONTROL`, koji je i
+dalje tvrdio da tu veštinu nijedan zadatak ne dodiruje — a dva je mere od
+prethodne sesije. Komentari su osveženi.
+
+Dve stvari koje su tako ispale same, a ne bi bile napisane rukom:
+
+- **oslonac koji nijedan zadatak ne nudi se ne opisuje** — `TRACE` danas nema
+  nijednog, pa bi opis obećavao vežbu koje nema;
+- **veština koju nijedan zadatak ne meri to i kaže.** Danas su to `RECOVERY` i
+  `CALCULATION`. To je podatak o aplikaciji, ne o korisniku.
+
+Iz istog razloga je iz naslova izbačen broj: „Osam veština" pada čim se doda
+deveta.
+
+#### Dva imena su promenjena
+
+Bila su žargon za početnika: „Koordinatna automatika" → **Snalaženje po tabli**,
+„Geometrija figure" → **Domet figure**. Uz svaku veštinu sad ide i duži opis — ne
+šta je, nego **kako izgleda kad otkaže**, jer se po tome i prepoznaje.
+
+#### Oslonac umesto prečke
+
+Reč nije govorila ništa, a metafora je išla naopako: „prečku niže" je značilo
+*manje pomoći*, dakle **teže** — a niz merdevine se ide nadole, što svako čita
+kao lakše. „Manje oslonca znači teže" se ne može pročitati pogrešno.
+
+Menjano je **rečenicu po rečenicu, ne reč po reč**: „prečka" je ženskog roda a
+„oslonac" muškog, pa bi mehanička zamena ostavila „srednja oslonac".
+
+### Slika zavisnosti
+
+Crta se iz `Skill.requires`, ne prepisuje, i to je komponenta koja kasnije ide i
+na ekran Napretka (obojena po tome šta je automatsko — `highlight` je već u
+potpisu).
+
+Prva verzija je bila splet ukrštenih dijagonala. Uzrok nije bio u crtanju nego u
+**pravilu za sprat**: sprat je bio najduži put do korena, pa je *Domet figure* —
+koji ništa ne traži pre sebe — stajao u prvom redu, a hrani dve veštine dva
+sprata niže. Grane su preskakale ceo red i prolazile kroz tuđa imena.
+
+Pravilo je sad **„što kasnije"**: veština stoji tačno jedan sprat iznad prve
+stvari kojoj treba.
+
+```
+                  Snalaženje po tabli
+      Držanje pozicije   Prevod zapisa   Domet figure
+   Ažuriranje pozicije   Oporavak slike  Kontrola polja
+                  Računanje naslepo
+```
+
+Time **nijedna grana ne preskače sprat**. Uz to grane idu pod pravim uglom
+umesto dijagonalno (dijagonala se na raskrsnici ne razlikuje od susedne), red
+unutar sprata se slaže po proseku roditelja, i sve kutije su iste širine.
+
+Cena je što se u istom redu nađu veština koja ima temelj i veština koja nema. To
+se i dalje vidi — u *Domet figure* ne ulazi nijedna grana.
+
+**Test čuva sliku, ne računicu.** Pada ako neko doda vezu koja razvuče veštinu od
+onoga što je hrani; tada se popravlja raspored, ne briše test.
+
+Uz platno ide i opis grana rečima, izveden iz istog grafa — aplikacija koja ima
+režim bez ekrana ne sme čitaču ekrana da ostavi praznu sliku.
+
+### Slepe ulice
+
+Sa slike se odmah vidi da se na neke veštine ništa ne oslanja, i to je prvo što
+se o njoj pita. Objašnjeno je ispod slike:
+
+- **Prevod zapisa u sliku je ulaz**, ne temelj. Naslepo partija stiže isključivo
+  kao zapis, pa se ne kasni za protivnikom zbog slike nego zbog dekodiranja.
+- **Oporavak slike je osiguranje.** Sve ostalo vodi kroz partiju dok ide dobro;
+  oporavak odlučuje šta biva kad krene loše. Tu je i veza koju vredi videti:
+  **zato se uopšte meri dubina do prve greške** — taj broj kaže dokle slika drži,
+  a oporavak je jedino što odlučuje šta biva posle te tačke.
+- **Računanje naslepo** nema nastavak iz trećeg razloga — ono je vrh.
+
 ### Šta je viđeno na uređaju
 
 - srednja prečka u „Daj šah": tabla, „ZAPAMTIO SAM", crne figure nestanu, skakač
@@ -111,6 +208,24 @@ je do sada čekalo preporuku — sad se sve može dohvatiti iz menija, u jednoj 
 3. **Dubina do prve greške**: posle jedne vežbe Prati partiju, u Napretku, red
    „slika je držala do N. odgovora". Traži **novu** vežbu — stare sesije u bazi
    imaju `null` na tom mestu i ne računaju se.
+
+Uputstvo je viđeno u prvoj verziji i po primedbama odatle precrtana je slika i
+promenjena reč; **precrtana slika i tekst o slepim ulicama nisu viđeni**, jer su
+napisani posle toga.
+
+### Šta je ostalo otvoreno
+
+1. **Komentari u kodu i dalje kažu „prečka"** — oko 190 mesta. Nije puštano kroz
+   `sed` zbog promene roda; to je prolaz koji se mora pročitati. Uz to: `podrška`
+   je već u upotrebi u kodu za isti pojam i **ženskog** je roda, pa bi za
+   komentare bila upola jeftinija. Za korisnika ostaje **oslonac**.
+2. **Da li `POSITION_UPDATE` treba da traži `NOTATION`.** Po objašnjenju slepih
+   ulica — ne možeš primeniti potez koji nisi dekodirao — trebalo bi, i zapis bi
+   prestao da bude slepa ulica. Izmena je jedna linija u `Skill.requires`, ali
+   **menja i preporuku**: ažuriranje bi bilo „blokirano" dok zapis ne postane
+   automatski. Nije dirano bez odluke.
+3. **Faze uputstva koje su ostale**: „?" sa kartica u odeljke (isti stringovi,
+   bez novog teksta), i slika veština na ekranu Napretka.
 
 ### Šta je odmah sledeće po dogovoru
 
