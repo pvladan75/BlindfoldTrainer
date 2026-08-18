@@ -149,6 +149,18 @@
     <string name="chart_target">- - - orijentir: %1$s s</string>
     <string name="progress_target_reached">orijentir dostignut</string>
     <string name="progress_target">orijentir: %1$s uz %2$d%% tačnosti</string>
+    <string name="profiles_title">Profili</string>
+    <string name="profiles_open">Profili</string>
+    <string name="profiles_hint">Ko vežba na ovom uređaju. Svako ima svoj napredak i svoja podešavanja. Bez lozinke — podaci su na telefonu, pa lozinka ne bi štitila nego se pretvarala da štiti.</string>
+    <string name="profiles_new_name">Ime novog profila</string>
+    <string name="profiles_create">Napravi</string>
+    <string name="profiles_active">u upotrebi</string>
+    <string name="profiles_rename">Preimenuj</string>
+    <string name="profiles_save">Sačuvaj</string>
+    <string name="profiles_cancel">Odustani</string>
+    <string name="profiles_delete">Obriši</string>
+    <string name="profiles_delete_confirm">Obriši i sav napredak?</string>
+
     <string name="path_title">Sledeće</string>
     <string name="path_offer">%1$s · %2$s</string>
     <string name="path_start">Kreni</string>

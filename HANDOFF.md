@@ -1951,7 +1951,40 @@ leči takmičenjem među korisnicima kojih nema.
 Zapisano **18. avgusta 2026** kao mogućnost, ne kao plan. Ništa od ovoga nije
 početo; ovde stoji da se ne bi ponovo smišljalo od nule.
 
-### Profili — više korisnika na istom uređaju
+### Profili postoje
+
+Urađeno **18. avgusta 2026**. Povod je bio stvaran: otac i sin koriste istu
+aplikaciju, i svako hoće da vidi svoj napredak a ne njihov zbir.
+
+**Ispalo je jeftinije nego što je najavljeno**, i to nije slučajno. Ranije je
+ovde pisalo da profili moraju pre svega što se oslanja na napredak, jer se inače
+prepravlja sve iznad. Ali profil veština, prečke, orijentiri, provera i put
+**ništa ne pamte** — sve se računa iz spiska sesija pri svakom čitanju. Zato je
+dovoljno promeniti **koje sesije ulaze u spisak**, a svih pet slojeva iznad se
+prilagodi samo.
+
+> To je cena i dobitak pravila „čuva se sirovo, izvodi se sve ostalo". Da je
+> negde bio upisan izračunat profil, prepravljao bi se na sedam mesta.
+
+Šta je zaista urađeno:
+
+- tabela `profiles` i kolona `profileId` u sesijama, verzija baze **6**;
+- **zatečena istorija se ne briše nego pripisuje prvom profilu** — ona je jedino
+  što se u ovoj aplikaciji ne može povratiti;
+- upit filtrira po aktivnom profilu, a aktivan profil stoji u DataStore-u jer je
+  svojstvo **uređaja**, ne profila: kaže ko sad sedi pred telefonom;
+- **podešavanja su postala svojstvo profila** — ključevi nose prefiks. Otac i sin
+  se razlikuju baš u jeziku, brzini govora i „bez ekrana". Ono što je upisano pre
+  profila čita prvi profil, jer je bilo njegovo;
+- ekran za biranje, sa preimenovanjem i brisanjem; brisanje traži dva dodira jer
+  briše i celu istoriju tog profila;
+- ime profila stoji **u naslovnoj traci** umesto imena aplikacije: ono što se
+  menja vredi više od onoga što uvek piše isto.
+
+**Bez lozinke**, kako je i dogovoreno. Nalog će se kačiti na profil kad dođe
+server; profil i nalog rešavaju različite probleme.
+
+### Profili — kako je bilo zamišljeno
 
 Povod je stvaran: **otac i sin koriste istu aplikaciju**, i svako hoće da vidi
 svoj napredak, a ne njihov zbir. Danas bi im se sesije mešale u jednu istoriju,

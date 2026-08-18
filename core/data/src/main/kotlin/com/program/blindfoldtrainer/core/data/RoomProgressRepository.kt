@@ -1,5 +1,6 @@
 package com.program.blindfoldtrainer.core.data
 
+import com.program.blindfoldtrainer.core.model.ProfileRepository
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.progress.ProgressRepository
 import com.program.blindfoldtrainer.core.progress.ProgressSnapshot
@@ -7,6 +8,8 @@ import com.program.blindfoldtrainer.core.progress.SessionReward
 import com.program.blindfoldtrainer.core.progress.Xp
 import com.program.blindfoldtrainer.core.progress.toProgressSnapshot
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -18,23 +21,34 @@ import javax.inject.Singleton
  * ostaje na jednom mestu u `:core:progress` i pokriveno je testovima bez baze.
  * Istorija je nekoliko stotina redova u najgorem slučaju, pa cena ne postoji.
  */
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 @Singleton
 class RoomProgressRepository @Inject constructor(
-    private val dao: SessionDao
+    private val dao: SessionDao,
+    private val profiles: ProfileRepository
 ) : ProgressRepository {
 
-    override val snapshot: Flow<ProgressSnapshot> =
-        dao.observeAll().map { rows -> rows.mapNotNull { it.toResult() }.toProgressSnapshot() }
+    /**
+     * Napredak **aktivnog profila**.
+     *
+     * Promena profila menja ceo snimak, i to bez ijedne izmene iznad: profil
+     * veština, provera, put i grafici se ionako računaju iz spiska sesija, pa je
+     * dovoljno promeniti koje sesije u taj spisak ulaze.
+     */
+    override val snapshot: Flow<ProgressSnapshot> = profiles.active
+        .flatMapLatest { profile -> dao.observeFor(profile.id) }
+        .map { rows -> rows.mapNotNull { it.toResult() }.toProgressSnapshot() }
 
     override suspend fun record(result: SessionResult): SessionReward {
-        val before = dao.all().mapNotNull { it.toResult() }.toProgressSnapshot()
+        val profileId = profiles.active.first().id
+        val before = dao.allFor(profileId).mapNotNull { it.toResult() }.toProgressSnapshot()
 
         // Vreme završetka popunjava skladište, ne modul — ali mora da uđe i u
         // rezultat, jer bez njega sesija ne ulazi u profil ni ovde ni pri
         // sledećem čitanju.
         val now = System.currentTimeMillis()
         val stamped = result.copy(finishedAtMillis = now)
-        dao.insert(stamped.toEntity(now))
+        dao.insert(stamped.toEntity(now, profileId))
 
         // Rang posle se računa iz snimka, ne iz baze: upis je već obavljen, a
         // ponovno čitanje bi samo dalo isti zbir.

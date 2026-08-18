@@ -63,8 +63,32 @@ data class SessionEntity(
     val taskId: String = "",
 
     /** Da li je red nastao proverom, a ne vežbom. */
-    val isCheckup: Boolean = false
+    val isCheckup: Boolean = false,
+
+    /**
+     * Kome pripada ova sesija.
+     *
+     * Bez ovoga bi se ocu i sinu istorija slila u jednu, pa bi obojica gledala
+     * broj koji ne opisuje nijednog od njih.
+     */
+    val profileId: Long = DEFAULT_PROFILE_ID
 )
+
+/**
+ * Jedan korisnik na uređaju.
+ *
+ * Bez lozinke: podaci su na uređaju, pa lozinka ne bi štitila nego se pretvarala
+ * da štiti. Ovde treba razdvajanje napretka, ne zaštita.
+ */
+@Entity(tableName = "profiles")
+data class ProfileEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val name: String,
+    val createdAtMillis: Long
+)
+
+/** Profil koji dobija sve što je upisano pre nego što su profili postojali. */
+const val DEFAULT_PROFILE_ID = 1L
 
 @Dao
 interface SessionDao {
@@ -72,14 +96,36 @@ interface SessionDao {
     @Insert
     suspend fun insert(session: SessionEntity)
 
-    @Query("SELECT * FROM sessions ORDER BY finishedAtMillis")
-    fun observeAll(): Flow<List<SessionEntity>>
+    @Query("SELECT * FROM sessions WHERE profileId = :profileId ORDER BY finishedAtMillis")
+    fun observeFor(profileId: Long): Flow<List<SessionEntity>>
 
-    @Query("SELECT * FROM sessions ORDER BY finishedAtMillis")
-    suspend fun all(): List<SessionEntity>
+    @Query("SELECT * FROM sessions WHERE profileId = :profileId ORDER BY finishedAtMillis")
+    suspend fun allFor(profileId: Long): List<SessionEntity>
 
-    @Query("DELETE FROM sessions")
-    suspend fun clear()
+    @Query("DELETE FROM sessions WHERE profileId = :profileId")
+    suspend fun clearFor(profileId: Long)
+}
+
+@Dao
+interface ProfileDao {
+
+    @Query("SELECT * FROM profiles ORDER BY createdAtMillis")
+    fun observeAll(): Flow<List<ProfileEntity>>
+
+    @Query("SELECT * FROM profiles ORDER BY createdAtMillis")
+    suspend fun all(): List<ProfileEntity>
+
+    @Query("SELECT * FROM profiles WHERE id = :id")
+    suspend fun byId(id: Long): ProfileEntity?
+
+    @Insert
+    suspend fun insert(profile: ProfileEntity): Long
+
+    @Query("UPDATE profiles SET name = :name WHERE id = :id")
+    suspend fun rename(id: Long, name: String)
+
+    @Query("DELETE FROM profiles WHERE id = :id")
+    suspend fun delete(id: Long)
 }
 
 /**
@@ -92,9 +138,11 @@ interface SessionDao {
  * `fallbackToDestructiveMigration` se namerno **ne** koristi: napredak je jedino
  * što korisnik u ovoj aplikaciji ima, a on živi u ovoj tabeli.
  */
-@Database(entities = [SessionEntity::class], version = 5, exportSchema = false)
+@Database(entities = [SessionEntity::class, ProfileEntity::class], version = 6, exportSchema = false)
 abstract class TrainerDatabase : RoomDatabase() {
     abstract fun sessionDao(): SessionDao
+
+    abstract fun profileDao(): ProfileDao
 
     companion object {
         const val NAME = "blindfold-trainer"
@@ -131,6 +179,32 @@ abstract class TrainerDatabase : RoomDatabase() {
             override fun migrate(connection: SQLiteConnection) {
                 connection.execSQL(
                     "ALTER TABLE sessions ADD COLUMN isCheckup INTEGER NOT NULL DEFAULT 0"
+                )
+            }
+        }
+
+        /**
+         * Profili.
+         *
+         * Zatečena istorija **se ne briše nego pripisuje prvom profilu** — ona
+         * je jedino što se u ovoj aplikaciji ne može povratiti. Profil dobija
+         * privremeno ime koje korisnik menja.
+         */
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "CREATE TABLE IF NOT EXISTS profiles (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "name TEXT NOT NULL, " +
+                        "createdAtMillis INTEGER NOT NULL)"
+                )
+                connection.execSQL(
+                    "INSERT INTO profiles (id, name, createdAtMillis) " +
+                        "VALUES ($DEFAULT_PROFILE_ID, 'Profil 1', 0)"
+                )
+                connection.execSQL(
+                    "ALTER TABLE sessions ADD COLUMN profileId INTEGER NOT NULL " +
+                        "DEFAULT $DEFAULT_PROFILE_ID"
                 )
             }
         }
@@ -174,7 +248,7 @@ internal fun String.toSkillTallies(): Map<Skill, SkillTally> {
     }.toMap()
 }
 
-internal fun SessionResult.toEntity(finishedAtMillis: Long) = SessionEntity(
+internal fun SessionResult.toEntity(finishedAtMillis: Long, profileId: Long) = SessionEntity(
     moduleKey = moduleId.key,
     difficultyName = difficulty.name,
     attempted = attempted,
@@ -186,7 +260,8 @@ internal fun SessionResult.toEntity(finishedAtMillis: Long) = SessionEntity(
     skillTallies = bySkill.toStored(),
     supportKey = support?.key.orEmpty(),
     taskId = taskId.orEmpty(),
-    isCheckup = isCheckup
+    isCheckup = isCheckup,
+    profileId = profileId
 )
 
 /**

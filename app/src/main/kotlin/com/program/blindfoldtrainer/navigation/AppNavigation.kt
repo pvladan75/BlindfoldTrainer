@@ -20,6 +20,8 @@ import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.moduleapi.ModuleArgs
 import com.program.blindfoldtrainer.ui.MainMenuScreen
 import com.program.blindfoldtrainer.core.progress.recommend
+import com.program.blindfoldtrainer.ui.ProfilesScreen
+import com.program.blindfoldtrainer.ui.ProfilesViewModel
 import com.program.blindfoldtrainer.ui.ProgressScreen
 import com.program.blindfoldtrainer.ui.ProgressViewModel
 import com.program.blindfoldtrainer.ui.SessionSummaryDialog
@@ -31,6 +33,7 @@ import com.program.blindfoldtrainer.ui.SummaryViewModel
 private const val ROUTE_MENU = "menu"
 private const val ROUTE_SETTINGS = "settings"
 private const val ROUTE_PROGRESS = "progress"
+private const val ROUTE_PROFILES = "profiles"
 private const val ARG_MODULE = "module"
 private const val ARG_DIFFICULTY = "difficulty"
 private const val ARG_TASK = "task"
@@ -94,6 +97,9 @@ fun AppNavigation(registry: ModuleRegistry) {
         )
     }
 
+    // Ko vežba. Stoji izvan NavHost-a jer se menja retko a čita svuda.
+    val activeProfile by hiltViewModel<ProfilesViewModel>().active.collectAsState()
+
     val summaryViewModel: SummaryViewModel = hiltViewModel()
     val eyesFree by summaryViewModel.eyesFree.collectAsState()
 
@@ -125,6 +131,8 @@ fun AppNavigation(registry: ModuleRegistry) {
                         )
                     )
                 },
+                profileName = activeProfile?.name,
+                onOpenProfiles = { navController.navigate(ROUTE_PROFILES) },
                 checkup = nextCheckup,
                 onStartCheckup = { checkup ->
                     navController.navigate(
@@ -148,6 +156,10 @@ fun AppNavigation(registry: ModuleRegistry) {
                 tasks = registry.all.flatMap { it.tasks }.associateBy { it.id },
                 onBack = { navController.popBackStack() }
             )
+        }
+
+        composable(ROUTE_PROFILES) {
+            ProfilesScreen(onBack = { navController.popBackStack() })
         }
 
         composable(ROUTE_SETTINGS) {

@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MicNone
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -56,6 +57,9 @@ fun MainMenuScreen(
     /** Provera koja se nudi, ili `null` ako je nema. */
     checkup: Checkup?,
     onStartCheckup: (Checkup) -> Unit,
+    /** Ime profila koji vežba; stoji u traci da se ne vežba pod tuđim imenom. */
+    profileName: String?,
+    onOpenProfiles: () -> Unit,
     /** Sledeći korak koji put predlaže, ili `null` dok se nema šta predložiti. */
     recommendation: Recommendation?,
     onStartRecommended: (Recommendation) -> Unit
@@ -64,12 +68,20 @@ fun MainMenuScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
+                    // Ime profila umesto imena aplikacije: ono što se menja
+                    // vredi više od onoga što uvek piše isto.
                     Text(
-                        text = stringResource(R.string.app_name),
+                        text = profileName ?: stringResource(R.string.app_name),
                         fontWeight = FontWeight.Bold
                     )
                 },
                 actions = {
+                    IconButton(onClick = onOpenProfiles) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = stringResource(R.string.profiles_open)
+                        )
+                    }
                     IconButton(onClick = onOpenSettings) {
                         Icon(
                             imageVector = Icons.Default.Settings,
