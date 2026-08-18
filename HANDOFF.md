@@ -27,28 +27,45 @@ poslednjeg probanja.
 
 ## Gde smo stali ovog trenutka
 
-**Poslednji komit: `655b178`.** Sve je komitovano; radno stablo je čisto.
+**Poslednji komit: `09b0e53`.** Sve je komitovano; radno stablo je čisto.
 
 Stanje na **18. avgust 2026.** Prethodna sesija je napisala „Daj šah", ovo je
 prva sesija u kojoj je taj modul **viđen na uređaju** — i sa uređaja je stiglo
 troje, sve iz iste porodice: prečka je bila pola vežbe, a korisnik je nije mogao
 ni izabrati ni pročitati.
 
-### Prečka se sad bira u meniju
+### Zadatak i prečka se sad biraju u meniju
 
-Kartica modula ima red **„Koliko pomoći"** iznad dugmića za težinu. Do sada se
-prečka birala samo **posredno** — globalnim režimom bez ekrana ili predlogom
-puta. Srednja se zato nije mogla dohvatiti bez dve uspešne sesije na punoj
-podršci, pa je zadatak koji je zbog nje i napravljen bio nedostupan iz menija.
+Kartica modula ima dva nova reda iznad dugmića za težinu: **„Zadatak"** i
+**„Koliko pomoći"**. Do sada se to dvoje biralo samo **posredno** — globalnim
+režimom bez ekrana ili predlogom puta — i to je ostavljalo dve rupe:
 
-Zatečeno stanje je **neizabrano**: dok se prečka ne dodirne, modul dobija `null`
-i odlučuje sam, tačno kao pre. Chip koji svetli pokazuje šta bi se tada dogodilo,
-da izbor ne izgleda prazan. Red se ne pokazuje kod modula sa jednom prečkom —
-„Zapamti poziciju" i „Diktat" umeju samo `FULL`.
+- srednja prečka se nije mogla dohvatiti bez dve uspešne sesije na punoj podršci,
+  pa je zadatak koji je zbog nje i napravljen bio nedostupan iz menija;
+- **drugi zadatak modula uopšte nije imao ulaz iz menija.** Modul iz menija radi
+  zatečeni zadatak, a drugi je zavisio od preporuke — koju put po svom prvom
+  pravilu („nikad dvaput isto zaredom") izbegava odmah posle vežbe. Zadatak se
+  tako nije mogao ni pogledati na zahtev.
+
+Zatečeno stanje je **neizabrano**: dok se ne dodirne, modul dobija `null` i
+odlučuje sam, tačno kao pre. Chip koji svetli pokazuje šta bi se tada dogodilo,
+da izbor ne izgleda prazan. Red se ne pokazuje kad nema šta da se bira — „Zapamti
+poziciju" i „Diktat" umeju samo `FULL` i po jedan zadatak.
 
 Sporedni dobitak: **„bez table" iz kartice daje režim bez ekrana za jednu
 sesiju**, bez diranja podešavanja. Svih šest modula sa više prečki taj raspored
 izvode iz prečke, ne iz podešavanja.
+
+#### `defaultTaskId` je ušao u ugovor
+
+Školjka je znala spisak zadataka, ali ne i **koji se dobija bez porudžbine** — a
+to joj treba da bi ga pokazala. Zatečeno je prvi sa spiska; „Daj šah" kaže
+drugačije, jer spisak ide pedagoškim redom od lakšeg oblika, a bez porudžbine
+treba strožije pravilo. Ugovor ne preuzima odluku od modula, samo je **prijavljuje**.
+
+Zato je `CHECK_DEFAULT_TASK` jedan izvor istine: čitaju ga i ViewModel i prijava
+modula. Da stoje dva zapisa, razišli bi se kao `when` blok u navigaciji stare
+aplikacije.
 
 ### Skakača nije bilo na tabli
 
@@ -85,17 +102,15 @@ Iz menija i dalje ide strože — zatečeni zadatak modula je `safe_path`.
 
 ### Šta nije viđeno na uređaju
 
-1. **Red sa pravilom u lakšem zadatku** (`no_capture`). Nije ga se moglo dohvatiti:
-   put ne nudi isti zadatak dva puta zaredom, a taj je odigran pre ove izmene.
-2. **Pitanje „ko napada figuru"** u Prati partiju.
-3. **Dubina do prve greške** u Prati partiju — traži jednu **novu** vežbu, jer
-   stare sesije u bazi imaju `null` na tom mestu.
+Sam **birač zadatka** je napisan posle poslednjeg probanja, a sa njim i troje što
+je do sada čekalo preporuku — sad se sve može dohvatiti iz menija, u jednoj sesiji:
 
-Sve troje čeka da put te zadatke ponudi. To i pokazuje šta je ostalo od iste
-porodice problema: **prečka se sad bira, a zadatak se i dalje ne bira.** Modul sa
-dva zadatka iz menija ume da odradi samo jedan; drugi zavisi od preporuke. Sledeći
-očigledan korak je birač zadatka uz birač prečke, po istom pravilu — neizabrano
-znači „modul odlučuje".
+1. **Red sa pravilom u lakšem zadatku**: Daj šah → Zadatak: *Šah bez uzimanja*.
+   Mora pisati da su napadnuta polja dozvoljena.
+2. **Pitanje „ko napada figuru"**: Prati partiju → Zadatak: *Ko napada figuru*.
+3. **Dubina do prve greške**: posle jedne vežbe Prati partiju, u Napretku, red
+   „slika je držala do N. odgovora". Traži **novu** vežbu — stare sesije u bazi
+   imaju `null` na tom mestu i ne računaju se.
 
 ### Šta je odmah sledeće po dogovoru
 
