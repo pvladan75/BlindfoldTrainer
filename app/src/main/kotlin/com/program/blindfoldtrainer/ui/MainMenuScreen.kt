@@ -15,6 +15,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MicNone
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
@@ -454,9 +456,54 @@ private fun ModuleCard(
             val rungs = remember(module.id) { module.rungs() }
             var chosenRung by remember(module.id) { mutableStateOf<Support?>(null) }
             var chosenTask by remember(module.id) { mutableStateOf<String?>(null) }
+            var open by remember(module.id) { mutableStateOf(false) }
 
-            if (module.tasks.size > 1) {
-                Spacer(Modifier.height(12.dp))
+            val pickableTask = module.tasks.size > 1
+            val pickableRung = rungs.size > 1
+
+            val shownTask = chosenTask ?: module.defaultTaskId
+            val shownRung = chosenRung ?: if (eyesFree) rungs.lastOrNull() else rungs.firstOrNull()
+
+            if (pickableTask || pickableRung) {
+                // **Sklopljeno po zatečenom.** Osam kartica sa po dva reda dugmića
+                // je meni koji se skroluje minut, a većina ljudi izbor nikad neće
+                // dodirnuti. Zato se ovde ne krije mogućnost nego samo kontrole:
+                // u jednom redu piše **šta će se dogoditi** ako se odmah krene, što
+                // je podatak koji ranije nije stajao nigde.
+                val summary = listOfNotNull(
+                    shownTask.takeIf { pickableTask }?.let { stringResource(taskLabelRes(it)) },
+                    shownRung.takeIf { pickableRung }?.let { stringResource(it.labelRes()) }
+                ).joinToString(" · ")
+
+                Spacer(Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { open = !open }
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = summary,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Icon(
+                        imageVector = if (open) {
+                            Icons.Default.KeyboardArrowUp
+                        } else {
+                            Icons.Default.KeyboardArrowDown
+                        },
+                        contentDescription = stringResource(R.string.menu_choice_toggle),
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            if (open && pickableTask) {
+                Spacer(Modifier.height(6.dp))
                 Text(
                     text = stringResource(R.string.menu_task_label),
                     style = MaterialTheme.typography.labelSmall,
@@ -464,10 +511,9 @@ private fun ModuleCard(
                 )
                 Spacer(Modifier.height(4.dp))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val showing = chosenTask ?: module.defaultTaskId
                     module.tasks.forEach { task ->
                         FilterChip(
-                            selected = task.id == showing,
+                            selected = task.id == shownTask,
                             onClick = { chosenTask = task.id },
                             label = { Text(stringResource(taskLabelRes(task.id))) }
                         )
@@ -475,8 +521,8 @@ private fun ModuleCard(
                 }
             }
 
-            if (rungs.size > 1) {
-                Spacer(Modifier.height(12.dp))
+            if (open && pickableRung) {
+                Spacer(Modifier.height(10.dp))
                 Text(
                     text = stringResource(R.string.menu_support_label),
                     style = MaterialTheme.typography.labelSmall,
@@ -484,10 +530,9 @@ private fun ModuleCard(
                 )
                 Spacer(Modifier.height(4.dp))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val showing = chosenRung ?: if (eyesFree) rungs.last() else rungs.first()
                     rungs.forEach { rung ->
                         FilterChip(
-                            selected = rung == showing,
+                            selected = rung == shownRung,
                             onClick = { chosenRung = rung },
                             label = { Text(stringResource(rung.labelRes())) }
                         )
