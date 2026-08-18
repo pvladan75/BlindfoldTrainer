@@ -157,20 +157,33 @@ fun ProgressChart(
             )
         }
 
-        Legend(bestColor = bestColor, targetColor = targetColor, hasTarget = target != null)
+        // Uz linije stoje i brojevi: bez njih se mora pogađati koliko iznose, a
+        // kad najbolji padne ispod orijentira — što je dobra vest — dve gole
+        // linije izgledaju kao da su zamenile mesta.
+        Legend(
+            bestColor = bestColor,
+            bestLabel = format(best.toFloat()),
+            targetColor = targetColor,
+            targetLabel = target?.let { format(it.toFloat()) }
+        )
     }
 }
 
 @Composable
-private fun Legend(bestColor: Color, targetColor: Color, hasTarget: Boolean) {
+private fun Legend(
+    bestColor: Color,
+    bestLabel: String,
+    targetColor: Color,
+    targetLabel: String?
+) {
     Text(
-        text = stringResource(R.string.chart_best),
+        text = stringResource(R.string.chart_best, bestLabel),
         style = MaterialTheme.typography.labelSmall,
         color = bestColor
     )
-    if (hasTarget) {
+    if (targetLabel != null) {
         Text(
-            text = stringResource(R.string.chart_target),
+            text = stringResource(R.string.chart_target, targetLabel),
             style = MaterialTheme.typography.labelSmall,
             color = targetColor
         )

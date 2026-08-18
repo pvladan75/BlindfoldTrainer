@@ -145,8 +145,8 @@
     <string name="progress_foundation_open">Vežbaj to</string>
     <string name="chart_scale">%1$s–%2$s s po zadatku</string>
     <string name="chart_sessions">%1$d sesija</string>
-    <string name="chart_best">— tvoj najbolji</string>
-    <string name="chart_target">- - - orijentir</string>
+    <string name="chart_best">— tvoj najbolji: %1$s s</string>
+    <string name="chart_target">- - - orijentir: %1$s s</string>
     <string name="progress_target_reached">orijentir dostignut</string>
     <string name="progress_target">orijentir: %1$s uz %2$d%% tačnosti</string>
     <string name="progress_estimate">Procena — poređiv nivo daće provera, koje još nema.</string>
