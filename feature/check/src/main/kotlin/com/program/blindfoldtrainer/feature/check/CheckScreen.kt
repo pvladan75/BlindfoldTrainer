@@ -31,6 +31,9 @@ import com.program.blindfoldtrainer.core.audio.MicrophoneZone
 import com.program.blindfoldtrainer.core.audio.VoiceState
 import com.program.blindfoldtrainer.core.audio.ZoneTone
 import com.program.blindfoldtrainer.core.chess.Board
+import com.program.blindfoldtrainer.core.chess.Color
+import com.program.blindfoldtrainer.core.chess.Piece
+import com.program.blindfoldtrainer.core.chess.PieceType
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.designsystem.board.ChessBoard
 import com.program.blindfoldtrainer.core.designsystem.board.PieceVisibility
@@ -59,6 +62,10 @@ fun CheckScreen(
     val uiState by viewModel.uiState.collectAsState()
     val isEyesFree by viewModel.isEyesFree.collectAsState()
     val voiceState by viewModel.voiceState.collectAsState()
+
+    // Prečka se čita ovde, a ne unutar `when` niže: uslovan `collectAsState` je
+    // uslovan poziv u kompoziciji, i radi samo dok se grane ne promene redom.
+    val resolvedSupport by viewModel.support.collectAsState()
 
     LaunchedEffect(difficulty) { viewModel.startOnce(difficulty, support, taskId) }
 
@@ -122,6 +129,24 @@ fun CheckScreen(
             fontWeight = FontWeight.Bold
         )
 
+        // Modul nosi dva zadatka sa različitim pravilom, a cilj im je isti — pa
+        // se iz naslova ne vidi u kom si. Pravilo zato stoji na ekranu: put ume
+        // da pošalje na lakši oblik, i to ne sme da izgleda kao da modul
+        // popušta.
+        puzzle?.let {
+            Text(
+                text = stringResource(
+                    if (it.avoidAttacked) {
+                        R.string.check_rule_safe_path
+                    } else {
+                        R.string.check_rule_no_capture
+                    }
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.secondary
+            )
+        }
+
         Text(
             text = stringResource(R.string.check_moves, uiState.moves, puzzle?.optimalMoves ?: 0),
             style = MaterialTheme.typography.bodyMedium,
@@ -132,15 +157,24 @@ fun CheckScreen(
         // okružuje moraš da držiš u glavi. To je i cela razlika između čitanja
         // linija i kontrole polja.
         val visibility = when {
-            uiState.phase == CheckPhase.MEMORIZE -> PieceVisibility.All
-            viewModel.support.collectAsState().value == Support.PARTIAL ->
+            memorizing -> PieceVisibility.All
+            resolvedSupport == Support.PARTIAL ->
                 PieceVisibility.Only(setOfNotNull(uiState.current))
 
             else -> PieceVisibility.All
         }
 
+        // Skakač nije deo pozicije: u njoj su samo crne figure, a beli skakač je
+        // stanje sesije. Za prikaz se dodaje — obojeno polje ne kaže *šta* na
+        // njemu stoji, a na srednjoj prečki bi posle nestanka figura ostala
+        // prazna tabla. U samu poziciju ne sme, jer bi zaklonio linije i
+        // promenio šta crni drži.
+        val shown = puzzle?.board?.let { position ->
+            uiState.current?.let { position.withPiece(it, WHITE_KNIGHT) } ?: position
+        } ?: Board.EMPTY
+
         ChessBoard(
-            board = puzzle?.board ?: Board.EMPTY,
+            board = shown,
             tints = buildTints(uiState),
             visibility = visibility,
             onSquareClick = viewModel::onSquareClicked,
@@ -195,3 +229,6 @@ private fun buildTints(uiState: CheckUiState): Map<Square, SquareTint> = buildMa
     uiState.walked.forEach { put(it, SquareTint.HINT) }
     uiState.current?.let { put(it, SquareTint.HIGHLIGHT) }
 }
+
+/** Jedina bela figura u zadatku; stoji ovde da se ne pravi u svakom kadru. */
+private val WHITE_KNIGHT = Piece(PieceType.KNIGHT, Color.WHITE)

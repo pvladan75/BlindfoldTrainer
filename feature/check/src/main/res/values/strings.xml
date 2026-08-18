@@ -4,6 +4,8 @@
     <string name="check_description">Crne figure drže tablu, a beli skakač treba da dâ šah crnom kralju. Ne sme da uzme nijednu figuru — a na težem zadatku ni da stane na polje koje neka od njih drži.</string>
     <string name="check_static">Crne figure se ne pomeraju. Ne zato što spavaju, nego zato što bi svaki tvoj skok menjao poziciju i zadatak bi postao partija.</string>
     <string name="check_goal">Daj šah crnom kralju</string>
+    <string name="check_rule_no_capture">Pravilo: ne uzimaj figure. Napadnuta polja su dozvoljena.</string>
+    <string name="check_rule_safe_path">Pravilo: ne uzimaj figure i ne staj na polje koje crni drži.</string>
     <string name="check_memorize">Zapamti gde stoje figure</string>
     <string name="check_memorized">ZAPAMTIO SAM</string>
     <string name="check_moves">Poteza: %1$d (najkraće %2$d)</string>

@@ -2,6 +2,7 @@ package com.program.blindfoldtrainer.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,6 +21,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,6 +30,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -39,6 +45,7 @@ import com.program.blindfoldtrainer.core.model.Capability
 import com.program.blindfoldtrainer.core.model.Checkup
 import com.program.blindfoldtrainer.core.progress.Recommendation
 import com.program.blindfoldtrainer.core.model.Difficulty
+import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.moduleapi.TrainingModule
 import com.program.blindfoldtrainer.core.progress.Achievement
 import com.program.blindfoldtrainer.core.progress.ProgressSnapshot
@@ -51,7 +58,7 @@ fun MainMenuScreen(
     progress: ProgressSnapshot,
     /** Da li je u Podešavanjima uključen režim bez ekrana. */
     eyesFree: Boolean,
-    onStart: (TrainingModule, Difficulty) -> Unit,
+    onStart: (TrainingModule, Difficulty, Support?) -> Unit,
     onOpenSettings: () -> Unit,
     onOpenProgress: () -> Unit,
     /** Provera koja se nudi, ili `null` ako je nema. */
@@ -134,7 +141,7 @@ fun MainMenuScreen(
                 ModuleCard(
                     module = module,
                     eyesFree = eyesFree,
-                    onStart = { onStart(module, it) }
+                    onStart = { difficulty, support -> onStart(module, difficulty, support) }
                 )
             }
 
@@ -360,7 +367,7 @@ private fun VoiceNotice(onOpenSettings: () -> Unit) {
 private fun ModuleCard(
     module: TrainingModule,
     eyesFree: Boolean,
-    onStart: (Difficulty) -> Unit
+    onStart: (Difficulty, Support?) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -425,6 +432,37 @@ private fun ModuleCard(
                 )
             }
 
+            // Prečka se do sada birala samo posredno — globalnim režimom bez
+            // ekrana ili predlogom puta. Srednja se tako nije mogla ni dohvatiti
+            // bez dve uspešne sesije na punoj podršci, pa je zadatak koji je
+            // zbog nje i napravljen bio nedostupan iz menija.
+            //
+            // Zatečeno stanje ostaje **neizabrano**: dok se prečka ne dodirne,
+            // modul dobija `null` i sam odlučuje, tačno kao pre. Chip koji svetli
+            // pokazuje šta bi se tada dogodilo, da izbor ne izgleda prazan.
+            val rungs = remember(module.id) { module.rungs() }
+            var chosen by remember(module.id) { mutableStateOf<Support?>(null) }
+
+            if (rungs.size > 1) {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    text = stringResource(R.string.menu_support_label),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(4.dp))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val showing = chosen ?: if (eyesFree) rungs.last() else rungs.first()
+                    rungs.forEach { rung ->
+                        FilterChip(
+                            selected = rung == showing,
+                            onClick = { chosen = rung },
+                            label = { Text(stringResource(rung.labelRes())) }
+                        )
+                    }
+                }
+            }
+
             Spacer(Modifier.height(14.dp))
 
             Row(
@@ -433,7 +471,7 @@ private fun ModuleCard(
             ) {
                 module.difficulties.forEach { difficulty ->
                     FilledTonalButton(
-                        onClick = { onStart(difficulty) },
+                        onClick = { onStart(difficulty, chosen) },
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
@@ -446,6 +484,14 @@ private fun ModuleCard(
         }
     }
 }
+
+/**
+ * Prečke koje ovaj modul ume — **unija zadataka**, isto pravilo po kom se sabiraju
+ * i veštine. Zadatak koji tu prečku ne ume dobija najbližu koju ume, pa izbor
+ * nikad ne odvede u prazno.
+ */
+private fun TrainingModule.rungs(): List<Support> =
+    tasks.flatMap { it.supports }.distinct().sortedBy { it.ordinal }
 
 private fun Difficulty.labelRes(): Int = when (this) {
     Difficulty.EASY -> R.string.difficulty_easy
