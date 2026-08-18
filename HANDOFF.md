@@ -239,6 +239,90 @@ Najjeftiniji pošten oblik: sesija ostaje jedan red u bazi, ali nosi **razlaganj
 po veštinama** — pokušano i pogođeno za svaku veštinu koju je dodirnula. Tek tada
 „savladanost" ima smisla, i to **po veštini, a ne po modulu**.
 
+### Put se pravi, ne crta
+
+Dogovoreno **18. avgusta 2026**, uz odeljak o veštinama. Korisnika **vodimo** — ne
+puštamo ga da luta po modulima, ali ga i ne stavljamo na šine.
+
+Obe krajnosti otkazuju, iz suprotnih razloga:
+
+- **Lutanje otkazuje tiho.** Čovek bira ono što mu ide, pa profil ostaje krivudav.
+  Uz to je sedam modula puta tri težine puta četiri nivoa podrške osamdesetak
+  izbora — a pred tolikim izborom se radi ono što se radilo i prošli put.
+- **Šina otkazuje glasno.** Trening je dobrovoljan; prvi dan kad se ne radi to što
+  piše u rasporedu je i poslednji dan.
+
+Zato: **predlog, uvek sa razlogom, a meni ostaje netaknut ispod njega.**
+
+```
+Sledeće: kontrola polja — 3 minuta
+Dubina do prve greške ti je pala sa 14 na 6 poteza.
+```
+
+Presudan je **drugi red**. Preporuka bez razloga je proročanstvo, a proročanstvu
+se ne veruje kad promaši. Preporuka sa brojem je argument, i sme da se odbije.
+
+#### Cilj traje, korak se prilagođava
+
+Put je dinamičan, ali ne prekraja se svaki dan — inače to nije put nego kolebanje,
+i korisnik prestane da mu veruje.
+
+| izvor | određuje | koliko često |
+|---|---|---|
+| **provera** (visoka podrška, bez poena) | **cilj** — na kojoj veštini se radi | na svakih N sesija |
+| **sesija** (razlaganje po veštinama) | **korak** — koliko podrške za sledeći zadatak | posle svake |
+
+#### Brojčanik je podrška
+
+Adaptivni deo nije izbor modula nego **prečka na lestvici podrške**, po paru
+(veština, vrsta pitanja) — modul je samo ono što taj par ume da izgeneriše:
+
+- **dva puta uspešno na istom nivou → jedna prečka dole** (manje podrške);
+- **promašaj → prečka nazad**, bez komentara i bez kazne.
+
+#### Savladano nije završeno
+
+**Naslepo vene brže nego što se stiče.** Posle savladanosti veština ide u
+**održavanje** — povremeno jedan zadatak na najnižoj podršci, da se vidi da još
+stoji; ako padne, vraća se u cilj.
+
+Bez toga bi put uvek išao ka najslabijem i tiho puštao da najjače propada, a to
+bi se otkrilo tek na pravoj partiji.
+
+#### Šta korisnik vidi od puta
+
+**Cilj i sledeći korak — ništa dalje.** Plan sa dvadeset koraka bio bi i laž i
+teret: laž jer se dalji koraci zaista ne znaju dok se ovaj ne odradi, teret jer
+izgleda kao dug.
+
+#### Četiri pravila bez kojih preporuka postaje smetnja
+
+- **nikad dvaput isto zaredom**, i kad je ista veština i dalje najslabija — zastoj
+  se ne probija ponavljanjem, a ostale veštine u međuvremenu venu;
+- **povremeno ono što ide dobro** — preporuka koja uvek šalje na najgore je
+  preporuka koja se prestane otvarati;
+- **prva stvar u aplikaciji je kratka provera**, ne uvodni tekst; ona daje prvi
+  profil, mora da **staje rano** i da ostane na visokoj podršci, jer joj je posao
+  da nađe polaznu tačku a ne da izmeri dno;
+- **odbijanje bez posledice** — nema „preskočio si" ni niza koji puca.
+
+#### Time se zatvara staro pitanje o rangu
+
+Da li rang išta otključava — **ne, i ne treba.** Zaključavanje i preporuka rade
+isti posao, ali zaključavanje ga plaća oduzimanjem. Pogrešna preporuka se
+ignoriše; pogrešno zaključavanje ostavi čoveka pred vratima.
+
+#### Dve granice, da se ne pogreši redosled
+
+**Merenje je gornja granica svega ovoga.** Dok `SessionResult` ne nosi razlaganje
+po veštinama, „najslabija veština" se ne zna i svaka dinamika je nagađanje sa
+brojem u ruci. Redosled je zato: veštine u ugovoru → razlaganje u rezultatu →
+provera → put.
+
+**Dve veštine se zasad ne daju izolovati** — oporavak slike (6) i računanje
+naslepo (8). Njih ne puštati u automatski put dok se ne smisli kako se mere;
+bolje ih ponuditi kao svestan izbor nego ih lažno rangirati.
+
 ### Šta iz ovoga sledi, po redu
 
 1. `Skill` (osam) i `podrška` ulaze u ugovor zadatka; modul prijavljuje **uniju**
@@ -252,7 +336,10 @@ po veštinama** — pokušano i pogođeno za svaku veštinu koju je dodirnula. T
    generiše. Napad se računa **statično** (crne figure se ne pomeraju) i to mora
    da piše, da ne deluje kao da protivnik spava.
 5. Ekran napretka i savladanost — po veštinama.
-6. Podsetnici — biraju **najslabiju veštinu**, ne najstariji modul.
+6. **Provera** — kratka, uvek ista, bez poena; daje profil po veštinama.
+7. **Put** — cilj iz provere, korak iz sesije (vidi „Put se pravi, ne crta").
+8. Podsetnici — biraju **najslabiju veštinu**, ne najstariji modul; isti račun kao
+   preporuka, samo isporučen na drugom mestu.
 
 ---
 
