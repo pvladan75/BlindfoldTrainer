@@ -27,7 +27,7 @@ poslednjeg probanja.
 
 ## Gde smo stali ovog trenutka
 
-**Poslednji komit: `7f16186`.** Sve je komitovano i gurnuto; radno stablo je čisto.
+**Poslednji komit: `f006756`.** Sve je komitovano i gurnuto; radno stablo je čisto.
 
 Stanje na **18. avgust 2026.** Sesija ima dva dela. Prvi je „Daj šah" viđen na
 uređaju po prvi put, i tri ispravke koje su odatle stigle. Drugi je **uputstvo** —
@@ -263,15 +263,92 @@ Bila je „Sledeće", što je zvučalo kao program koji te vodi. Razmatrano je i
 koristi za taj pojam („predlog, ne šina") i jedina koja sama kaže da se sme
 odbiti, što je i cela doktrina te kartice.
 
+### Deca vežbaju — prikupljanje je počelo
+
+**18. avgusta uveče** aplikacija je instalirana deci da vežbaju. Od tog trenutka
+se podaci skupljaju u stvarnoj upotrebi, i to menja redosled posla.
+
+Postavilo se pitanje šta prvo: **preuređenje ekrana i navigacije** ili **provere
+za veštine koje ih nemaju**. Odabrane su provere, iz dva razloga:
+
+1. **Podatak iz provere se ne može nadoknaditi unazad.** Svaka nedelja bez
+   provere za ažuriranje pozicije je nedelja za koju se nivo te veštine više
+   nikad neće znati. Navigacija ne gubi ništa čekanjem.
+2. **Navigacija dobija čekanjem.** Deca su najbolji test upotrebljivosti koji
+   ovaj projekat može da dobije; projektovati raspored danas znači potrošiti tu
+   priliku i pogađati. Uz to, menjati raspored usred prikupljanja kvari i same
+   podatke — kasnije se ne bi znalo da li je „Predlog" radio ili je meni bio
+   drugačiji.
+
+### Provere pokrivaju šest od osam veština
+
+| veština | kroz šta | koliko traje |
+|---|---|---|
+| Ažuriranje pozicije | Prati partiju · „gde stoji figura" | ~2 min |
+| Kontrola polja | Prati partiju · „ko napada figuru" | ~2 min |
+| Prevod zapisa | Diktat, **dve pozicije umesto pet** | ~2,5 min |
+
+Vremena su **procenjena iz orijentira, ne izmerena** — u njima nije uračunato
+vreme koje ode na pritiskanje „SLEDEĆI POTEZ" kroz dvadesetak poluteza. Ako
+ispadnu duža, `rounds` postoji i za njih.
+
+#### Provera sama određuje koliko traje
+
+Dužina je do sada dolazila od težine, a težina služi drugoj svrsi: Diktat na
+najlakšoj težini je pet pozicija, oko šest minuta, a lakšeg nema — manje od tri
+figure ne bi merilo isto.
+
+Zato `ModuleArgs` i `Checkup` imaju `rounds`. Prazno polje i dalje znači „koliko
+modul da", pa se nijedna postojeća provera nije promenila.
+
+Skraćuje se **samo broj krugova, ne i njihova težina**: provera koja bi uz dužinu
+olakšala i sadržaj merila bi nešto drugo nego vežba, pa se rezultat ne bi smeo
+porediti sa vežbom iste veštine.
+
+Ručicu poštuje **svih pet modula koji nose proveru**, ne samo Diktat — polje u
+ugovoru koje poštuje jedan modul nije ugovor nego izuzetak.
+
+#### Zaštita od tihog promašaja
+
+Registar propušta samo provere kod kojih se poklope **modul, zadatak i veština
+koju taj zadatak zaista meri** (`ModuleRegistry.offerableCheckups`).
+
+Bez toga: preimenuje se `taskId`, modul bez porudžbine odradi svoj **zatečeni**
+zadatak, upiše rezultat — i profil tiho dobije **nivo za veštinu koja nije ni
+vežbana**. Nesaglasna provera se sad prosto ne nudi, isto pravilo po kom ruta ka
+neugrađenom modulu vraća u meni. Uputstvo čita isti taj spisak, pa ne može da
+obeća merenje kog u ovoj verziji nema.
+
+### Birač u kartici je sklopljen
+
+Osam kartica sa po dva reda dugmića je meni koji se skrolira minut, a većina
+izbor nikad neće dodirnuti. Redovi se sad otvaraju dodirom.
+
+**Ne krije se mogućnost nego samo kontrole:** u sklopljenom stanju stoji red koji
+kaže šta će se dogoditi ako se odmah krene — zadatak i oslonac koje bi modul sam
+izabrao. Taj podatak ranije nije stajao nigde, pa je kartica istovremeno kraća i
+informativnija.
+
+Ovo je jedini deo preuređenja početnog ekrana koji **ne traži nijednu odluku o
+strukturi**: ništa se ne premešta, ne preimenuje, ne grupiše.
+
 ### Šta je ostalo otvoreno
 
-1. **Komentari u kodu i dalje kažu „prečka"** — oko 190 mesta. Nije puštano kroz
+1. **Preuređenje ekrana i navigacije** — grupisanje srodnog, sistematizacija gde
+   se šta nalazi. **Čeka podatke iz upotrebe**, po dogovoru: prvo videti gde se
+   deca zaista izgube, pa onda crtati.
+2. **Oporavak slike i računanje naslepo** nemaju proveru zato što ih nijedan
+   zadatak ne meri. Njima fali **vežba** — nov modul veličine „Daj šah", ne unos
+   u spisak provera. Za oporavak bi to bilo nešto kao: prati poziciju, pa se u
+   jednom trenutku traži da se cela slika sastavi posle namerno ubačene greške, i
+   meri se koliko to traje.
+3. **Komentari u kodu i dalje kažu „prečka"** — oko 190 mesta. Nije puštano kroz
    `sed` zbog promene roda; to je prolaz koji se mora pročitati. Uz to: `podrška`
    je već u upotrebi u kodu za isti pojam i **ženskog** je roda, pa bi za
    komentare bila upola jeftinija. Za korisnika ostaje **oslonac**.
-2. **Udeo od 75% je prvi predlog**, kao i sami orijentiri. Tek sa nekoliko nedelja
+4. **Udeo od 75% je prvi predlog**, kao i sami orijentiri. Tek sa nekoliko nedelja
    vežbanja se vidi da li je premekan ili pretvrd.
-3. **Faze uputstva koje su ostale**: „?" sa kartica u odeljke (isti stringovi,
+5. **Faze uputstva koje su ostale**: „?" sa kartica u odeljke (isti stringovi,
    bez novog teksta), i slika veština na ekranu Napretka.
 
 ### Šta je odmah sledeće po dogovoru
