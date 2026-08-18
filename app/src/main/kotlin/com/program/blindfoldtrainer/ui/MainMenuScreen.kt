@@ -46,6 +46,7 @@ import com.program.blindfoldtrainer.core.model.Checkup
 import com.program.blindfoldtrainer.core.progress.Recommendation
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.Support
+import com.program.blindfoldtrainer.core.moduleapi.ModuleArgs
 import com.program.blindfoldtrainer.core.moduleapi.TrainingModule
 import com.program.blindfoldtrainer.core.progress.Achievement
 import com.program.blindfoldtrainer.core.progress.ProgressSnapshot
@@ -58,7 +59,7 @@ fun MainMenuScreen(
     progress: ProgressSnapshot,
     /** Da li je u Podešavanjima uključen režim bez ekrana. */
     eyesFree: Boolean,
-    onStart: (TrainingModule, Difficulty, Support?) -> Unit,
+    onStart: (TrainingModule, ModuleArgs) -> Unit,
     onOpenSettings: () -> Unit,
     onOpenProgress: () -> Unit,
     /** Provera koja se nudi, ili `null` ako je nema. */
@@ -141,7 +142,7 @@ fun MainMenuScreen(
                 ModuleCard(
                     module = module,
                     eyesFree = eyesFree,
-                    onStart = { difficulty, support -> onStart(module, difficulty, support) }
+                    onStart = { args -> onStart(module, args) }
                 )
             }
 
@@ -367,7 +368,7 @@ private fun VoiceNotice(onOpenSettings: () -> Unit) {
 private fun ModuleCard(
     module: TrainingModule,
     eyesFree: Boolean,
-    onStart: (Difficulty, Support?) -> Unit
+    onStart: (ModuleArgs) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -432,16 +433,38 @@ private fun ModuleCard(
                 )
             }
 
-            // Prečka se do sada birala samo posredno — globalnim režimom bez
-            // ekrana ili predlogom puta. Srednja se tako nije mogla ni dohvatiti
-            // bez dve uspešne sesije na punoj podršci, pa je zadatak koji je
-            // zbog nje i napravljen bio nedostupan iz menija.
+            // Zadatak i prečka su se do sada birali samo **posredno** — globalnim
+            // režimom bez ekrana ili predlogom puta. To je ostavljalo dve rupe:
+            // srednja prečka se nije mogla dohvatiti bez dve uspešne sesije na
+            // punoj podršci, a drugi zadatak modula uopšte nije imao ulaz iz
+            // menija — put ga po svom prvom pravilu izbegava odmah posle vežbe.
             //
-            // Zatečeno stanje ostaje **neizabrano**: dok se prečka ne dodirne,
-            // modul dobija `null` i sam odlučuje, tačno kao pre. Chip koji svetli
+            // Zatečeno stanje ostaje **neizabrano**: dok se ne dodirne, modul
+            // dobija `null` i odlučuje sam, tačno kao pre. Chip koji svetli
             // pokazuje šta bi se tada dogodilo, da izbor ne izgleda prazan.
             val rungs = remember(module.id) { module.rungs() }
-            var chosen by remember(module.id) { mutableStateOf<Support?>(null) }
+            var chosenRung by remember(module.id) { mutableStateOf<Support?>(null) }
+            var chosenTask by remember(module.id) { mutableStateOf<String?>(null) }
+
+            if (module.tasks.size > 1) {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    text = stringResource(R.string.menu_task_label),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(4.dp))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val showing = chosenTask ?: module.defaultTaskId
+                    module.tasks.forEach { task ->
+                        FilterChip(
+                            selected = task.id == showing,
+                            onClick = { chosenTask = task.id },
+                            label = { Text(stringResource(taskLabelRes(task.id))) }
+                        )
+                    }
+                }
+            }
 
             if (rungs.size > 1) {
                 Spacer(Modifier.height(12.dp))
@@ -452,11 +475,11 @@ private fun ModuleCard(
                 )
                 Spacer(Modifier.height(4.dp))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val showing = chosen ?: if (eyesFree) rungs.last() else rungs.first()
+                    val showing = chosenRung ?: if (eyesFree) rungs.last() else rungs.first()
                     rungs.forEach { rung ->
                         FilterChip(
                             selected = rung == showing,
-                            onClick = { chosen = rung },
+                            onClick = { chosenRung = rung },
                             label = { Text(stringResource(rung.labelRes())) }
                         )
                     }
@@ -471,7 +494,15 @@ private fun ModuleCard(
             ) {
                 module.difficulties.forEach { difficulty ->
                     FilledTonalButton(
-                        onClick = { onStart(difficulty, chosen) },
+                        onClick = {
+                            onStart(
+                                ModuleArgs(
+                                    difficulty = difficulty,
+                                    taskId = chosenTask,
+                                    support = chosenRung
+                                )
+                            )
+                        },
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(

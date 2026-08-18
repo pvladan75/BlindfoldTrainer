@@ -191,6 +191,7 @@
     <string name="task_place_position">Slaganje po diktatu</string>
     <string name="task_unknown">Nepoznat zadatak</string>
 
+    <string name="menu_task_label">Zadatak</string>
     <string name="menu_support_label">Koliko pomoći</string>
     <string name="support_full">uz tablu</string>
     <string name="support_partial">pogledaj pa zapamti</string>

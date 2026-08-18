@@ -113,7 +113,7 @@ class CheckViewModel @Inject constructor(
         isStarted = true
         this.difficulty = difficulty
         setup = setupFor(difficulty)
-        task = CHECK_TASKS.find { it.id == taskId } ?: CHECK_SAFE_PATH
+        task = CHECK_TASKS.find { it.id == taskId } ?: CHECK_DEFAULT_TASK
 
         viewModelScope.launch {
             val eyesFree = settingsRepository.settings.first().eyesFree
@@ -349,5 +349,14 @@ internal val CHECK_NO_CAPTURE = TaskSpec(
 )
 
 internal val CHECK_TASKS = listOf(CHECK_NO_CAPTURE, CHECK_SAFE_PATH)
+
+/**
+ * Zadatak bez porudžbine — **strožije pravilo**, jer je ono ono zbog čega modul
+ * postoji. Spisak iznad ide pedagoškim redom, od lakšeg oblika, pa se to dvoje
+ * ne poklapa; zato ovo stoji izdvojeno, a ne kao „prvi sa spiska".
+ *
+ * Odavde ga čitaju i ViewModel i ugovor modula, da se ne raziđu.
+ */
+internal val CHECK_DEFAULT_TASK = CHECK_SAFE_PATH
 
 private const val SOLVED_PAUSE_MILLIS = 1_500L

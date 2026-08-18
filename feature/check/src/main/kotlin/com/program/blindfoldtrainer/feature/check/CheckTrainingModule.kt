@@ -21,6 +21,7 @@ class CheckTrainingModule @Inject constructor() : TrainingModule {
     override val descriptionRes = R.string.check_description
     override val iconRes = R.drawable.ic_check
     override val tasks = CHECK_TASKS
+    override val defaultTaskId = CHECK_DEFAULT_TASK.id
 
     override val difficulties = listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD)
     override val needs = setOf(Capability.SPEECH_OUTPUT, Capability.VOICE_INPUT)

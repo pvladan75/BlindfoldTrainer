@@ -112,11 +112,16 @@ fun AppNavigation(registry: ModuleRegistry) {
                 modules = registry.all,
                 progress = progress,
                 eyesFree = settings.eyesFree,
-                onStart = { module, difficulty, support ->
-                    // Prečka iz menija je **izbor korisnika**, ne porudžbina puta:
+                onStart = { module, args ->
+                    // Izbor iz menija je **izbor korisnika**, ne porudžbina puta:
                     // `null` znači „nisam dirao", pa modul odlučuje kao i pre.
                     navController.navigate(
-                        moduleRoute(module.id.key, difficulty, support = support)
+                        moduleRoute(
+                            moduleKey = module.id.key,
+                            difficulty = args.difficulty,
+                            taskId = args.taskId,
+                            support = args.support
+                        )
                     )
                 },
                 onOpenSettings = { navController.navigate(ROUTE_SETTINGS) },

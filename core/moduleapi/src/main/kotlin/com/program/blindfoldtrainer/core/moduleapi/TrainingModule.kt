@@ -60,6 +60,20 @@ interface TrainingModule {
     val tasks: List<TaskSpec>
         get() = emptyList()
 
+    /**
+     * Zadatak koji modul radi **bez porudžbine** — kad se u njega ulazi iz menija.
+     *
+     * Zatečeno je **prvi sa spiska**, a modul sme da kaže drugačije: spisak nosi
+     * pedagoški red (lakši oblik pre težeg), a zatečeni zadatak je odluka o tome
+     * šta se dobija kad se ništa ne izabere, i to dvoje ne mora da se poklopi.
+     *
+     * Školjki ovo treba samo da bi **pokazala** šta će se dogoditi. Modul i dalje
+     * odlučuje sam kad mu `taskId` ne stigne — ugovor ovde ne preuzima taj posao,
+     * nego ga prijavljuje.
+     */
+    val defaultTaskId: String?
+        get() = tasks.firstOrNull()?.id
+
     /** Sve veštine ovog modula — **unija zadataka**, da se ne prepisuje ručno. */
     val skills: Set<Skill>
         get() = tasks.flatMapTo(mutableSetOf()) { it.skills }
