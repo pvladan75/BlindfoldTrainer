@@ -103,7 +103,19 @@ data class SessionResult(
      * Prazno je dozvoljeno i **znači „nije mereno"**, ne nulu: sesije upisane
      * pre ove izmene ga nemaju, i to se korisniku tako i kaže.
      */
-    val bySkill: Map<Skill, SkillTally> = emptyMap()
+    val bySkill: Map<Skill, SkillTally> = emptyMap(),
+
+    /**
+     * Na kojoj je **prečki podrške** sesija odrađena.
+     *
+     * Bez ovoga se profil može naduvati: deset tačnih uz tablu i deset tačnih
+     * bez nje upisivali bi se istom težinom, a to nisu isti dokazi. Nivo veštine
+     * je prečka koju drži, ne procenat — a prečka se ne zna ako se ne upiše.
+     *
+     * `null` znači **ne zna se**: sesije upisane pre ove izmene. Takve u profil
+     * po veštinama ne ulaze, umesto da se pretvaraju da su bile na najlakšoj.
+     */
+    val support: Support? = null
 ) {
     init {
         require(attempted >= 0) { "attempted ne može biti negativan" }

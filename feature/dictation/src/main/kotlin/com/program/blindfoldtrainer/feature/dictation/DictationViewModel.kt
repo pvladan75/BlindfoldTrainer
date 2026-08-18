@@ -285,6 +285,9 @@ class DictationViewModel @Inject constructor(
             mistakes = state.mistakes,
             elapsedMillis = System.currentTimeMillis() - startedAtMillis,
             completed = state.isFinished,
+            // Zadatak zna samo punu podršku — slaže se iz palete, a paleta
+            // traži oko.
+            support = Support.FULL,
             bySkill = mapOf(
                 DICTATION_PLACE_POSITION.measures to SkillTally(
                     attempted = state.taskNumber,

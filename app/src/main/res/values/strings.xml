@@ -135,6 +135,13 @@
     <string name="progress_not_measured">nije mereno</string>
     <string name="progress_not_measured_hint">Veština o kojoj još nema podatka. To nije slabost — samo se još ne zna.</string>
     <string name="progress_weakest">Trenutno najslabije</string>
+    <string name="progress_holds">drži: %1$s</string>
+    <string name="progress_no_rung_held">još nije utvrđeno</string>
+
+    <string name="support_full">uz tablu</string>
+    <string name="support_partial">uz deo slike</string>
+    <string name="support_trace">samo tragovi</string>
+    <string name="support_none">bez table</string>
     <string name="progress_empty">Nijedna sesija još nije merena po veštinama. Odradi jednu vežbu pa se vrati.</string>
     <string name="progress_old_sessions">Sesije odrađene pre uvođenja veština nemaju razlaganje i ne ulaze u profil.</string>
 

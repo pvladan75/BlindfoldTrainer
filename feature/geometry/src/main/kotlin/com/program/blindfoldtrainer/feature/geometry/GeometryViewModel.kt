@@ -296,6 +296,7 @@ class GeometryViewModel @Inject constructor(
             mistakes = state.mistakes,
             elapsedMillis = System.currentTimeMillis() - startedAtMillis,
             completed = state.isFinished && !wasQuit,
+            support = _support.value,
             // Ceo modul meri jednu veštinu, pa je razlaganje kratko — ali ide
             // istim kanalom kao i kod modula koji mešaju više vrsta pitanja.
             bySkill = mapOf(

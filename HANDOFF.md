@@ -45,7 +45,7 @@ blindfold animacija i raspakivanje ViewModel-a. Stari projekat se odatle napušt
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **sedam** modula za trening. Poslednji build
-je prošao čisto, bez upozorenja. **178 testova, nijedan ne pada.**
+je prošao čisto, bez upozorenja. **181 test, nijedan ne pada.**
 
 **Svih sedam modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -509,6 +509,38 @@ ishod. Ime veštine je oznaka za čitanje — u govoru nema za šta da se zakač
 Izbačeno je i `skillName` iz `SpeechPhrases`, sa njim. Pravilo o dva izvora
 istine za imena je time ostalo neprekršeno — a bilo je prekršeno baš zbog reda
 koji nije radio.
+
+#### Prečka je deo podatka, ne ukras
+
+Prvo je profil beležio samo pokušano i rešeno. Pitanje sa strane — *da li režim
+bez ekrana menja veštinu koja se razvija?* — pokazalo je rupu:
+
+> Deset tačnih uz tablu i deset tačnih bez nje upisivali su se **istom težinom**,
+> a to nisu isti dokazi.
+
+Posledica je bila ozbiljna: profil se mogao naduvati vežbanjem na najlakšoj
+prečki. Ko uvek vežba uz punu podršku dobio bi visok procenat i preporuku da ide
+dalje — a veština koju taj procenat opisuje nije stečena.
+
+Uz to, sami smo bili napisali da je **nivo prečka a ne procenat**, pa upisali
+procenat.
+
+Zato sesija sad nosi i prečku (`SessionResult.support`, kolona u bazi, verzija
+3), a profil se razlaže po paru **(veština, prečka)**:
+
+- `SkillProfile.heldRung()` — najteža prečka na kojoj ima **dovoljno pokušaja i
+  dovoljno tačno**; jedan srećan pogodak bez table nije dokaz.
+- `SkillProfile.standing` — jedan broj za poređenje veština u kom **prečka vredi
+  više od procenta**. Bez toga bi onaj ko sve radi uz punu podršku izgledao jači
+  od onoga ko se muči bez table.
+- Sesija **bez upisane prečke ne ulazi u profil** — kao i sesija bez razlaganja.
+  Bolje ne znati nego znati pogrešno.
+
+Ekran napretka zato više ne pokazuje procenat nego **„drži: bez table"**, uz po
+jedan red za svaku prečku na kojoj je veština probana.
+
+Ovo je ujedno i ulaz koji petlji puta treba: „dva puta uspešno na ovoj prečki →
+prečka dole" se ne može izračunati bez ovog podatka.
 
 Ostaje ono što traži još merenja: provera, put i podsetnici.
 

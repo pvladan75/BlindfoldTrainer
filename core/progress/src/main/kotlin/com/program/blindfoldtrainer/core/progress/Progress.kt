@@ -5,6 +5,7 @@ import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.SkillTally
+import com.program.blindfoldtrainer.core.model.Support
 
 /** Napredak u jednom modulu. */
 data class ModuleProgress(
@@ -64,8 +65,11 @@ data class ProgressSnapshot(
      * Zbir razlaganja iz sesija, i **jedino mesto** odakle se zna šta je
      * korisniku jako a šta slabo. Veština koje ovde nema **nije mereno** — ne
      * znači nula, nego da o njoj još ništa ne znamo.
+     *
+     * Razlaže se i **po prečkama**: isti procenat uz tablu i bez nje nije isti
+     * podatak, pa se ne sme sabrati u jedan broj.
      */
-    val bySkill: Map<Skill, SkillTally> = emptyMap()
+    val bySkill: Map<Skill, SkillProfile> = emptyMap()
 ) {
     val rank: Rank get() = Rank.forXp(totalXp)
     val rankProgress: RankProgress get() = RankProgress.forXp(totalXp)
@@ -85,11 +89,14 @@ data class ProgressSnapshot(
      * Odavde kasnije kreće preporuka. Nemerena veština se namerno ne vraća: o
      * njoj se ne zna da je slaba, nego se ne zna ništa, a to su dve različite
      * stvari i ne smeju da se pomešaju.
+     *
+     * Poredi se učinak **na prečki koju veština drži** — inače bi onaj ko sve
+     * radi uz punu podršku izgledao jači od onoga ko se muči bez table.
      */
     val weakestSkill: Skill?
         get() = bySkill.entries
-            .filter { (_, tally) -> tally.attempted > 0 }
-            .minByOrNull { (_, tally) -> tally.solved.toFloat() / tally.attempted }
+            .filter { (_, profile) -> profile.attempted > 0 }
+            .minByOrNull { (_, profile) -> profile.standing }
             ?.key
 
     operator fun plus(result: SessionResult): ProgressSnapshot {
@@ -110,17 +117,73 @@ data class ProgressSnapshot(
             },
             perfectStreak = streak,
             bestPerfectStreak = maxOf(bestPerfectStreak, streak),
-            // Sesije upisane pre uvođenja veština nemaju razlaganje; one profil
-            // ne pomeraju, umesto da ga razblaže nulama.
-            bySkill = result.bySkill.entries.fold(bySkill) { profile, (skill, tally) ->
-                profile + (skill to ((profile[skill] ?: SkillTally(0, 0)) + tally))
-            }
+            // Sesije bez razlaganja ili bez upisane prečke profil **ne pomeraju**.
+            // Prečka je deo podatka, ne ukras: bez nje se ne zna koliko uspeh
+            // vredi, pa je bolje ne znati ništa nego znati pogrešno.
+            bySkill = result.support?.let { support ->
+                result.bySkill.entries.fold(bySkill) { profile, (skill, tally) ->
+                    val current = profile[skill] ?: SkillProfile()
+                    profile + (skill to current.plus(support, tally))
+                }
+            } ?: bySkill
         )
     }
 
     companion object {
         val EMPTY = ProgressSnapshot()
     }
+}
+
+/**
+ * Šta se o jednoj veštini zna — **po prečkama**.
+ *
+ * Nivo veštine je prečka koju drži, a ne procenat. Procenat izgleda tačno a
+ * nije: sastavljen je od nejednakih zadataka, a uspeh uz punu podršku i uspeh
+ * bez table nisu isti dokaz. Zato se čuvaju razdvojeno i sabiraju tek za prikaz.
+ */
+data class SkillProfile(val bySupport: Map<Support, SkillTally> = emptyMap()) {
+
+    val attempted: Int get() = bySupport.values.sumOf { it.attempted }
+    val solved: Int get() = bySupport.values.sumOf { it.solved }
+
+    fun at(support: Support): SkillTally? = bySupport[support]
+
+    /** Prečke na kojima je veština uopšte probana, od najlakše ka najtežoj. */
+    val triedRungs: List<Support> get() = bySupport.keys.sortedBy { it.ordinal }
+
+    /**
+     * Najteža prečka koju veština **drži**.
+     *
+     * Drži je kad je na njoj bilo dovoljno pokušaja i dovoljno tačno. Jedan
+     * srećan pogodak bez table nije dokaz, pa prag postoji — a jeste nizak, jer
+     * je ovo merilo napretka a ne ispit.
+     */
+    fun heldRung(minAttempts: Int = 8, minAccuracy: Float = 0.8f): Support? =
+        bySupport.entries
+            .filter { (_, tally) ->
+                tally.attempted >= minAttempts &&
+                    tally.solved.toFloat() / tally.attempted >= minAccuracy
+            }
+            .maxByOrNull { (support, _) -> support.ordinal }
+            ?.key
+
+    /**
+     * Jedan broj za poređenje veština, u kom **prečka vredi više od procenta**.
+     *
+     * Bez toga bi onaj ko sve radi uz punu podršku izgledao jači od onoga ko se
+     * muči bez table — a upravo je ovaj drugi dalje odmakao.
+     */
+    val standing: Float
+        get() {
+            if (attempted == 0) return 0f
+            return bySupport.entries.sumOf { (support, tally) ->
+                val accuracy = if (tally.attempted == 0) 0.0 else tally.solved.toDouble() / tally.attempted
+                (accuracy * (support.ordinal + 1) * tally.attempted)
+            }.toFloat() / bySupport.values.sumOf { it.attempted }
+        }
+
+    internal fun plus(support: Support, tally: SkillTally): SkillProfile =
+        SkillProfile(bySupport + (support to ((bySupport[support] ?: SkillTally(0, 0)) + tally)))
 }
 
 /**

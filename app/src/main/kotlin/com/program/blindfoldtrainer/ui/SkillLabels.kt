@@ -2,6 +2,7 @@ package com.program.blindfoldtrainer.ui
 
 import com.program.blindfoldtrainer.R
 import com.program.blindfoldtrainer.core.model.Skill
+import com.program.blindfoldtrainer.core.model.Support
 
 /**
  * Ime veštine na ekranu.
@@ -36,4 +37,17 @@ internal fun Skill.hintRes(): Int = when (this) {
     Skill.RECOVERY -> R.string.skill_recovery_hint
     Skill.SQUARE_CONTROL -> R.string.skill_square_control_hint
     Skill.CALCULATION -> R.string.skill_calculation_hint
+}
+
+/**
+ * Ime prečke na ekranu.
+ *
+ * Ne kaže se „FULL" nego **šta korisnik vidi** — prečka je za njega opis vežbe,
+ * a ne stepen na skali.
+ */
+internal fun Support.labelRes(): Int = when (this) {
+    Support.FULL -> R.string.support_full
+    Support.PARTIAL -> R.string.support_partial
+    Support.TRACE -> R.string.support_trace
+    Support.NONE -> R.string.support_none
 }

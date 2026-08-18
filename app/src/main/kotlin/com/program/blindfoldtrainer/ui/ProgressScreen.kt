@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.program.blindfoldtrainer.R
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.progress.ProgressSnapshot
+import com.program.blindfoldtrainer.core.progress.SkillProfile
 
 /**
  * Profil: šta je jako, šta slabo, a šta se još ne zna.
@@ -87,7 +88,7 @@ fun ProgressScreen(progress: ProgressSnapshot, onBack: () -> Unit) {
             items(Skill.entries, key = { it.key }) { skill ->
                 SkillCard(
                     skill = skill,
-                    tally = progress.bySkill[skill],
+                    profile = progress.bySkill[skill],
                     isWeakest = skill == weakest
                 )
             }
@@ -104,11 +105,8 @@ fun ProgressScreen(progress: ProgressSnapshot, onBack: () -> Unit) {
 }
 
 @Composable
-private fun SkillCard(
-    skill: Skill,
-    tally: com.program.blindfoldtrainer.core.model.SkillTally?,
-    isWeakest: Boolean
-) {
+private fun SkillCard(skill: Skill, profile: SkillProfile?, isWeakest: Boolean) {
+    val held = profile?.heldRung()
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -131,15 +129,13 @@ private fun SkillCard(
                     fontWeight = FontWeight.Bold
                 )
 
+                // Nivo je **prečka**, ne procenat: uspeh uz tablu i uspeh bez
+                // nje nisu isti dokaz, pa se ne smeju sabrati u jedan broj.
                 Text(
-                    text = if (tally == null) {
-                        stringResource(R.string.progress_not_measured)
-                    } else {
-                        stringResource(
-                            R.string.progress_skill_score,
-                            tally.solved,
-                            tally.attempted
-                        )
+                    text = when {
+                        profile == null -> stringResource(R.string.progress_not_measured)
+                        held == null -> stringResource(R.string.progress_no_rung_held)
+                        else -> stringResource(R.string.progress_holds, stringResource(held.labelRes()))
                     },
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -150,20 +146,41 @@ private fun SkillCard(
 
             Text(
                 text = stringResource(
-                    if (tally == null) R.string.progress_not_measured_hint else skill.hintRes()
+                    if (profile == null) R.string.progress_not_measured_hint else skill.hintRes()
                 ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            // Traka postoji samo tamo gde ima šta da se prikaže. Prazna traka bi
-            // izgledala kao nula, a nula i „nije mereno" nisu ista stvar.
-            if (tally != null && tally.attempted > 0) {
+            // Po jedan red za svaku prečku na kojoj je veština probana. Zbir bi
+            // sakrio ono jedino što ovde nešto znači — gde si to postigao.
+            profile?.triedRungs?.forEach { rung ->
+                val tally = profile.at(rung) ?: return@forEach
                 Spacer(Modifier.height(10.dp))
-                LinearProgressIndicator(
-                    progress = { tally.solved.toFloat() / tally.attempted },
-                    modifier = Modifier.fillMaxWidth().height(6.dp)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(rung.labelRes()),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.progress_skill_score,
+                            tally.solved,
+                            tally.attempted
+                        ),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                if (tally.attempted > 0) {
+                    Spacer(Modifier.height(4.dp))
+                    LinearProgressIndicator(
+                        progress = { tally.solved.toFloat() / tally.attempted },
+                        modifier = Modifier.fillMaxWidth().height(6.dp)
+                    )
+                }
             }
 
             if (isWeakest) {

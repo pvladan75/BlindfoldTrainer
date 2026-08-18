@@ -15,6 +15,7 @@ import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.SkillTally
+import com.program.blindfoldtrainer.core.model.Support
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -48,7 +49,15 @@ data class SessionEntity(
      * sesije upisane pre nego što su veštine uvedene, i tako se korisniku i
      * kaže.
      */
-    val skillTallies: String = ""
+    val skillTallies: String = "",
+
+    /**
+     * Prečka podrške na kojoj je sesija odrađena, kao ključ; prazno = ne zna se.
+     *
+     * Ne zna se za sve što je upisano pre ove izmene. Takve sesije u profil po
+     * veštinama **ne ulaze** — bolje bez podatka nego sa izmišljenim.
+     */
+    val supportKey: String = ""
 )
 
 @Dao
@@ -77,7 +86,7 @@ interface SessionDao {
  * `fallbackToDestructiveMigration` se namerno **ne** koristi: napredak je jedino
  * što korisnik u ovoj aplikaciji ima, a on živi u ovoj tabeli.
  */
-@Database(entities = [SessionEntity::class], version = 2, exportSchema = false)
+@Database(entities = [SessionEntity::class], version = 3, exportSchema = false)
 abstract class TrainerDatabase : RoomDatabase() {
     abstract fun sessionDao(): SessionDao
 
@@ -89,6 +98,15 @@ abstract class TrainerDatabase : RoomDatabase() {
             override fun migrate(connection: SQLiteConnection) {
                 connection.execSQL(
                     "ALTER TABLE sessions ADD COLUMN skillTallies TEXT NOT NULL DEFAULT ''"
+                )
+            }
+        }
+
+        /** Dodavanje prečke podrške; postojeći redovi ostaju bez nje. */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "ALTER TABLE sessions ADD COLUMN supportKey TEXT NOT NULL DEFAULT ''"
                 )
             }
         }
@@ -133,7 +151,8 @@ internal fun SessionResult.toEntity(finishedAtMillis: Long) = SessionEntity(
     elapsedMillis = elapsedMillis,
     completed = completed,
     finishedAtMillis = finishedAtMillis,
-    skillTallies = bySkill.toStored()
+    skillTallies = bySkill.toStored(),
+    supportKey = support?.key.orEmpty()
 )
 
 /**
@@ -156,7 +175,8 @@ internal fun SessionEntity.toResult(): SessionResult? {
             mistakes = mistakes,
             elapsedMillis = elapsedMillis,
             completed = completed,
-            bySkill = skillTallies.toSkillTallies()
+            bySkill = skillTallies.toSkillTallies(),
+            support = Support.entries.find { it.key == supportKey }
         )
     }.getOrNull()
 }

@@ -406,6 +406,10 @@ class PairsViewModel @Inject constructor(
             mistakes = state.mistakes,
             elapsedMillis = System.currentTimeMillis() - startedAtMillis,
             completed = state.isFinished,
+            // Prečka na kojoj je sesija stvarno odrađena. Zasad su zauzeti samo
+            // krajevi lestvice — modul još ne prima porudžbinu, nego čita
+            // podešavanje, ali profil od sada zna koliko uspeh vredi.
+            support = if (_isEyesFree.value) Support.NONE else Support.FULL,
             bySkill = mapOf(
                 PAIRS_MEETING_SQUARE.measures to SkillTally(
                     attempted = state.puzzleNumber,

@@ -20,7 +20,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): TrainerDatabase =
         Room.databaseBuilder(context, TrainerDatabase::class.java, TrainerDatabase.NAME)
-            .addMigrations(TrainerDatabase.MIGRATION_1_2)
+            .addMigrations(TrainerDatabase.MIGRATION_1_2, TrainerDatabase.MIGRATION_2_3)
             .build()
 
     @Provides

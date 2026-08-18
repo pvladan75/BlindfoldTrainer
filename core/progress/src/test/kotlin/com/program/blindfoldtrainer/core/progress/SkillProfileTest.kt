@@ -5,14 +5,15 @@ import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.SkillTally
+import com.program.blindfoldtrainer.core.model.Support
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Profil je zbir razlaganja iz sesija i jedino mesto odakle se zna šta je
- * korisniku jako a šta slabo.
+ * Profil je zbir razlaganja iz sesija, i **razlaže se po prečkama**: isti
+ * procenat uz tablu i bez nje nije isti podatak.
  */
 class SkillProfileTest {
 
@@ -20,6 +21,7 @@ class SkillProfileTest {
         moduleId: ModuleId = ModuleId.GEOMETRY,
         attempted: Int = 10,
         solved: Int = 10,
+        support: Support? = Support.FULL,
         bySkill: Map<Skill, SkillTally> = emptyMap()
     ) = SessionResult(
         moduleId = moduleId,
@@ -28,30 +30,47 @@ class SkillProfileTest {
         solved = solved,
         mistakes = attempted - solved,
         elapsedMillis = 60_000,
-        bySkill = bySkill
+        bySkill = bySkill,
+        support = support
     )
 
     @Test
-    fun `profil se sabira kroz sesije`() {
+    fun `profil se sabira kroz sesije, po preckama`() {
         val history = listOf(
             session(bySkill = mapOf(Skill.COORDINATES to SkillTally(10, 8))),
             session(bySkill = mapOf(Skill.COORDINATES to SkillTally(10, 9))),
             session(
-                moduleId = ModuleId.FOLLOW_GAME,
-                bySkill = mapOf(Skill.POSITION_UPDATE to SkillTally(6, 3))
+                support = Support.NONE,
+                bySkill = mapOf(Skill.COORDINATES to SkillTally(10, 5))
             )
         )
 
-        val profile = history.toProgressSnapshot().bySkill
+        val profile = history.toProgressSnapshot().bySkill.getValue(Skill.COORDINATES)
 
-        assertEquals(SkillTally(20, 17), profile[Skill.COORDINATES])
-        assertEquals(SkillTally(6, 3), profile[Skill.POSITION_UPDATE])
+        assertEquals(SkillTally(20, 17), profile.at(Support.FULL))
+        assertEquals(SkillTally(10, 5), profile.at(Support.NONE))
+        assertEquals(30, profile.attempted)
     }
 
     /**
-     * Sesije upisane pre uvođenja veština nemaju razlaganje. One profil **ne
-     * pomeraju** — ni na gore ni na dole — umesto da ga razblaže nulama.
+     * Sesija bez upisane prečke ne ulazi u profil. Prečka je deo podatka, ne
+     * ukras — bez nje se ne zna koliko uspeh vredi, pa je bolje ne znati ništa
+     * nego znati pogrešno.
      */
+    @Test
+    fun `sesija bez precke ne ulazi u profil`() {
+        val history = listOf(
+            session(bySkill = mapOf(Skill.COORDINATES to SkillTally(10, 8))),
+            session(support = null, bySkill = mapOf(Skill.COORDINATES to SkillTally(10, 1)))
+        )
+
+        val snapshot = history.toProgressSnapshot()
+
+        assertEquals(SkillTally(10, 8), snapshot.bySkill.getValue(Skill.COORDINATES).at(Support.FULL))
+        assertEquals(10, snapshot.bySkill.getValue(Skill.COORDINATES).attempted)
+        assertEquals(2, snapshot.sessions)
+    }
+
     @Test
     fun `sesija bez razlaganja ne razblazuje profil`() {
         val history = listOf(
@@ -61,38 +80,66 @@ class SkillProfileTest {
 
         val snapshot = history.toProgressSnapshot()
 
-        assertEquals(SkillTally(10, 8), snapshot.bySkill[Skill.COORDINATES])
+        assertEquals(10, snapshot.bySkill.getValue(Skill.COORDINATES).attempted)
         assertEquals(1, snapshot.bySkill.size)
-        assertEquals(2, snapshot.sessions)
-    }
-
-    @Test
-    fun `najslabija vestina je ona sa najnizim ucinkom`() {
-        val history = listOf(
-            session(bySkill = mapOf(Skill.COORDINATES to SkillTally(10, 9))),
-            session(bySkill = mapOf(Skill.POSITION_UPDATE to SkillTally(10, 4))),
-            session(bySkill = mapOf(Skill.NOTATION to SkillTally(10, 7)))
-        )
-
-        assertEquals(Skill.POSITION_UPDATE, history.toProgressSnapshot().weakestSkill)
     }
 
     /**
-     * Nemerena veština se ne vraća kao najslabija. „Ne zna se da je slaba" i
-     * „zna se da je slaba" su dve različite stvari; mešanje bi poslalo korisnika
-     * da popravlja ono o čemu nemamo nijedan podatak.
+     * Prečka koju veština **drži** je najteža na kojoj ima dovoljno pokušaja i
+     * dovoljno tačno. Jedan srećan pogodak bez table nije dokaz.
      */
+    @Test
+    fun `drzana precka trazi i dovoljno pokusaja i dovoljno tacnosti`() {
+        val solid = SkillProfile()
+            .plus(Support.FULL, SkillTally(20, 19))
+            .plus(Support.NONE, SkillTally(10, 9))
+
+        assertEquals(Support.NONE, solid.heldRung())
+
+        // Bez table je probano, ali premalo — drži se i dalje samo uz tablu.
+        val shaky = SkillProfile()
+            .plus(Support.FULL, SkillTally(20, 19))
+            .plus(Support.NONE, SkillTally(2, 2))
+
+        assertEquals(Support.FULL, shaky.heldRung())
+
+        // Ima pokušaja, ali tačnost ne drži ni na jednoj prečki.
+        val failing = SkillProfile().plus(Support.FULL, SkillTally(20, 5))
+        assertNull(failing.heldRung())
+    }
+
+    /**
+     * Ovo je razlog zbog kog se prečka uopšte upisuje: bez nje bi onaj ko sve
+     * radi uz punu podršku izgledao jači od onoga ko se muči bez table.
+     */
+    @Test
+    fun `precka vredi vise od procenta pri poredjenju`() {
+        val comfortable = SkillProfile().plus(Support.FULL, SkillTally(20, 20))
+        val harder = SkillProfile().plus(Support.NONE, SkillTally(20, 14))
+
+        assertTrue(
+            "vežba bez table mora da stoji bolje od savršene uz tablu",
+            harder.standing > comfortable.standing
+        )
+    }
+
+    @Test
+    fun `najslabija vestina se meri po tome gde je postignuta`() {
+        val history = listOf(
+            session(support = Support.NONE, bySkill = mapOf(Skill.COORDINATES to SkillTally(10, 7))),
+            session(support = Support.FULL, bySkill = mapOf(Skill.POSITION_UPDATE to SkillTally(10, 8)))
+        )
+
+        // Ažuriranje ima bolji procenat, ali samo uz tablu — koordinate stoje
+        // bolje jer su postignute na težoj prečki.
+        assertEquals(Skill.POSITION_UPDATE, history.toProgressSnapshot().weakestSkill)
+    }
+
     @Test
     fun `nemereno nije slabost`() {
         val empty = ProgressSnapshot.EMPTY
 
         assertNull(empty.weakestSkill)
         assertTrue(empty.measuredSkills.isEmpty())
-
-        val onlyOne = listOf(session(bySkill = mapOf(Skill.COORDINATES to SkillTally(4, 4))))
-            .toProgressSnapshot()
-
-        assertEquals(Skill.COORDINATES, onlyOne.weakestSkill)
-        assertEquals(setOf(Skill.COORDINATES), onlyOne.measuredSkills)
     }
 }
