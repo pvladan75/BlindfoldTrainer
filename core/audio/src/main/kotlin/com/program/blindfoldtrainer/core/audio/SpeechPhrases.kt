@@ -96,6 +96,12 @@ interface SpeechPhrases {
 
     val notKnightMove: String
 
+    /** Skakač bi tu uzeo figuru, a zadatak traži da prođe neprimećen. */
+    val pieceInTheWay: String
+
+    /** Polje je prazno, ali ga protivnik drži. */
+    val squareIsAttacked: String
+
     fun correctInMoves(moves: Int): String
 
     val shortestGoesLikeThis: String
@@ -257,6 +263,10 @@ internal object EnglishPhrases : SpeechPhrases {
         if (moves == 1) "1 move left" else "$moves moves left"
 
     override val notKnightMove = "That is not a knight move."
+
+    override val pieceInTheWay = "There is a piece there."
+
+    override val squareIsAttacked = "That square is attacked."
 
     override fun correctInMoves(moves: Int) =
         if (moves == 1) "Correct, in 1 move." else "Correct, in $moves moves."

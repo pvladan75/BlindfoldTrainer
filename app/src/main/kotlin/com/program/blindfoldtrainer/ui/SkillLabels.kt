@@ -79,6 +79,8 @@ internal fun taskLabelRes(taskId: String): Int = when (taskId) {
     "meeting_square" -> R.string.task_meeting_square
     "where_is_piece" -> R.string.task_where_is_piece
     "attackers" -> R.string.task_attackers
+    "safe_path" -> R.string.task_safe_path
+    "no_capture" -> R.string.task_no_capture
     "play_out" -> R.string.task_play_out
     "reconstruct" -> R.string.task_reconstruct
     "place_position" -> R.string.task_place_position

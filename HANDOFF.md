@@ -44,8 +44,8 @@ blindfold animacija i raspakivanje ViewModel-a. Stari projekat se odatle napušt
 
 ## Šta radi
 
-Aplikacija se gradi, pokreće, i ima **sedam** modula za trening. Poslednji build
-je prošao čisto, bez upozorenja. **216 testova, nijedan ne pada.**
+Aplikacija se gradi, pokreće, i ima **osam** modula za trening. Poslednji build
+je prošao čisto, bez upozorenja. **222 testa, nijedan ne pada.**
 
 **Svih sedam modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -78,6 +78,7 @@ adb install -r C:\Users\Admin\AndroidStudioProjects\BlindfoldTrainer\app\build\o
 | `:feature:recall` | Zapamti poziciju | — |
 | `:feature:followgame` | Prati partiju | **5** |
 | `:feature:dictation` | Postavi po diktatu | — |
+| `:feature:minefield` | Kroz minsko polje | — |
 | `:app` | registar, navigacija, meni, sažetak sesije | — |
 
 `:core:model`, `:core:chess` i `:core:progress` su **čist Kotlin, bez Androida** —
@@ -920,6 +921,55 @@ izričito — a pošto kontrola polja nikad nije merena, put je odmah i nudi.
 `Board.attackersOf` je dodat u `:core:chess`, uz osam testova. Postojeći
 `isAttackedBy` odgovara na drugo pitanje: za pravila je dovoljno znati **da li**
 je polje napadnuto, za vežbu je potrebno **odakle**.
+
+### Skakač kroz minsko polje
+
+Osmi modul, `:feature:minefield`. Crne figure drže tablu, beli skakač mora do
+zadatog polja — **na lakšem zadatku ne sme da uzme nijednu figuru, na težem ni
+da stane na polje koje neka od njih drži.**
+
+Prvi modul koji pita **šta protivnik kontroliše**, a ne gde su figure. Time je i
+druga prazna vrsta u tabeli veština dobila pravi zadatak — u Prati partiju se
+kontrola polja **prepoznaje**, ovde se po njoj **planira**.
+
+**Zaseban modul, a ne težina u „Putanja skakača“**, jer se menja uputstvo: tamo je
+„stigni u najmanje poteza“, ovde „stigni živ“. Menja se i veština.
+
+#### Dva zadatka, jedan lakši ulaz u drugi
+
+| zadatak | meri | uz to nosi |
+|---|---|---|
+| `no_capture` | geometrija figure | držanje pozicije |
+| `safe_path` | **kontrola polja** | računanje, držanje |
+
+Prvi je prirodan ulaz: tabla je prorešetana, ali se ništa ne mora znati o tome
+šta protivnik drži. Drugi je ono zbog čega modul postoji.
+
+#### Napad se računa statično
+
+Crne figure se ne pomeraju, i **to piše na ekranu**. Drugačije se ne može — svaki
+skok bi menjao poziciju i zadatak bi postao partija — ali bez te rečenice bi
+izgledalo kao da protivnik spava.
+
+#### Zadatak se proverava pre nego što se ponudi
+
+Za razliku od prazne table, gde je svako polje dostupno iz svakog, ovde put ume i
+**da ne postoji**: skakač se ume zatvoriti sopstvenim skokovima. Zato se raspored
+postavlja nasumično pa **proverava**, a nerešiv se odbacuje.
+
+Provera je jeftinija od pametnog postavljanja, a i poštenija: zadaci ostaju
+raznoliki umesto da svi liče na obrazac po kom su građeni.
+
+#### Odbijen potez kaže zašto
+
+„Tu stoji figura“ i „to polje je napadnuto“ su **dve različite greške**, a iz
+druge se uči ono zbog čega modul postoji. Razlog se izgovara i kad se tabla vidi,
+jer je on ovde sama pouka a ne potvrda da je dodir primljen.
+
+Napadnuta polja se **ne boje na tabli** — to je baš ono što treba znati napamet.
+
+`Board.attackersOf`, `safeKnightPath` i `randomMinefield` stoje u `:core:chess`,
+uz trinaest testova u čistom Kotlinu.
 
 ### Šta iz ovoga sledi, po redu
 

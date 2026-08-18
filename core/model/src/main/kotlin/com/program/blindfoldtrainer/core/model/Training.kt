@@ -23,6 +23,13 @@ enum class ModuleId(val key: String) {
     /** Skakač od polazišta do odredišta, bez table. */
     KNIGHT_PATH("knight_path"),
 
+    /**
+     * Skakač do cilja kroz polja koja protivnik drži.
+     *
+     * Jedini modul koji pita **šta protivnik kontroliše**, a ne gde su figure.
+     */
+    MINEFIELD("minefield"),
+
     /** Potezi majstorske partije stižu jedan po jedan, uz povremena pitanja. */
     FOLLOW_GAME("follow_game"),
 
