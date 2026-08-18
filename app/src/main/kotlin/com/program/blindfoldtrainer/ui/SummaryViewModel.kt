@@ -54,6 +54,13 @@ class SummaryViewModel @Inject constructor(
     fun sayResult(result: SessionResult, reward: SessionReward?) = speaker.say {
         buildList {
             add(summaryResult(result.solved, result.attempted, result.mistakes))
+
+            // Šta je sesija pomerila — bez ekrana je ovo jedini način da se to
+            // sazna, a bez njega sažetak kaže koliko si radio ali ne i na čemu.
+            result.bySkill.forEach { (skill, tally) ->
+                add("${skillName(skill)} ${tally.solved} / ${tally.attempted}")
+            }
+
             reward?.let {
                 add(summaryXp(it.xp))
                 if (it.isRankUp) add(summaryRankUp)

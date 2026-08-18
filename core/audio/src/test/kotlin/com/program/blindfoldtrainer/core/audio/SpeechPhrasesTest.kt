@@ -24,8 +24,15 @@ class SpeechPhrasesTest {
             val voice = voiceFor(language)
 
             for (member in SpeechPhrases::class.java.methods) {
+                // Brojevi, enumi i reči — sve što se u rečenicu može umetnuti.
+                // Kad se pojavi nova vrsta, test padne ovde a ne na uređaju.
                 val arguments = Array<Any>(member.parameterTypes.size) { index ->
-                    if (member.parameterTypes[index] == Int::class.javaPrimitiveType) 2 else "reč"
+                    val type = member.parameterTypes[index]
+                    when {
+                        type == Int::class.javaPrimitiveType -> 2
+                        type.isEnum -> requireNotNull(type.enumConstants).first()
+                        else -> "reč"
+                    }
                 }
 
                 val spoken = member.invoke(voice, *arguments) as String

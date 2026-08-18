@@ -476,7 +476,25 @@ radi" nego da korisnik to otkrije pred tablom u koju ne gleda.
 - **nemereno nije slabost** — `weakestSkill` ne vraća veštinu o kojoj nema
   podatka, jer „ne zna se da je slaba" i „zna se da je slaba" nisu ista stvar.
 
-Ostaje prikaz: ekran napretka po veštinama i red u sažetku sesije.
+#### Profil se sad i vidi
+
+Tri mesta, istog dana:
+
+- **Sažetak sesije** — red „Pomereno", sa učinkom po veštini koju je sesija
+  dodirnula. Bez ekrana se isti podatak **izgovara**, pa je uz `SpeechPhrases`
+  dodato i `skillName`. To je svesan izuzetak od pravila o dva izvora istine za
+  imena: bez ekrana je govor jedini način da se sazna šta je sesija pomerila.
+- **Kartica modula** — „Razvija: …", unija veština njegovih zadataka. Modul više
+  ne izgleda kao vežba sama sebi svrha.
+- **Ekran napretka** — otvara se dodirom na karticu ranga u meniju. Ide **po
+  veštinama, ne po modulima**, i drži tri pravila iz dogovora: „nije mereno"
+  stoji umesto nule, ističe se **jedna** slabost, i uz svaku veštinu stoji
+  rečenica šta znači.
+
+Traka učinka se crta samo tamo gde ima podatka — prazna traka bi izgledala kao
+nula, a nula i „nije mereno" nisu ista stvar.
+
+Ostaje ono što traži još merenja: provera, put i podsetnici.
 
 ### Šta iz ovoga sledi, po redu
 

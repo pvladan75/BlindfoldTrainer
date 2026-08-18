@@ -62,6 +62,24 @@ fun SessionSummaryDialog(
                     emphasised = true
                 )
 
+                // Šta je ova sesija pomerila. Stiže u trenutku kad je zasluženo
+                // i bez otvaranja ijednog ekrana — zato je ovo najvažnije mesto
+                // na kom se profil vidi, važnije od samog ekrana napretka.
+                if (result.bySkill.isNotEmpty()) {
+                    HorizontalDivider()
+                    Text(
+                        text = stringResource(R.string.summary_skills),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    result.bySkill.forEach { (skill, tally) ->
+                        SummaryRow(
+                            label = stringResource(skill.labelRes()),
+                            value = "${tally.solved}/${tally.attempted}"
+                        )
+                    }
+                }
+
                 // Poeni stižu tek pošto se sesija upiše, pa ih nema u prvom
                 // kadru — red se zato pojavljuje kad nagrada stigne.
                 reward?.let {

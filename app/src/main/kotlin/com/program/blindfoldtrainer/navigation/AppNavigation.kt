@@ -17,6 +17,7 @@ import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.moduleapi.ModuleArgs
 import com.program.blindfoldtrainer.ui.MainMenuScreen
+import com.program.blindfoldtrainer.ui.ProgressScreen
 import com.program.blindfoldtrainer.ui.ProgressViewModel
 import com.program.blindfoldtrainer.ui.SessionSummaryDialog
 import com.program.blindfoldtrainer.ui.SessionSummaryEyesFree
@@ -26,6 +27,7 @@ import com.program.blindfoldtrainer.ui.SummaryViewModel
 
 private const val ROUTE_MENU = "menu"
 private const val ROUTE_SETTINGS = "settings"
+private const val ROUTE_PROGRESS = "progress"
 private const val ARG_MODULE = "module"
 private const val ARG_DIFFICULTY = "difficulty"
 private const val ROUTE_MODULE = "module/{$ARG_MODULE}/{$ARG_DIFFICULTY}"
@@ -66,8 +68,13 @@ fun AppNavigation(registry: ModuleRegistry) {
                 onStart = { module, difficulty ->
                     navController.navigate(moduleRoute(module.id.key, difficulty))
                 },
-                onOpenSettings = { navController.navigate(ROUTE_SETTINGS) }
+                onOpenSettings = { navController.navigate(ROUTE_SETTINGS) },
+                onOpenProgress = { navController.navigate(ROUTE_PROGRESS) }
             )
+        }
+
+        composable(ROUTE_PROGRESS) {
+            ProgressScreen(progress = progress, onBack = { navController.popBackStack() })
         }
 
         composable(ROUTE_SETTINGS) {

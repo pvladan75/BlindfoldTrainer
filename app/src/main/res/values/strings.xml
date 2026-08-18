@@ -108,4 +108,40 @@
     <string name="rank_experienced">Iskusan</string>
     <string name="rank_master">Majstor</string>
     <string name="rank_grandmaster">Velemajstor</string>
+
+    <!-- Veštine: ime i jedna rečenica o tome šta znače. -->
+    <string name="skill_coordinates">Koordinatna automatika</string>
+    <string name="skill_coordinates_hint">Boju i mesto polja znaš odmah, bez računanja.</string>
+    <string name="skill_piece_geometry">Geometrija figure</string>
+    <string name="skill_piece_geometry_hint">Sa datog polja odmah vidiš kuda figura može.</string>
+    <string name="skill_position_hold">Držanje pozicije</string>
+    <string name="skill_position_hold_hint">Držiš gde koja figura stoji, bez curenja.</string>
+    <string name="skill_position_update">Ažuriranje pozicije</string>
+    <string name="skill_position_update_hint">Primeniš potez a da sliku ne pokvariš. Ovde se najčešće raspada.</string>
+    <string name="skill_notation">Prevod zapisa u sliku</string>
+    <string name="skill_notation_hint">Čuješ „g1 f3" i vidiš; i obrnuto.</string>
+    <string name="skill_recovery">Oporavak slike</string>
+    <string name="skill_recovery_hint">Primetiš da ti se slika raspala i sastaviš je ponovo.</string>
+    <string name="skill_square_control">Kontrola polja</string>
+    <string name="skill_square_control_hint">Znaš šta protivnik drži i koje je polje vruće.</string>
+    <string name="skill_calculation">Računanje naslepo</string>
+    <string name="skill_calculation_hint">Vodiš varijantu bez table.</string>
+
+    <!-- Napredak po veštinama. -->
+    <string name="progress_title">Napredak</string>
+    <string name="progress_open">Napredak po veštinama</string>
+    <string name="progress_skills">Veštine</string>
+    <string name="progress_skill_score">%1$d/%2$d</string>
+    <string name="progress_not_measured">nije mereno</string>
+    <string name="progress_not_measured_hint">Veština o kojoj još nema podatka. To nije slabost — samo se još ne zna.</string>
+    <string name="progress_weakest">Trenutno najslabije</string>
+    <string name="progress_empty">Nijedna sesija još nije merena po veštinama. Odradi jednu vežbu pa se vrati.</string>
+    <string name="progress_old_sessions">Sesije odrađene pre uvođenja veština nemaju razlaganje i ne ulaze u profil.</string>
+
+    <!-- Šta je sesija pomerila. -->
+    <string name="summary_skills">Pomereno</string>
+    <string name="summary_skill_row">%1$s %2$d/%3$d</string>
+
+    <!-- Kartica modula. -->
+    <string name="menu_module_skills">Razvija: %1$s</string>
 </resources>

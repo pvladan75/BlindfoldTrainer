@@ -49,7 +49,8 @@ fun MainMenuScreen(
     /** Da li je u Podešavanjima uključen režim bez ekrana. */
     eyesFree: Boolean,
     onStart: (TrainingModule, Difficulty) -> Unit,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    onOpenProgress: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -92,7 +93,9 @@ fun MainMenuScreen(
             contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            item(key = "progress") { RankCard(progress = progress) }
+            item(key = "progress") {
+                RankCard(progress = progress, onOpenProgress = onOpenProgress)
+            }
 
             items(modules, key = { it.id.key }) { module ->
                 ModuleCard(
@@ -112,10 +115,13 @@ fun MainMenuScreen(
  * red iznad nje — inače bi ostao zalepljen dok se spisak modula pomera.
  */
 @Composable
-private fun RankCard(progress: ProgressSnapshot) {
+private fun RankCard(progress: ProgressSnapshot, onOpenProgress: () -> Unit) {
     val rankProgress = progress.rankProgress
 
     Card(
+        // Cela kartica je ulaz u profil: rang i poeni kažu koliko si radio, a
+        // profil šta se od toga razvilo — i to drugo je ono zbog čega se vežba.
+        onClick = onOpenProgress,
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
@@ -264,6 +270,20 @@ private fun ModuleCard(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            // Šta se ovim modulom razvija — da se vidi da vežbe nisu same sebi
+            // svrha. Modul prijavljuje zadatke, meni sabira njihove veštine.
+            if (module.skills.isNotEmpty()) {
+                Spacer(Modifier.height(6.dp))
+                // `map` je inline pa sme da zove stringResource; `joinToString`
+                // nije, pa se imena prvo pokupe a tek onda spoje.
+                val names = module.skills.map { stringResource(it.labelRes()) }
+                Text(
+                    text = stringResource(R.string.menu_module_skills, names.joinToString(", ")),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
 
             // Da modul nema režim bez ekrana treba znati **pre** ulaska, a ne
             // tek kad se unutra otvori tabla u koju se ne gleda.
