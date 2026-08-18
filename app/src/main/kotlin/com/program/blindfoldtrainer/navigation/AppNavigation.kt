@@ -18,6 +18,7 @@ import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.moduleapi.ModuleArgs
+import com.program.blindfoldtrainer.ui.GuideScreen
 import com.program.blindfoldtrainer.ui.MainMenuScreen
 import com.program.blindfoldtrainer.core.progress.recommend
 import com.program.blindfoldtrainer.ui.ProfilesScreen
@@ -34,6 +35,7 @@ private const val ROUTE_MENU = "menu"
 private const val ROUTE_SETTINGS = "settings"
 private const val ROUTE_PROGRESS = "progress"
 private const val ROUTE_PROFILES = "profiles"
+private const val ROUTE_GUIDE = "guide"
 private const val ARG_MODULE = "module"
 private const val ARG_DIFFICULTY = "difficulty"
 private const val ARG_TASK = "task"
@@ -126,6 +128,7 @@ fun AppNavigation(registry: ModuleRegistry) {
                 },
                 onOpenSettings = { navController.navigate(ROUTE_SETTINGS) },
                 onOpenProgress = { navController.navigate(ROUTE_PROGRESS) },
+                onOpenGuide = { navController.navigate(ROUTE_GUIDE) },
                 recommendation = recommendation,
                 onStartRecommended = { suggestion ->
                     val module = registry.all.first { module ->
@@ -163,6 +166,15 @@ fun AppNavigation(registry: ModuleRegistry) {
             ProgressScreen(
                 progress = progress,
                 tasks = registry.all.flatMap { it.tasks }.associateBy { it.id },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(ROUTE_GUIDE) {
+            // Uputstvo dobija **registar**, ne prepisan spisak: veštine, zadaci i
+            // prečke o kojima piše su iste one po kojima aplikacija radi.
+            GuideScreen(
+                modules = registry.all,
                 onBack = { navController.popBackStack() }
             )
         }

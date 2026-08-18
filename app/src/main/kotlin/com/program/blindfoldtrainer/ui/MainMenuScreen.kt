@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.MicNone
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
@@ -62,6 +63,8 @@ fun MainMenuScreen(
     onStart: (TrainingModule, ModuleArgs) -> Unit,
     onOpenSettings: () -> Unit,
     onOpenProgress: () -> Unit,
+    /** Uputstvo — čemu sve ovo i kako se čita ono što piše po ekranima. */
+    onOpenGuide: () -> Unit,
     /** Provera koja se nudi, ili `null` ako je nema. */
     checkup: Checkup?,
     onStartCheckup: (Checkup) -> Unit,
@@ -84,6 +87,12 @@ fun MainMenuScreen(
                     )
                 },
                 actions = {
+                    IconButton(onClick = onOpenGuide) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.HelpOutline,
+                            contentDescription = stringResource(R.string.guide_open)
+                        )
+                    }
                     IconButton(onClick = onOpenProfiles) {
                         Icon(
                             imageVector = Icons.Default.Person,

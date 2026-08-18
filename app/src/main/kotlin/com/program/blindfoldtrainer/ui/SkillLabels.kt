@@ -41,6 +41,38 @@ internal fun Skill.hintRes(): Int = when (this) {
 }
 
 /**
+ * Duži opis veštine — za uputstvo, ne za profil.
+ *
+ * Rečenica iz [hintRes] kaže **šta je** veština, i toliko staje uz ocenu na
+ * kartici. Ovde stoji **kako izgleda kad otkaže**, jer se veština po tome i
+ * prepoznaje: niko ne zna da mu curi držanje pozicije dok mu ne kažeš da se to
+ * ne primećuje iznutra.
+ */
+internal fun Skill.guideRes(): Int = when (this) {
+    Skill.COORDINATES -> R.string.skill_coordinates_guide
+    Skill.PIECE_GEOMETRY -> R.string.skill_piece_geometry_guide
+    Skill.POSITION_HOLD -> R.string.skill_position_hold_guide
+    Skill.POSITION_UPDATE -> R.string.skill_position_update_guide
+    Skill.NOTATION -> R.string.skill_notation_guide
+    Skill.RECOVERY -> R.string.skill_recovery_guide
+    Skill.SQUARE_CONTROL -> R.string.skill_square_control_guide
+    Skill.CALCULATION -> R.string.skill_calculation_guide
+}
+
+/**
+ * Šta prečka znači, u jednoj rečenici — za uputstvo.
+ *
+ * [labelRes] je ime koje staje na dugme; ovo je objašnjenje koje uz to ime ide
+ * jednom, dok se ne shvati da prečka nije isto što i težina.
+ */
+internal fun Support.guideRes(): Int = when (this) {
+    Support.FULL -> R.string.guide_rung_full
+    Support.PARTIAL -> R.string.guide_rung_partial
+    Support.TRACE -> R.string.guide_rung_trace
+    Support.NONE -> R.string.guide_rung_none
+}
+
+/**
  * Ime prečke na ekranu.
  *
  * Ne kaže se „FULL" nego **šta korisnik vidi** — prečka je za njega opis vežbe,

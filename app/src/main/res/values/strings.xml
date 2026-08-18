@@ -110,9 +110,9 @@
     <string name="rank_grandmaster">Velemajstor</string>
 
     <!-- Veštine: ime i jedna rečenica o tome šta znače. -->
-    <string name="skill_coordinates">Koordinatna automatika</string>
+    <string name="skill_coordinates">Snalaženje po tabli</string>
     <string name="skill_coordinates_hint">Boju i mesto polja znaš odmah, bez računanja.</string>
-    <string name="skill_piece_geometry">Geometrija figure</string>
+    <string name="skill_piece_geometry">Domet figure</string>
     <string name="skill_piece_geometry_hint">Sa datog polja odmah vidiš kuda figura može.</string>
     <string name="skill_position_hold">Držanje pozicije</string>
     <string name="skill_position_hold_hint">Držiš gde koja figura stoji, bez curenja.</string>
@@ -197,6 +197,64 @@
     <string name="support_partial">pogledaj pa zapamti</string>
     <string name="support_trace">samo tragovi</string>
     <string name="support_none">bez table</string>
+    <!-- Uputstvo: duži opis po veštini. Rečenica iz `_hint` kaže šta je; ovo kaže
+         kako izgleda kad otkaže, jer se po tome i prepoznaje. -->
+    <string name="skill_coordinates_guide">Ako moraš da izbrojiš da bi znao da je e4 tamno polje, znaš tačan odgovor a i dalje ti nedostaje veština. Ovde se ne meri da li znaš, nego koliko te košta. Otkazuje tiho: sve je tačno, samo se sve ostalo raspada, jer pažnja koja broji polja ne drži poziciju.</string>
+    <string name="skill_piece_geometry_guide">Sa datog polja odmah vidiš dokle figura seže — bez nabrajanja polje po polje. Skakač je granica: kod njega se najbolje vidi da li domet zaista vidiš ili ga svaki put iznova računaš. Otkazuje tako što ti se za svaki potez traži trenutak previše.</string>
+    <string name="skill_position_hold_guide">Veze figura–polje stoje stabilno dok ništa ne pomeraš. Otkazuje curenjem, ne padom: figura tiho nestane iz slike, a ti to ne primetiš — jer da si primetio, vratio bi je. Zato se meri koliko ih izdrži, a ne da li ih znaš.</string>
+    <string name="skill_position_update_guide">Ovo je usko grlo, ne držanje. Statična pozicija se pamti relativno lako; slika se kvari pri promeni, jer svaki potez nosi novu priliku da nešto ispadne, a greške se ne poništavaju nego slažu. Otkazuje tako što prvih deset poteza ide savršeno, a onda odjednom ništa ne stoji.</string>
+    <string name="skill_notation_guide">Čuješ „g1 f3" i vidiš potez, bez međukoraka; i obrnuto, viđeno umeš da izgovoriš. Dok je taj prevod svestan, sve što se sluša ide sporije nego što partija teče. Otkazuje na tuđim potezima pre nego na svojim.</string>
+    <string name="skill_recovery_guide">Prvo primetiš da ti se slika raspala, pa je sastaviš ponovo. Bez toga se posle prve greške nastavlja nagađanje, jer priznati sebi da se više ne zna gde je top deluje kao gubitak — a nije, to je jedini trenutak u kom se partija još može spasti.</string>
+    <string name="skill_square_control_guide">U pravoj partiji naslepo figure se ne gube zato što se zaboravi gde stoje, nego zato što se zaboravi šta drže. Držanje pozicije ti kaže da je lovac na g7; kontrola polja ti kaže da zbog toga ne smeš na d4. Otkazuje kao potez koji jednostavno visi.</string>
+    <string name="skill_calculation_guide">Vodiš varijantu bez table — dakle menjaš sliku više puta i vraćaš je na početak. Traži sve prethodno odjednom, i zato ide poslednje: dok ažuriranje ili kontrola polja troše pažnju, računanje nema čime da radi.</string>
+
+    <!-- ================= Uputstvo: „Kako ovo radi" ================= -->
+    <!--
+      Proza stoji ovde, a struktura se čita iz registra: spisak veština, grane
+      preduslova, ko šta meri i gde ima provere crta sam ekran. Da se i to ovde
+      prepiše, uputstvo bi zastarelo čim se doda deveti modul.
+    -->
+    <string name="guide_title">Kako ovo radi</string>
+    <string name="guide_open">Otvori uputstvo</string>
+
+    <string name="guide_intro_title">Zašto naslepo</string>
+    <string name="guide_intro">Ova aplikacija te ne uči šah. Uči te da ga držiš u glavi.\n\nIgra naslepo ne pada zato što ne znaš šta je dobar potez, nego zato što se u dvanaestom potezu više ne zna gde je lovac. To nije jedna mana pamćenja nego skup navika koje se vežbaju odvojeno — i koje se, dok se ne uvežbaju, međusobno guše, jer se sve odvijaju u istoj glavi u isto vreme.\n\nZato ovde nema jedne vežbe „igraj naslepo". Ima ih više, odvojenih, i svaka se vežba za sebe.</string>
+
+    <string name="guide_skills_title">Veštine</string>
+    <string name="guide_skills_intro">Uz svaku piše šta znači, kako izgleda kad otkaže, i čime se u aplikaciji vežba. Ono čime se vežba se ne prepisuje ručno — čita se iz samih zadataka, pa je uvek tačno.</string>
+    <string name="guide_trains">Vežba se: %1$s</string>
+    <string name="guide_trains_none">Nijedan zadatak je za sada ne meri — nosi se uz druge.</string>
+    <string name="guide_has_checkup">Ima proveru.</string>
+    <string name="guide_no_checkup">Nema proveru — zna se koliko si vežbao, ne i na kom si nivou.</string>
+
+    <string name="guide_deps_title">Kako se oslanjaju jedna na drugu</string>
+    <string name="guide_deps">Razlog nije pedagoški nego mehanički: radna memorija je jedna. Ako traženje polja e4 troši pažnju, nema se čime držati pozicija — pa držanje ne napreduje ma koliko ga vežbao.\n\nAutomatski ne znači tačno. Znači brzo, bez razmišljanja: tačan odgovor koji te je koštao tri sekunde i dalje troši pažnju koja bi trebalo da radi nešto drugo.\n\nPreduslov ništa ne zaključava. Ulazi samo u preporuku i u ovu sliku. Ako procena promaši, ti si i dalje pred otvorenim vratima.</string>
+    <string name="guide_deps_needs">stoji na: %1$s</string>
+    <string name="guide_deps_root">ne traži ništa pre sebe</string>
+
+    <string name="guide_levels_title">Modul, zadatak, prečka</string>
+    <string name="guide_levels">Tri stvari koje je lako pomešati, a znače različito.\n\nMODUL je alat — kartica u meniju. „Prati partiju", „Daj šah".\n\nZADATAK je ono što se zaista meri. Isti modul ume da pita stvari koje ne mere isto: „gde je sad skakač" meri ažuriranje slike, a „ko napada skakača" kontrolu polja. Ulaz je isti, veština druga. Zato modul sa dva zadatka u kartici ima red „Zadatak" — dok ga ne dodirneš, radi svoj zatečeni.\n\nPREČKA je koliko slike aplikacija drži umesto tebe, i to je prava težina vežbe naslepo. LAKO / SREDNJE / TEŠKO menja koliko toga ima i koliko brzo — to je napor. Prečka menja koliko toga moraš da držiš sam.</string>
+    <string name="guide_rungs_intro">Šta koja prečka znači zavisi od zadatka, i zadatak to kaže na svom ekranu. Zajednički je samo redosled — od najviše pomoći ka najmanje.</string>
+    <string name="guide_rung_full">Tabla se vidi sve vreme. Vežba se čitanje i brzina, ne držanje.</string>
+    <string name="guide_rung_partial">Tabla se vidi dok ne kažeš da si zapamtio, pa deo slike nestane. Granica je tvoja potvrda, a ne sat: sa figurama pred očima vežba se svede na čitanje, a slika u glavi se nikad ne sastavi.</string>
+    <string name="guide_rung_trace">Ostaju samo tragovi — polja bez figura.</string>
+    <string name="guide_rung_none">Ništa se ne vidi. Pozicija se čuje, a odgovara se glasom ili po zonama ekrana.</string>
+    <string name="guide_rungs_effect">Ista vežba na težoj prečki meri drugu veštinu. „Daj šah" uz tablu je čitanje linija; isti taj zadatak posle „ZAPAMTIO SAM" je kontrola polja napamet. Zato prečka ulazi u ocenu, i u profilu vredi više od procenta tačnosti.</string>
+
+    <string name="guide_measure_title">Kako se meri</string>
+    <string name="guide_measure">Za svaku prečku svakog zadatka postoji orijentir — i vreme i tačnost. Par, ne broj: da stoji samo vreme, merilo bi pozivalo na žurbu, a žurba obara tačnost, koja je pola veštine. Priznaje se tek kad su ispunjena oba.\n\nOrijentir nije maksimum i sme da se pređe. Kad ga pređeš, prestaje da bude horizont i postaje pod — preuzima ga orijentir sledeće prečke.\n\nDUBINA DO PRVE GREŠKE je najkorisniji broj ovde, a tačnost ga ne kaže. Tačnost od 70% ne kaže kako izgleda partija: neko greši ravnomerno, a nekome se slika raspadne u šestom potezu pa dalje pogađa nasumično. Prvo se popravlja vežbom, drugo je granica onoga što glava trenutno drži. Pamti se prva greška, jer je posle nje slika već pokvarena, pa ostali odgovori ne mere isto.\n\n„Nije mereno" nije nula. Nula bi rekla da si loš u tome; istina je da se o tome još ništa ne zna. Zato prazna mesta u profilu tako i pišu.</string>
+
+    <string name="guide_checkup_title">Provera</string>
+    <string name="guide_checkup">Vežba ti kaže kako napreduješ u tom zadatku. Ne kaže na kom si nivou, jer si sam birao težinu, prečku i koliko ćeš ponavljati.\n\nProvera je zato uvek ista: isti zadatak, ista težina, isti broj pitanja. To je jedino merenje koje se sme porediti sa prošlim mesecom.\n\nNe nosi poene, i to piše pre nego što je pokreneš a ne posle. Merilo koje nagrađuje prestaje da meri — čim bi provera davala poene, radila bi se zbog poena.\n\nProvera ne postoji za svaku veštinu. Za ostale se zna koliko si vežbao, ali ne i gde stojiš, i to piše uz svaku veštinu umesto da se prećuti.</string>
+
+    <string name="guide_path_title">Kartica „Sledeće"</string>
+    <string name="guide_path">Predlog šta raditi sada: koja veština, kojim zadatkom, na kojoj prečki — i zašto baš to.\n\nRazlog nije ukras. Preporuka bez razloga je proročanstvo, a proročanstvu se ne veruje kad promaši; sa razlogom je argument i smeš da se ne složiš.\n\nKako bira, po redu:\n\n1. Nikad dvaput isto zaredom — zastoj se ne probija ponavljanjem, a ostale veštine u međuvremenu venu.\n2. Povremeno ono što ti ide dobro. Preporuka koja uvek šalje na najgore mesto je preporuka koja se prestane otvarati.\n3. Temelj pre nadgradnje.\n4. Neprobano pre slabog — o neprobanom se ne zna ništa, a to je vrednije od još jedne potvrde da je nešto slabo.\n5. Inače najslabije.\n\nPrečku bira po poslednjem putu: dva puta uspešno zaredom na istoj prečki i ide se prečku niže; promašaj vraća nazad, bez kazne i bez komentara.\n\nNišta se ne zaključava. Spisak modula stoji netaknut ispod kartice, odbijanje nema posledice, i rang ništa ne otvara. Ako ti se ne radi ono što je predloženo, ne radi.</string>
+
+    <string name="guide_modules_title">Moduli</string>
+    <string name="guide_modules_intro">Spisak je isti onaj iz menija. Uz svaki modul piše koje zadatke nosi i do koje prečke ume.</string>
+    <string name="guide_module_tasks">Zadaci: %1$s</string>
+    <string name="guide_module_rungs">Prečke: %1$s</string>
+
     <string name="progress_empty">Nijedna sesija još nije merena po veštinama. Odradi jednu vežbu pa se vrati.</string>
     <string name="progress_old_sessions">Sesije odrađene pre uvođenja veština nemaju razlaganje i ne ulaze u profil.</string>
 
