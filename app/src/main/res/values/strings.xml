@@ -143,6 +143,8 @@
     <string name="progress_seconds">%1$s s po zadatku</string>
     <string name="progress_foundation">Ovo ide brže kad prvo postane automatsko: %1$s.</string>
     <string name="progress_foundation_open">Vežbaj to</string>
+    <string name="chart_scale">%1$s–%2$s s po zadatku</string>
+    <string name="chart_sessions">%1$d sesija</string>
     <string name="chart_best">— tvoj najbolji</string>
     <string name="chart_target">- - - orijentir</string>
     <string name="progress_target_reached">orijentir dostignut</string>

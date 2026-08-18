@@ -62,7 +62,9 @@ fun ProgressScreen(
     tasks: Map<String, TaskSpec>,
     onBack: () -> Unit
 ) {
-    val weakest = progress.weakestSkill
+    // Dok je merena samo jedna veština, „najslabija" nema sa čim da se poredi
+    // — a na jedinoj merenoj zvuči kao prekor umesto kao putokaz.
+    val weakest = progress.weakestSkill.takeIf { progress.measuredSkills.size >= 2 }
 
     Scaffold(
         topBar = {
@@ -252,6 +254,8 @@ private fun TaskRows(
         )
     }
 
+    TaskTrend(trend)
+
     task.triedRungs.forEach { rung ->
         val tally = task.at(rung) ?: return@forEach
         Spacer(Modifier.height(6.dp))
@@ -306,9 +310,15 @@ private fun TaskRows(
         )
     }
 
-    // Trend se gleda unutar istog zadatka — inače bi poredio dve sekunde po
-    // pitanju sa tri minuta po poziciji. Vreme je ovde važnije od procenta:
-    // procenat ume da bude dobar odavno, a vežba i dalje spora.
+}
+
+/**
+ * Trend se gleda unutar istog zadatka — inače bi poredio dve sekunde po pitanju
+ * sa tri minuta po poziciji. Vreme je ovde važnije od procenta: procenat ume da
+ * bude dobar odavno, a vežba i dalje spora.
+ */
+@Composable
+private fun TaskTrend(trend: SkillTrend?) {
     if (trend != null && trend.hasComparison) {
         Spacer(Modifier.height(8.dp))
         Text(

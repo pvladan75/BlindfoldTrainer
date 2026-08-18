@@ -1,7 +1,9 @@
 package com.program.blindfoldtrainer.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -65,7 +67,15 @@ fun ProgressChart(
 
     val best = points.minOf { it.first }
     val target = benchmark?.millisPerAttempt
-    val top = maxOf(points.maxOf { it.first }, target ?: 0L) * 1.15f
+
+    // Skala prati **podatke, ne nulu**. Sa nulom bi se sve između tri i pet
+    // sekundi slepilo u gornju trećinu, a razlika koja se prati je baš ta —
+    // pola sekunde po zadatku.
+    val lowest = minOf(points.minOf { it.first }, target ?: Long.MAX_VALUE)
+    val highest = maxOf(points.maxOf { it.first }, target ?: 0L)
+    val margin = ((highest - lowest) * 0.15f).coerceAtLeast(500f)
+    val bottom = (lowest - margin).coerceAtLeast(0f)
+    val top = highest + margin
 
     val line = MaterialTheme.colorScheme.primary
     val bestColor = MaterialTheme.colorScheme.tertiary
@@ -74,7 +84,8 @@ fun ProgressChart(
 
     Column(modifier = modifier) {
         Canvas(modifier = Modifier.fillMaxWidth().height(120.dp)) {
-            fun y(millis: Long): Float = size.height * (1f - millis / top)
+            fun y(millis: Long): Float =
+                size.height * (1f - (millis - bottom) / (top - bottom))
             fun x(index: Int): Float =
                 if (points.size == 1) 0f else size.width * index / (points.size - 1)
 
@@ -126,7 +137,25 @@ fun ProgressChart(
             }
         }
 
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(4.dp))
+
+        // Bez brojeva na osi grafik kaže samo „ide na dole", a razlika od pola
+        // sekunde po zadatku je upravo ono zbog čega se gleda.
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = stringResource(R.string.chart_scale, format(bottom), format(top)),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = stringResource(R.string.chart_sessions, points.size),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
 
         Legend(bestColor = bestColor, targetColor = targetColor, hasTarget = target != null)
     }
@@ -147,5 +176,8 @@ private fun Legend(bestColor: Color, targetColor: Color, hasTarget: Boolean) {
         )
     }
 }
+
+/** Sekunde sa jednom decimalom — milisekunde ovde nikome ništa ne znače. */
+private fun format(millis: Float): String = String.format("%.1f", millis / 1000f)
 
 private const val MIN_POINTS = 3
