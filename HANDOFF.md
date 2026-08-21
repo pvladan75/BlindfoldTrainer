@@ -47,6 +47,35 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### Uputstvo je dobilo dva poglavlja
+
+Odgovor na pitanje „sajt ili aplikacija": **jedan tekst, u aplikaciji, a sajt
+objavljuje isti.** Aplikacija radi bez interneta, prevod ionako ide kroz
+`strings.xml` pa sajt dobija sve jezike besplatno, i uputstvo ide sa verzijom
+koja je instalirana. Dva teksta bi se razišla — greška koju ovaj projekat već
+zna napamet.
+
+**„Zašto plan, a ne samo vežbanje"** — ide odmah posle slike zavisnosti, koja
+pokazuje da red postoji; ovo kaže zašto se ne sme birati po osećaju. Nosi tri
+stvari koje nigde drugde nisu rečene: da je vežbanje onoga što ti ide prijatno i
+jalovo; da je cela partija naslepo najbrži način da se odustane, jer kad padne ne
+znaš koja je veština popustila; i da izolovana mera **precenjuje** — boja polja za
+tri sekunde merena je dok ne radiš ništa drugo.
+
+**„Vežba se i ležeći"** — ide posle oslonca, jer se tek tu vidi šta „bez table"
+zaista znači: ne teži ekran nego nikakav. Ovo je izvorna zamisao projekta, koja je
+sve vreme živela u kodu a nigde nije bila napisana.
+
+#### I test za rečenice
+
+Pri pisanju ovog teksta **ista greška se ponovila u istom danu**: zatvoreni
+navodnik je otkucan kao ASCII, pa bi ga Android obrisao.
+
+`StringsTest` zato sad čita `strings.xml` i pada na ASCII navodniku, na
+neescape-ovanom apostrofu i na navodnicima koji nisu u paru. Kod je imao preko
+četiri stotine testova; rečenice nijedan — a otkazuju tiho i vide se tek kad ih
+neko pročita naglas.
+
 ### „Boja polja" više ne nudi oslonac kao izbor
 
 Iz zaključka koji je stigao sa uređaja: *„mi ovde nemamo oslonac, ovo se igra samo
@@ -1251,8 +1280,9 @@ strukturi**: ništa se ne premešta, ne preimenuje, ne grupiše.
 
 ### Šta je ostalo otvoreno
 
-0. **Pedagoško-psihološki tekst uz objavu** — traži se pre prevoda i pre
-   objavljivanja, za sajt i/ili za samu aplikaciju. Korisniku mora biti jasno
+0. **Pedagoško-psihološki tekst uz objavu** — *dva poglavlja su napisana, vidi
+   „Uputstvo je dobilo dva poglavlja"; ostaje da se iz istog teksta složi verzija
+   za sajt.* Prvobitni zapis stoji ispod, kao merilo šta je trebalo pokriti. Korisniku mora biti jasno
    **zašto** vežba baš to što vežba i **zašto vežbanje bez plana nije racionalno**.
    Gradivo za taj tekst je već izgovoreno u razgovoru i stoji rasuto po ovom
    fajlu; treba ga sastaviti na jedno mesto. Kičma:

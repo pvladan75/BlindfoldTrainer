@@ -142,6 +142,14 @@ fun GuideScreen(
             }
 
             // ---- Modul, zadatak, prečka -------------------------------------
+            // **Zašto plan** dolazi odmah posle slike zavisnosti: slika pokazuje
+            // da red postoji, a ovo kaže zašto se on ne sme birati po osećaju.
+            item(key = "plan") {
+                Section(titleRes = R.string.guide_plan_title) {
+                    Body(R.string.guide_plan)
+                }
+            }
+
             item(key = "levels") {
                 Section(titleRes = R.string.guide_levels_title) {
                     Body(R.string.guide_levels)
@@ -162,6 +170,14 @@ fun GuideScreen(
                         Spacer(Modifier.height(8.dp))
                     }
                     Body(R.string.guide_rungs_effect)
+                }
+            }
+
+            // **Ležeći** ide posle oslonca, jer se tek tu vidi šta „bez table"
+            // zaista znači: ne teži ekran nego nikakav.
+            item(key = "posture") {
+                Section(titleRes = R.string.guide_posture_title) {
+                    Body(R.string.guide_posture)
                 }
             }
 
