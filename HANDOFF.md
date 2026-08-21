@@ -37,6 +37,31 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### „Kuda po nju" je postalo dugme
+
+Sa uređaja: *„Sad kad bih hteo da unapredim Držanje pozicije, ne bih znao koju
+vežbu da uzmem."* Red je stajao i pisao **„Gradi se ovim: Rekonstrukcija viđenog ·
+uz tablu"** — a to je ime **zadatka**, koje se u meniju ne vidi. Kartice nose imena
+modula; „Rekonstrukcija viđenog" stoji tek unutra, kao jedan od izbora. Napredak
+je time pokazivao na nešto što se ne može naći.
+
+Sad piše **„Vežbaj: Zapamti poziciju → Rekonstrukcija viđenog · uz tablu"**, i to
+je **dugme**: odatle se ulazi pravo u tu vežbu, sa već izabranim zadatkom,
+osloncem i težinom. Red koji kaže šta da radiš pa te pusti da to sam tražiš po
+meniju je uputstvo, ne put.
+
+Težina ide kroz `PracticeStep`, po **istom pravilu kao predlog**. Prvo je ovde
+bila ukucana `Difficulty.EASY` — isti propust koji je na kartici Predloga slao
+svakoga ko sluša predlog na najlakšu trećinu. Pravilo sad stoji na jednom mestu i
+odavde se zove.
+
+#### I još jedna protivrečnost na istoj kartici
+
+Naslov je govorio **„u izgradnji"**, a red ispod **„Boja polja — drži: bez table"**.
+Naslov gleda skorašnji prozor, a `TaskProfile.heldRung` trajni zbir — dva tačna
+računa o istoj stvari, i oba na ekranu. Zaglavlje zadatka sad koristi isti prozor
+kao i naslov.
+
 ### Održavanje: savladano više ne stoji zauvek
 
 Poslednji deo puta koji je godinama stajao samo kao rečenica u ovom fajlu —

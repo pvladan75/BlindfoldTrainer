@@ -185,6 +185,28 @@ fun AppNavigation(registry: ModuleRegistry) {
             ProgressScreen(
                 progress = progress,
                 tasks = registry.all.flatMap { it.tasks }.associateBy { it.id },
+                // Zadatak se u meniju ne vidi sam za sebe — kartice nose imena
+                // modula. Bez ovoga bi Napredak upućivao na nešto što se ne
+                // može naći.
+                moduleTitleFor = { taskId ->
+                    registry.all.find { module -> module.tasks.any { it.id == taskId } }?.titleRes
+                },
+                // Iz Napretka se ulazi **pravo u vežbu**, sa već izabranim
+                // zadatkom i osloncem — isto kao sa kartice Predloga.
+                difficultiesFor = { taskId -> difficultiesByTask[taskId] ?: Difficulty.entries },
+                onPractice = { taskId, support, difficulty ->
+                    registry.all.find { module -> module.tasks.any { it.id == taskId } }
+                        ?.let { module ->
+                            navController.navigate(
+                                moduleRoute(
+                                    moduleKey = module.id.key,
+                                    difficulty = difficulty ?: Difficulty.EASY,
+                                    taskId = taskId,
+                                    support = support
+                                )
+                            )
+                        }
+                },
                 onBack = { navController.popBackStack() }
             )
         }

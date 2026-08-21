@@ -21,6 +21,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -45,6 +47,8 @@ import com.program.blindfoldtrainer.core.progress.Benchmarks
 import com.program.blindfoldtrainer.core.progress.Depth
 import com.program.blindfoldtrainer.core.progress.ProgressSnapshot
 import com.program.blindfoldtrainer.core.progress.SkillEntry
+import com.program.blindfoldtrainer.core.model.Difficulty
+import com.program.blindfoldtrainer.core.progress.PracticeStep
 import com.program.blindfoldtrainer.core.progress.SkillLevel
 import com.program.blindfoldtrainer.core.progress.SkillProfile
 import com.program.blindfoldtrainer.core.progress.SkillStage
@@ -75,6 +79,18 @@ fun ProgressScreen(
     progress: ProgressSnapshot,
     /** Zadaci iz registra — po njima se znaju orijentiri. Modul ih prijavljuje. */
     tasks: Map<String, TaskSpec>,
+    /**
+     * Ime **modula** kom zadatak pripada.
+     *
+     * Bez njega je red „gradi se ovim" imenovao zadatak koji se u meniju ne vidi:
+     * kartice nose imena modula, a „Rekonstrukcija viđenog" stoji tek unutra, kao
+     * jedan od izbora. Uputstvo je time pokazivalo na nešto što se ne može naći.
+     */
+    moduleTitleFor: (String) -> Int?,
+    /** Koje težine modul tog zadatka nudi — po tome se bira i ona. */
+    difficultiesFor: (String) -> List<Difficulty>,
+    /** Otvara vežbu odmah, sa izabranim zadatkom, osloncem i težinom. */
+    onPractice: (String, Support, Difficulty?) -> Unit,
     onBack: () -> Unit
 ) {
     // Dok je merena samo jedna veština, „najslabija" nema sa čim da se poredi
@@ -146,7 +162,11 @@ fun ProgressScreen(
                     skill = skill,
                     profile = progress.bySkill[skill],
                     level = progress.levelOf(skill, tasks.values.toList()),
-                    practice = progress.practiceFor(skill, tasks.values.toList()),
+                    practice = progress.practiceFor(
+                        skill = skill,
+                        tasks = tasks.values.toList(),
+                        difficultiesFor = difficultiesFor
+                    ),
                     checkup = progress.lastCheckup(skill),
                     isAutomatic = progress.isAutomatic(skill, benchmarks),
                     foundationsMissing = progress.foundationsMissing(skill, benchmarks),
@@ -155,6 +175,8 @@ fun ProgressScreen(
                     depthFor = { taskId -> progress.depthFor(taskId) },
                     specFor = { taskId -> tasks[taskId] },
                     holdsAt = { spec, rung -> progress.holdsAt(skill, spec, rung) },
+                    moduleTitleFor = moduleTitleFor,
+                    onPractice = onPractice,
                     sessionsFor = { taskId, rung -> progress.sessionsFor(skill, taskId, rung) }
                 )
             }
@@ -176,7 +198,7 @@ private fun SkillCard(
     profile: SkillProfile?,
     level: SkillLevel,
     /** Kojim zadatkom i na kojoj prečki se veština sad gradi. */
-    practice: Pair<TaskSpec, Support>?,
+    practice: PracticeStep?,
     checkup: SkillEntry?,
     isAutomatic: Boolean,
     foundationsMissing: Set<Skill>,
@@ -186,6 +208,8 @@ private fun SkillCard(
     specFor: (String) -> TaskSpec?,
     /** Drži li se orijentir **sada** — isto merilo po kom se računa i naslov. */
     holdsAt: (TaskSpec, Support) -> Boolean,
+    moduleTitleFor: (String) -> Int?,
+    onPractice: (String, Support, Difficulty?) -> Unit,
     sessionsFor: (String, Support) -> List<SkillEntry>
 ) {
     var expanded by remember(skill) { mutableStateOf(false) }
@@ -259,18 +283,38 @@ private fun SkillCard(
             // sazna i čime se to popravlja — dotle je to znao samo Predlog, i to
             // za jednu jedinu veštinu, onu koju je sam izabrao.
             if (practice != null && level.stage != SkillStage.MASTERED) {
-                val (task, rung) = practice
+                val task = practice.task
+                val rung = practice.support
+                val moduleTitle = moduleTitleFor(task.id)
+
                 Spacer(Modifier.height(10.dp))
-                Text(
-                    text = stringResource(
-                        R.string.progress_practice,
-                        stringResource(taskLabelRes(task.id)),
-                        stringResource(rung.labelRes())
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary
-                )
+
+                // **Dugme, ne rečenica.** Red koji kaže šta da radiš a onda te
+                // pusti da to sam tražiš po meniju je uputstvo, ne put. Odavde se
+                // ulazi pravo u tu vežbu, sa već izabranim zadatkom i osloncem.
+                FilledTonalButton(
+                    onClick = { onPractice(task.id, rung, practice.difficulty) },
+                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = if (moduleTitle == null) {
+                            stringResource(
+                                R.string.progress_practice,
+                                stringResource(taskLabelRes(task.id)),
+                                stringResource(rung.labelRes())
+                            )
+                        } else {
+                            stringResource(
+                                R.string.progress_practice_module,
+                                stringResource(moduleTitle),
+                                stringResource(taskLabelRes(task.id)),
+                                stringResource(rung.labelRes())
+                            )
+                        },
+                        style = MaterialTheme.typography.labelLarge,
+                        textAlign = TextAlign.Start
+                    )
+                }
             }
 
             // **Provera je potvrda, ne nivo.** Nivo je prečka iznad; provera kaže
@@ -334,7 +378,11 @@ private fun SkillCard(
                         )
                     } else {
                         Spacer(Modifier.height(6.dp))
-                        TaskHeader(taskId = taskId, task = task)
+                        TaskHeader(
+                            taskId = taskId,
+                            spec = specFor(taskId),
+                            holdsAt = holdsAt
+                        )
                     }
                 }
 
@@ -426,8 +474,15 @@ private fun SkillLevel.headline(): String = when (stage) {
  * imao, nego dokle si stigao.
  */
 @Composable
-private fun TaskHeader(taskId: String, task: TaskProfile) {
-    val held = task.heldRung()
+private fun TaskHeader(
+    taskId: String,
+    spec: TaskSpec?,
+    holdsAt: (TaskSpec, Support) -> Boolean
+) {
+    // **Isto merilo kao naslov kartice.** `TaskProfile.heldRung` gleda trajni
+    // zbir, pa je kartica umela da kaže „u izgradnji" gore i „drži: bez table"
+    // odmah ispod — dva tačna računa o istoj stvari, i oba na ekranu.
+    val held = spec?.let { s -> s.supports.filter { holdsAt(s, it) }.maxByOrNull { it.ordinal } }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -462,7 +517,7 @@ private fun TaskRows(
     holdsAt: (TaskSpec, Support) -> Boolean,
     sessionsFor: (Support) -> List<SkillEntry>
 ) {
-    TaskHeader(taskId = taskId, task = task)
+    TaskHeader(taskId = taskId, spec = spec, holdsAt = holdsAt)
 
     TaskTrend(trend)
 

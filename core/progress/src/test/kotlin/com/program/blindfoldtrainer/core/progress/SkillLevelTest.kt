@@ -146,10 +146,31 @@ class SkillLevelTest {
     /** Ko pročita da negde stoji slabo, ima pravo da odmah sazna i kuda po nju. */
     @Test
     fun `kaze kojim zadatkom i na kojoj precki se vestina sad gradi`() {
-        val (task, rung) = ProgressSnapshot.EMPTY.practiceFor(Skill.COORDINATES, tasks)!!
+        val step = ProgressSnapshot.EMPTY.practiceFor(Skill.COORDINATES, tasks)!!
 
-        assertEquals(Support.FULL, rung)
-        assertEquals(true, task.id in setOf("square_color", "reach_on_line"))
+        assertEquals(Support.FULL, step.support)
+        assertEquals(true, step.task.id in setOf("square_color", "reach_on_line"))
+    }
+
+    /**
+     * Nosi i **težinu**. Bez nje bi je pozivalac ukucao — a to je već jednom
+     * napravljeno na kartici Predloga, gde je svakoga ko sluša predlog slalo na
+     * najlakšu.
+     */
+    @Test
+    fun `korak nosi i tezinu, po istom pravilu kao predlog`() {
+        val step = ProgressSnapshot.EMPTY.practiceFor(Skill.COORDINATES, tasks)!!
+
+        assertEquals(Difficulty.EASY, step.difficulty)
+    }
+
+    /** Modul koji težine ne nudi je ne dobija ni ovde — izmišljati je značilo bi lagati. */
+    @Test
+    fun `modul bez tezina ne dobija tezinu ni u koraku`() {
+        val step = ProgressSnapshot.EMPTY
+            .practiceFor(Skill.COORDINATES, tasks, difficultiesFor = { emptyList() })!!
+
+        assertNull(step.difficulty)
     }
 
     @Test

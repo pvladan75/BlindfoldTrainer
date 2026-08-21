@@ -142,6 +142,7 @@
     <string name="stage_holding_short">drži oslonac</string>
     <string name="stage_mastered">savladano</string>
     <string name="progress_practice">Gradi se ovim: %1$s · %2$s</string>
+    <string name="progress_practice_module">Vežbaj: %1$s → %2$s · %3$s</string>
     <string name="progress_weakest">Trenutno najslabije</string>
     <string name="progress_holds">drži: %1$s</string>
     <string name="progress_no_rung_held">još nije utvrđeno</string>

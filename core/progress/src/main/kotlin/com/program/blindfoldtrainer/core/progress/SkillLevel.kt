@@ -1,5 +1,6 @@
 package com.program.blindfoldtrainer.core.progress
 
+import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.model.TaskSpec
@@ -194,7 +195,11 @@ private const val DAY_MILLIS = 24L * 60 * 60 * 1000
  *
  * `null` ako veštinu ne meri nijedan zadatak.
  */
-fun ProgressSnapshot.practiceFor(skill: Skill, tasks: List<TaskSpec>): Pair<TaskSpec, Support>? {
+fun ProgressSnapshot.practiceFor(
+    skill: Skill,
+    tasks: List<TaskSpec>,
+    difficultiesFor: (String) -> List<Difficulty> = { Difficulty.entries }
+): PracticeStep? {
     val measuring = tasks.filter { it.measures == skill }.ifEmpty { return null }
     val profile = bySkill[skill]
 
@@ -202,8 +207,28 @@ fun ProgressSnapshot.practiceFor(skill: Skill, tasks: List<TaskSpec>): Pair<Task
         profile?.byTask?.get(spec.id)?.standing ?: UNTOUCHED_FIRST
     } ?: return null
 
-    return chosen to nextRungFor(chosen)
+    val support = nextRungFor(chosen)
+
+    return PracticeStep(
+        task = chosen,
+        support = support,
+        difficulty = nextStepFor(chosen, support, difficultiesFor(chosen.id))
+    )
 }
+
+/**
+ * Šta tačno da otvoriš da bi ovu veštinu pomerio.
+ *
+ * Nosi i **težinu**, ne samo zadatak i oslonac. Bez nje bi je pozivalac ukucao —
+ * a to je već jednom napravljeno na kartici Predloga, gde je svakoga ko
+ * sluša predlog slalo na najlakšu. Pravilo za težinu stoji na jednom mestu i odavde se zove.
+ */
+data class PracticeStep(
+    val task: TaskSpec,
+    val support: Support,
+    /** `null` kad modul težine ne nudi. */
+    val difficulty: Difficulty?
+)
 
 /** Neprobano ide pre svega merenog: o njemu se ne zna ništa, a to je vrednije. */
 private const val UNTOUCHED_FIRST = -1f

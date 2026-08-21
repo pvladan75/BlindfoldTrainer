@@ -216,6 +216,12 @@ private fun ProgressSnapshot.standingOf(task: TaskSpec): Float =
  */
 internal fun ProgressSnapshot.nextRungFor(task: TaskSpec): Support = nextRung(task)
 
+internal fun ProgressSnapshot.nextStepFor(
+    task: TaskSpec,
+    support: Support,
+    offered: List<Difficulty>
+): Difficulty? = nextStep(task, support, offered)
+
 private fun ProgressSnapshot.nextRung(task: TaskSpec): Support {
     val history = skillHistory
         .filter { !it.isCheckup && it.taskId == task.id }
