@@ -47,6 +47,33 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### Rang je prestao da se pretvara da je nivo
+
+Sa uređaja: *„rang ništa ne znači, a kad se u njega uđe otvara se Napredak."*
+
+Oboje je bilo tačno i oboje je bio isti propust. Kartica je pisala „Amater · 1240
+poena", što se čita kao **ocena znanja** — a poeni mere koliko si radio. Otkako
+nivo postoji zasebno i zove se svojim imenom (prečka koju veština drži), imali smo
+**dva broja koja izgledaju kao ista stvar**, tačno onaj obrazac koji je ovaj
+projekat danas lovio tri puta.
+
+Kartica sad uz rang pokazuje **sesije i vreme**, po čemu se odmah vidi da je reč o
+uloženom, i vodi na svoj ekran — **Istrajnost** — umesto na Napredak.
+
+Na tom ekranu stoji i **spisak dostignuća**, koji dotle nije imao svoj ekran nego
+samo brojač u meniju. Neosvojena se pokazuju, ne kriju: spisak na kom se vidi šta
+još stoji je putokaz, a spisak koji raste iz ničega je iznenađenje.
+
+#### Zašto je ovo prvo, a ne skraćivanje početnog ekrana
+
+Zato što od njega zavisi drugo. Da se prvo krenulo u preuređenje, moralo bi se
+odlučiti **gde ide kartica ranga** — a to se ne može dok se ne zna šta je ona.
+Sad se mesto nameće samo: istrajnost je „ja", ne „šta sad" ni „gde stojim".
+
+Ovo je usput i **priprema za server**: kad dođe takmičenje, ono se sme vezati
+isključivo za istrajnost. Ko nizove dana i minute „lažira", samo je vežbao;
+lestvica po veštinama bi napala sam instrument.
+
 ### Uputstvo je dobilo dva poglavlja
 
 Odgovor na pitanje „sajt ili aplikacija": **jedan tekst, u aplikaciji, a sajt

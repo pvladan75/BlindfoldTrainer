@@ -135,6 +135,17 @@
     <string name="progress_not_measured">nije mereno</string>
     <string name="progress_not_measured_hint">Veština o kojoj još nema podatka. To nije slabost — samo se još ne zna.</string>
     <string name="progress_details">Krive, orijentiri i oslonci</string>
+    <string name="persistence_title">Istrajnost</string>
+    <string name="persistence_intro">Koliko si uložio, ne dokle si stigao. Poeni i rang mere vreme i upornost; dokle si stigao piše u Napretku, uz svaku veštinu posebno.</string>
+    <string name="persistence_sessions">Sesija</string>
+    <string name="persistence_time">Vremena za tablom</string>
+    <string name="persistence_solved">Rešenih zadataka</string>
+    <string name="persistence_perfect">Sesija bez greške</string>
+    <string name="persistence_streak">Niz bez greške (najbolji)</string>
+    <string name="persistence_achievements">Dostignuća: %1$d od %2$d</string>
+    <string name="persistence_minutes">%1$d min</string>
+    <string name="persistence_hours">%1$d h %2$d min</string>
+    <string name="menu_rank_effort">%1$d sesija · %2$s</string>
     <string name="snapshot_title">Presek</string>
     <string name="snapshot_summary">provereno %1$d od %2$d veština</string>
     <string name="snapshot_intro">Gde stojiš po svakoj veštini, izmereno na isti način. Napredak pokazuje šta je vežba usput donela; ovde stoji samo ono što se sme uporediti sa istim merenjem za mesec dana.</string>

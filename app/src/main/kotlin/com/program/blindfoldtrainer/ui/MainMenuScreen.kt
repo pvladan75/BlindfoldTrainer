@@ -270,8 +270,19 @@ private fun CheckupCard(checkup: Checkup, onStart: () -> Unit) {
 }
 
 /**
- * Rang i poeni. Stoji na vrhu menija, kao prva stavka liste a ne kao zaseban
- * red iznad nje — inače bi ostao zalepljen dok se spisak modula pomera.
+ * **Istrajnost** — rang i poeni, ali imenovani kao ono što jesu.
+ *
+ * Dugo je ova kartica vodila u Napredak, a pisala „Amater · 1240 poena". To se
+ * čitalo kao **nivo**, jer je „Amater" reč koja zvuči kao ocena znanja. Nije:
+ * poeni mere koliko si radio. Nivo sada postoji zasebno i zove se drugačije —
+ * prečka koju veština drži.
+ *
+ * Dva broja koja izgledaju kao ista stvar su najskuplja greška u ovom projektu,
+ * pa je razdvojeno oboje: kartica sad uz rang pokazuje **sesije i vreme**, po
+ * čemu se odmah vidi da je reč o uloženom, i vodi na svoj ekran.
+ *
+ * Stoji na vrhu menija, kao prva stavka liste a ne kao zaseban red iznad nje —
+ * inače bi ostao zalepljen dok se spisak modula pomera.
  */
 @Composable
 private fun RankCard(progress: ProgressSnapshot, onOpenProgress: () -> Unit) {
@@ -331,11 +342,13 @@ private fun RankCard(progress: ProgressSnapshot, onOpenProgress: () -> Unit) {
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                // **Sesije i vreme umesto broja dostignuća.** Ovo je jedini red
+                // na kartici po kom se odmah vidi da se meri uloženo, a ne znanje.
                 Text(
                     text = stringResource(
-                        R.string.menu_achievements,
-                        progress.achievements.size,
-                        Achievement.entries.size
+                        R.string.menu_rank_effort,
+                        progress.sessions,
+                        practiceTimeLabel(progress.timeMillis)
                     ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -683,6 +696,17 @@ private fun ModuleCard(
  */
 private fun TrainingModule.rungs(): List<Support> =
     tasks.flatMap { it.supports }.distinct().sortedBy { it.ordinal }
+
+/** Vreme vežbanja, u satima i minutima; ispod sata se sati ne pominju. */
+@Composable
+private fun practiceTimeLabel(millis: Long): String {
+    val minutes = millis / 60_000
+    return if (minutes < 60) {
+        stringResource(R.string.persistence_minutes, minutes)
+    } else {
+        stringResource(R.string.persistence_hours, minutes / 60, minutes % 60)
+    }
+}
 
 private fun Difficulty.labelRes(): Int = when (this) {
     Difficulty.EASY -> R.string.difficulty_easy

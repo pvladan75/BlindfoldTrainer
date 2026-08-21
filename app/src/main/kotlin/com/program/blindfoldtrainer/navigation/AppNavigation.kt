@@ -22,6 +22,7 @@ import com.program.blindfoldtrainer.core.moduleapi.ModuleArgs
 import com.program.blindfoldtrainer.ui.GuideScreen
 import com.program.blindfoldtrainer.ui.MainMenuScreen
 import com.program.blindfoldtrainer.core.progress.recommend
+import com.program.blindfoldtrainer.ui.PersistenceScreen
 import com.program.blindfoldtrainer.ui.ProfilesScreen
 import com.program.blindfoldtrainer.ui.ProfilesViewModel
 import com.program.blindfoldtrainer.ui.ProgressScreen
@@ -39,6 +40,7 @@ private const val ROUTE_PROGRESS = "progress"
 private const val ROUTE_PROFILES = "profiles"
 private const val ROUTE_GUIDE = "guide"
 private const val ROUTE_SNAPSHOT = "snapshot"
+private const val ROUTE_PERSISTENCE = "persistence"
 private const val ARG_MODULE = "module"
 private const val ARG_DIFFICULTY = "difficulty"
 private const val ARG_TASK = "task"
@@ -156,7 +158,9 @@ fun AppNavigation(registry: ModuleRegistry) {
                     )
                 },
                 onOpenSettings = { navController.navigate(ROUTE_SETTINGS) },
-                onOpenProgress = { navController.navigate(ROUTE_PROGRESS) },
+                // Rang vodi na **istrajnost**, ne na Napredak: dotle je vodio
+                // tamo i time tvrdio da su poeni i nivo ista stvar.
+                onOpenProgress = { navController.navigate(ROUTE_PERSISTENCE) },
                 onOpenGuide = { navController.navigate(ROUTE_GUIDE) },
                 recommendation = recommendation,
                 onStartRecommended = { suggestion ->
@@ -256,6 +260,10 @@ fun AppNavigation(registry: ModuleRegistry) {
                 },
                 onBack = { navController.popBackStack() }
             )
+        }
+
+        composable(ROUTE_PERSISTENCE) {
+            PersistenceScreen(progress = progress, onBack = { navController.popBackStack() })
         }
 
         composable(ROUTE_PROFILES) {
