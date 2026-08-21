@@ -92,7 +92,11 @@ za pejzaž pravili dvaput. A i sama korist je manja nego što zvuči: **na telef
 je tabla u pejzažu manja**, jer je ograničava visina. Pejzaž se isplati na
 tabletu, a tableta zasad nema.
 
-Aplikacija je zato **zaključana na portret** u manifestu. To je i sadašnje stanje
+Aplikacija je zato **zaključana na portret** u manifestu. **Potvrđeno na uređaju
+i prihvaćeno** kao konačno za sada — uz jednu razliku koju vredi zapamtiti, jer se
+lako pobrka: na **telefonu se ne rotira uopšte** (zaključavanje drži), a na
+**tabletu se rotira** i raspored podnosi obe orijentacije. Dva različita mehanizma
+daju isti utisak. To je i sadašnje stanje
 u glavnom režimu: ekrani sa velikim zonama su i dosad zaključavali portret preko
 `LockPortrait`, koji uredno pamti i vraća prethodnu orijentaciju.
 
