@@ -48,9 +48,9 @@
     <string name="settings_theme_light">Svetla</string>
     <string name="settings_theme_dark">Tamna</string>
 
-    <string name="settings_eyes_free">Bez ekrana</string>
-    <string name="settings_eyes_free_switch">Vežbaj zatvorenih očiju</string>
-    <string name="settings_eyes_free_hint">Umesto table i dugmadi — velike zone koje se pogađaju bez gledanja, svaka sa svojom vibracijom. Pozicija se pročita, potezi se izgovaraju. Radi u pet modula; Zapamti poziciju traži tablu i ostaje na ekranu.</string>
+    <string name="settings_eyes_free">Kako obično vežbaš</string>
+    <string name="settings_eyes_free_switch">Ovako obično vežbam — bez table</string>
+    <string name="settings_eyes_free_hint">Ne zaključava ništa: samo kaže odakle svaki modul kreće. Zadatak koji ume bez table počinje bez nje, a sažetak sesije ti se izgovori umesto da se prikaže — inače bi te na kraju dočekao ekran u koji ne gledaš. Oslonac i dalje biraš na kartici modula, a put ti ga sam pomera po tome kako ide.</string>
 
     <string name="settings_language_title">Jezik</string>
     <string name="settings_language_title_hint">Isti jezik za oba smera: i za ono što ti aplikacija govori i za ono što ti govoriš njoj. Nude se jezici koje aplikacija ume da izgovori i za koje uređaj ima glas.</string>
