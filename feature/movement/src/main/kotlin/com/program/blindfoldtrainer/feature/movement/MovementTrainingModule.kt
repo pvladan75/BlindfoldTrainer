@@ -5,6 +5,7 @@ import com.program.blindfoldtrainer.core.model.Capability
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.moduleapi.ModuleArgs
 import com.program.blindfoldtrainer.core.moduleapi.TrainingModule
 import dagger.Binds
@@ -37,6 +38,21 @@ class MovementTrainingModule @Inject constructor() : TrainingModule {
 
     override fun difficultyDetail(difficulty: Difficulty, taskId: String?): String =
         difficultyDetailOf(difficulty, taskId ?: defaultTaskId)
+
+    /**
+     * Oslonac ovde znači **koliko traga ostaje iza figure** dok se putanja crta,
+     * a ne stoji li tabla pred tobom. Tabla u „Prepričaj putanju" i jeste samo
+     * pitanje; u šetnjama je nema dok se radi, pa tamo nema ni šta da se kaže.
+     */
+    override fun supportDetail(support: Support, taskId: String?): String? {
+        if (taskId != RETELL_PATH.id) return null
+
+        return when (support) {
+            Support.FULL -> "ceo trag ostaje — putanja se pročita sa table"
+            Support.PARTIAL -> "iza figure ostaju dva polja"
+            else -> "vidi se samo polje na kom figura stoji"
+        }
+    }
 
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {

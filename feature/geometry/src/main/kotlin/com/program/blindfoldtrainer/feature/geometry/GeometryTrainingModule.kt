@@ -5,6 +5,7 @@ import com.program.blindfoldtrainer.core.model.Capability
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.moduleapi.ModuleArgs
 import com.program.blindfoldtrainer.core.moduleapi.TrainingModule
 import dagger.Binds
@@ -28,6 +29,16 @@ class GeometryTrainingModule @Inject constructor() : TrainingModule {
 
     override fun difficultyDetail(difficulty: Difficulty, taskId: String?): String? =
         difficultyDetailOf(difficulty)
+
+    /**
+     * Ovde „uz tablu" **ne znači da tabla stoji dok odgovaraš** — boja polja se
+     * zna napamet ili se ne zna. Tabla dolazi posle odgovora, da se vidi gde je
+     * polje bilo; to je razlika između testa i vežbe.
+     */
+    override fun supportDetail(support: Support, taskId: String?): String = when (support) {
+        Support.NONE -> "polje se izgovara, istina takođe"
+        else -> "tabla se pokaže tek posle odgovora"
+    }
 
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {

@@ -37,6 +37,40 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### Kartica je pisala jedno a pokretala drugo
+
+Sa uređaja: Geometrija sa izabranim „uz tablu" pokrenula se **bez table**.
+
+Uzrok su dva propusta u istoj kartici.
+
+**Slalo se samo ono što je dodirnuto.** Netaknut izbor je išao kao `null`, pa je
+modul odlučivao sam, po globalnom podešavanju — a istaknuti čip je bio samo
+**nagoveštaj** šta bi se tada dogodilo. Pravilo je time postojalo na dva mesta, u
+meniju i u svakom modulu, i umelo je da se raziđe. Sad se šalje **ono što na
+kartici piše**: odlučuje ono što se vidi.
+
+**Izbor se gubio pri skrolovanju.** Kartice stoje u `LazyColumn`, koji odbacuje
+sastav stavke koja izađe sa ekrana — a sa njim i običan `remember`. Prešlo se na
+`rememberSaveable`; oslonac se pamti kao ključ, jer se `Support` ne ume sam
+sačuvati.
+
+### „Uz tablu" je bilo netačno ime
+
+Veći nalaz od gornjeg, i stigao je kao ispravka korisnika u hodu: u Geometriji se
+tabla **jeste** pokazivala, ali **tek posle odgovora**, da se vidi gde je polje
+bilo. Ko pročita „uz tablu" razumno očekuje da će tabla stajati pred njim **dok
+odgovara** — a to je druga vežba.
+
+Ime je zato promenjeno u **„najviše pomoći"**. Ono ne obećava tablu, a istinito je
+i tamo gde tabla zaista stoji (Završnica) i tamo gde dolazi posle (Geometrija).
+Ostala tri imena ostaju: „bez table" nikoga ne navodi da očekuje tablu.
+
+`TrainingModule` je uz to dobio **`supportDetail(support, taskId)`**, po uzoru na
+`difficultyDetail`: ime nosi redosled, a **značenje pripada zadatku** — to je već
+zapisano uz `Support`, samo nije imalo gde da se kaže. Popunjeno za Geometriju
+(„tabla se pokaže tek posle odgovora") i za „Prepričaj putanju" (koliko traga
+ostaje). Ostali vraćaju `null`, jer im ime znači tačno ono što piše.
+
 ### Presek postoji
 
 **Presek nije novi ekran preko Napretka nego drugo pitanje.** Napredak pokazuje

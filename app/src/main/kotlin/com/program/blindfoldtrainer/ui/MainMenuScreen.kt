@@ -36,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -463,9 +464,17 @@ private fun ModuleCard(
             // Zatečeno stanje ostaje **neizabrano**: dok se ne dodirne, modul
             // dobija `null` i odlučuje sam, tačno kao pre. Chip koji svetli
             // pokazuje šta bi se tada dogodilo, da izbor ne izgleda prazan.
-            var chosenRung by remember(module.id) { mutableStateOf<Support?>(null) }
-            var chosenTask by remember(module.id) { mutableStateOf<String?>(null) }
-            var open by remember(module.id) { mutableStateOf(false) }
+            // **`rememberSaveable`, ne `remember`.** Kartice stoje u `LazyColumn`,
+            // a on odbacuje sastav stavke koja izađe sa ekrana — sa njim i običan
+            // `remember`. Izbor bi se tako gubio pri skrolovanju, tiho i tek
+            // ponekad, što je najgora vrsta greške za pronaći.
+            //
+            // Oslonac se pamti kao **ključ**, jer se `Support` ne ume sam sačuvati.
+            var chosenRungKey by rememberSaveable(module.id) { mutableStateOf<String?>(null) }
+            var chosenTask by rememberSaveable(module.id) { mutableStateOf<String?>(null) }
+            var open by rememberSaveable(module.id) { mutableStateOf(false) }
+
+            val chosenRung = chosenRungKey?.let { key -> Support.entries.find { it.key == key } }
 
             val shownTask = chosenTask ?: module.defaultTaskId
 
@@ -487,6 +496,9 @@ private fun ModuleCard(
             val pickableRung = rungs.size > 1
 
             // Prečka izabrana za prošli zadatak ne mora da postoji u novom.
+            //
+            // Kad ništa nije dodirnuto, ovo je **odluka a ne nagoveštaj** — vidi
+            // šta se šalje modulu niže.
             val shownRung = chosenRung?.takeIf { it in rungs }
                 ?: if (eyesFree) rungs.lastOrNull() else rungs.firstOrNull()
 
@@ -544,7 +556,7 @@ private fun ModuleCard(
                                 chosenTask = task.id
                                 // Novi zadatak nosi svoje prečke; stari izbor bi
                                 // se u njemu svodio na nešto drugo.
-                                chosenRung = null
+                                chosenRungKey = null
                             },
                             label = { Text(stringResource(taskLabelRes(task.id))) }
                         )
@@ -564,8 +576,23 @@ private fun ModuleCard(
                     rungs.forEach { rung ->
                         FilterChip(
                             selected = rung == shownRung,
-                            onClick = { chosenRung = rung },
+                            onClick = { chosenRungKey = rung.key },
                             label = { Text(stringResource(rung.labelRes())) }
+                        )
+                    }
+                }
+
+                // **Šta izabrani oslonac ovde znači.** Imena su zajednička, ali
+                // posao nije: „uz tablu" u Završnici znači da tabla stoji dok
+                // igraš, a u Geometriji da se pokaže tek posle odgovora. Ko
+                // pročita samo ime razumno očekuje ono prvo.
+                shownRung?.let { rung ->
+                    module.supportDetail(rung, shownTask)?.let { detail ->
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            text = detail,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -589,13 +616,22 @@ private fun ModuleCard(
 
                     FilledTonalButton(
                         onClick = {
+                            // **Šalje se ono što na kartici piše.**
+                            //
+                            // Dotle se slalo samo ono što je **dodirnuto**, a
+                            // netaknuto je išlo kao `null` — pa je modul odlučivao
+                            // sam, po globalnom podešavanju. Istaknuti čip je time
+                            // bio nagoveštaj, ne izbor, i to se razilazilo: kartica
+                            // je pisala „uz tablu", a pokretalo se bez table.
+                            //
+                            // Isto pravilo je time prestalo da postoji na dva
+                            // mesta — u meniju i u svakom modulu. Odlučuje ono koje
+                            // se **vidi**.
                             onStart(
                                 ModuleArgs(
                                     difficulty = difficulty,
-                                    taskId = chosenTask,
-                                    // Šalje se samo prečka koju izabrani zadatak
-                                    // zaista ume; inače `null`, pa modul bira sam.
-                                    support = chosenRung?.takeIf { it in rungs }
+                                    taskId = shownTask,
+                                    support = shownRung
                                 )
                             )
                         },

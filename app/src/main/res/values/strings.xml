@@ -225,7 +225,7 @@
     <string name="menu_choice_toggle">Izaberi zadatak i oslonac</string>
     <string name="menu_task_label">Zadatak</string>
     <string name="menu_support_label">Koliko oslonca</string>
-    <string name="support_full">uz tablu</string>
+    <string name="support_full">najviše pomoći</string>
     <string name="support_partial">pogledaj pa zapamti</string>
     <string name="support_trace">samo tragovi</string>
     <string name="support_none">bez table</string>

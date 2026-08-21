@@ -58,6 +58,23 @@ interface TrainingModule {
     fun difficultyDetail(difficulty: Difficulty, taskId: String? = null): String? = null
 
     /**
+     * Šta oslonac **konkretno znači** u ovom zadatku.
+     *
+     * Imena oslonaca su zajednička, ali posao nije: u Završnici „uz tablu" znači
+     * da tabla stoji pred tobom dok igraš, a u Geometriji da se pokaže **tek
+     * posle odgovora**, da vidiš gde je polje bilo. Ista reč, dve različite
+     * vežbe — a čovek koji pročita „uz tablu" razumno očekuje ono prvo.
+     *
+     * Da meni sam objasni ne može: **zajednički je samo redosled**, značenje
+     * pripada zadatku. To je već zapisano uz `Support`; ovo je mesto na kom
+     * zadatak to i kaže.
+     *
+     * `null` znači da je ime dovoljno — tamo gde oslonac znači tačno ono što
+     * piše, rečenica ispod bi bila šum.
+     */
+    fun supportDetail(support: Support, taskId: String? = null): String? = null
+
+    /**
      * Šta modulu treba od školjke. Školjka na osnovu ovoga traži dozvolu za
      * mikrofon i podiže Stockfish **pre** ulaska u modul, umesto da svaki modul
      * to petlja sam.
