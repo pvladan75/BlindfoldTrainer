@@ -48,6 +48,36 @@ data class Line(val isFile: Boolean, val index: Int) {
 /** Koju vrstu zadatka modul upravo radi. */
 enum class MovementTask { REACH, WALK, KNIGHT_WALK }
 
+/**
+ * Odrađena šetnja, prikazana natrag — polje po polje, uz izgovaranje.
+ *
+ * **Ovo nije oslonac nego odgovor.** Oslonac je koliko slike aplikacija drži
+ * umesto tebe *dok radiš*; ovo se dešava kad je šetnja već gotova i ne pomaže
+ * pri njoj ni najmanje. Da je vezano za oslonac, čovek bi prikaz **gubio** kako
+ * napreduje — a upravo je prikaz mesto na kom se vidi šta se držalo.
+ *
+ * Isto pravilo po kom Geometrija posle odgovora pokaže polje: test kaže da li
+ * si pogodio, vežba pokaže istinu. Šetnja je dotle govorila samo broj.
+ *
+ * Nema strelica jer ih tabla ne ume da crta — a i ne trebaju: prikaz **korača**,
+ * pa se redosled vidi iz samog toka, dok potrošena polja ostaju obojena i iz
+ * njih se vidi oblik.
+ */
+data class Replay(
+    val piece: PieceType,
+    /** Cela putanja, počev od polaznog polja. */
+    val path: List<Square>,
+    /** Dokle je prikaz stigao. */
+    val step: Int = 0,
+    /** Prikaz je došao do kraja i čeka se dodir. */
+    val isDone: Boolean = false
+) {
+    val current: Square get() = path[step.coerceIn(path.indices)]
+
+    /** Polja kroz koja se već prošlo — bez onog na kom figura sad stoji. */
+    val behind: List<Square> get() = path.take(step)
+}
+
 data class MovementUiState(
     val task: MovementTask = MovementTask.REACH,
     val roundNumber: Int = 0,
@@ -68,6 +98,8 @@ data class MovementUiState(
 
     // — Šetnja —
     val walk: Walk? = null,
+    /** Prikaz odrađene šetnje; `null` dok se radi. */
+    val replay: Replay? = null,
 
     // — Domet na liniji —
     val piece: PieceType? = null,
@@ -418,11 +450,39 @@ class MovementViewModel @Inject constructor(
         val held = walk.heldUntil ?: walk.movesMade
         bestHeld = maxOf(bestHeld ?: held, held)
 
+        _uiState.update { it.copy(replay = Replay(walk.piece, walk.visited)) }
+
         roundJob?.cancel()
         roundJob = viewModelScope.launch {
             awaitSilence()
-            nextRound()
+            speaker.say(interrupt = false) { walkReplay }
+
+            // Korak čeka da se prethodno polje **izgovori**, umesto da se pogađa
+            // koliko izgovor traje. Otud i osećaj da prikaz ide onoliko brzo
+            // koliko se stiže pratiti.
+            walk.visited.indices.forEach { step ->
+                if (_uiState.value.replay == null) return@launch
+                _uiState.update { it.copy(replay = it.replay?.copy(step = step)) }
+                speaker.say(walk.visited[step], interrupt = false)
+                awaitSilence()
+            }
+
+            _uiState.update { it.copy(replay = it.replay?.copy(isDone = true)) }
         }
+    }
+
+    /**
+     * Dalje sa prikaza na sledeću šetnju.
+     *
+     * Radi i **pre** nego što prikaz dođe do kraja: ko je video dovoljno ne mora
+     * da čeka ostatak. Zato dugme stoji na ekranu sve vreme, a ne tek na kraju.
+     */
+    fun onReplayDone() {
+        if (_uiState.value.replay == null) return
+        roundJob?.cancel()
+        speaker.stop()
+        _uiState.update { it.copy(replay = null) }
+        nextRound()
     }
 
     /**
@@ -478,7 +538,12 @@ class MovementViewModel @Inject constructor(
         speaker.say(from, interrupt = false)
         if (walk.piece == PieceType.QUEEN) sayQueenTurn(walk)
         _uiState.update {
-            it.copy(roundNumber = it.roundNumber + 1, walk = walk, isBetweenRounds = false)
+            it.copy(
+                roundNumber = it.roundNumber + 1,
+                walk = walk,
+                replay = null,
+                isBetweenRounds = false
+            )
         }
     }
 

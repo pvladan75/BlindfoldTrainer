@@ -30,9 +30,10 @@ android {
 
 dependencies {
     implementation(project(":core:moduleapi"))
-    // Table nema ni na jednoj prečki, pa ni :core:designsystem — jedini ulaz i
-    // izlaz su glas i zone.
     implementation(project(":core:audio"))
+    // Tabla se ne vidi **dok se radi** — jedini ulaz i izlaz su tada glas i
+    // zone. Pojavljuje se tek posle odrađene šetnje, kao odgovor.
+    implementation(project(":core:designsystem"))
 
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.kotlinx.coroutines.android)

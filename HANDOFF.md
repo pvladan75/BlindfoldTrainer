@@ -37,6 +37,60 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### Šetnja se posle vežbe pokaže na tabli
+
+Stanje na **21. avgust 2026.**, posle prvog probanja šetnje. Šetnja je do sada
+govorila samo **broj** — koliko poteza je izdržano — a čovek koji je dvanaest
+poteza držao sliku u glavi nije imao nikakav način da vidi šta je zapravo
+nacrtao.
+
+Sad se posle svake šetnje putanja prikaže: figura korača od polja do polja,
+**potrošena polja iza nje ostaju obojena**, i svako se izgovori. Iz obojenih se
+vidi oblik, iz koračanja redosled. Strelica nema jer ih `ChessBoard` ne ume da
+crta, a i ne trebaju — koračanje kaže redosled bolje nego strelica.
+
+#### Prikaz nije oslonac nego odgovor
+
+Ovo je odluka koja se lako promaši. Oslonac je koliko slike aplikacija drži
+umesto tebe **dok radiš**; prikaz se dešava kad je šetnja već gotova i pri njoj
+ne pomaže ni najmanje. Da je vezan za oslonac, čovek bi ga **gubio kako
+napreduje** — a upravo je prikaz mesto na kom se uči.
+
+Zato zadatak i dalje ima jedan jedini oslonac, `Support.NONE`, i tvrdnja „tabla
+se ne vidi" ostaje tačna uz jednu reč više: **dok se radi**.
+
+Isto pravilo po kom Geometrija posle odgovora pokaže polje — test kaže da li si
+pogodio, vežba pokaže istinu.
+
+#### Korak čeka izgovor, ne tajmer
+
+Prikaz prelazi na sledeće polje tek kad se prethodno izgovori, preko
+`awaitSilence()`. Otud i ide onoliko brzo koliko se stiže pratiti, bez ijednog
+pogođenog broja milisekundi.
+
+Dugme stoji **sve vreme**, ne tek na kraju: ko je video dovoljno ne mora da čeka
+ostatak. Zato piše „PRESKOČI" dok traje, a „DALJE" kad se završi.
+
+`:feature:movement` je time dobio `:core:designsystem`, koji je dotad namerno
+bio izostavljen.
+
+#### Otvoreno: „vidi pa reci"
+
+Korisnik je smislio i **obrnut smer** — tabla nacrta putanju, tabla nestane, a
+čovek je prepriča. Njegovim rečima, modul bi imao „vidi pa reci" i „reci pa
+vidi".
+
+Prikaz odrađene šetnje je **prva polovina tog zadatka**: isto koračanje, isti
+trag. Ostaje da se doda pitanje umesto odgovora.
+
+Tamo se javlja i pitanje koje je već rešeno: broj poteza ide na **težinu**, a to
+koliko traga ostaje na tabli na **oslonac** — brisanje prethodne strelice je
+doslovno definicija oslonca. Četiri prečke ispadaju same: sve ostaje / ostaju
+obojena polja bez strelica / vidi se samo tekući korak / putanja se izgovori
+umesto da se nacrta.
+
+**367 testova, nijedan ne pada. Nije viđeno na uređaju.**
+
 ### „Ponovi" je prestao da vraća istu nedoumicu
 
 Stanje na **21. avgust 2026.**, kraj dana. Tri izmene, sve u `:core:audio`, pa

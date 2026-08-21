@@ -1,11 +1,20 @@
 package com.program.blindfoldtrainer.feature.movement
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -17,19 +26,22 @@ import com.program.blindfoldtrainer.core.audio.HELPER_ZONE_WEIGHT
 import com.program.blindfoldtrainer.core.audio.MicrophoneZone
 import com.program.blindfoldtrainer.core.audio.VoiceState
 import com.program.blindfoldtrainer.core.audio.ZoneTone
+import com.program.blindfoldtrainer.core.chess.Board
+import com.program.blindfoldtrainer.core.chess.Color
+import com.program.blindfoldtrainer.core.chess.Piece
+import com.program.blindfoldtrainer.core.designsystem.board.ChessBoard
+import com.program.blindfoldtrainer.core.designsystem.board.SquareTint
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.SessionResult
 
 /**
- * Jedini modul **bez ekrana i na jednoj i na jedinoj prečki**.
+ * Modul ima **dva lica, ali ne po osloncu**.
  *
- * Ostali moduli imaju dva lica — tablu i zone — pa se ekran grana po osloncu.
- * Ovde grananja nema: uz tablu bi se odgovor pročitao umesto izračunao, pa tabla
- * ne postoji ni kao mogućnost. Ono što se menja je **srednji red zona**, jer se
- * dva zadatka ne pitaju isto.
+ * Dok se radi, table nema ni na jednoj prečki: uz nju bi se odgovor pročitao
+ * umesto izračunao. Tabla se pojavljuje tek **pošto je šetnja gotova**, i tada
+ * nije pomoć nego odgovor — vidi [Replay].
  *
- * Mikrofon se otvara **po jednom polju**, kao i u ostalim modulima: jedan pokret
- * koji se nauči jednom vredi više od ušteđenog dodira.
+ * Dok se radi, menja se **srednji red zona**, jer se dva zadatka ne pitaju isto:
  *
  * ```
  * ┌───────────────────────────────┐
@@ -37,9 +49,12 @@ import com.program.blindfoldtrainer.core.model.SessionResult
  * ├───────────────┬───────────────┤
  * │    PONOVI     │ GOTOVO/STANJE │   25%
  * ├───────────────┴───────────────┤
- * │      ODUSTANI (dva puta)      │   25%
+ * │      ODUSTANI (dva dodira)    │   25%
  * └───────────────────────────────┘
  * ```
+ *
+ * Mikrofon se otvara **po jednom polju**, kao i u ostalim modulima: jedan pokret
+ * koji se nauči jednom vredi više od ušteđenog dodira.
  */
 @Composable
 fun MovementScreen(
@@ -58,6 +73,11 @@ fun MovementScreen(
 
     LaunchedEffect(uiState.isFinished) {
         if (uiState.isFinished) onFinish(viewModel.buildResult())
+    }
+
+    uiState.replay?.let { replay ->
+        WalkReplay(replay = replay, onContinue = viewModel::onReplayDone)
+        return
     }
 
     // Kod dometa se odgovor mora **zaključiti**, jer je „nijedno" valjan odgovor
@@ -119,4 +139,47 @@ fun MovementScreen(
         ),
         modifier = Modifier.padding(8.dp)
     )
+}
+
+/**
+ * Odrađena šetnja, prikazana natrag.
+ *
+ * Figura stoji na polju do kog je prikaz stigao, a **potrošena polja iza nje
+ * ostaju obojena** — iz njih se vidi oblik cele putanje, dok se redosled vidi iz
+ * toga što prikaz korača. Strelice bi rekle isto, a tabla ih ne ume crtati.
+ *
+ * Dugme stoji **sve vreme**, ne tek na kraju: ko je video dovoljno ne mora da
+ * čeka ostatak.
+ */
+@Composable
+private fun WalkReplay(replay: Replay, onContinue: () -> Unit) {
+    val board = Board.EMPTY.withPiece(replay.current, Piece(replay.piece, Color.WHITE))
+    val tints = buildMap {
+        replay.behind.forEach { square -> put(square, SquareTint.HINT) }
+        put(replay.current, SquareTint.SUCCESS)
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
+    ) {
+        Text(
+            text = "Tvoja šetnja",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+
+        ChessBoard(board = board, tints = tints)
+
+        Text(
+            text = "${replay.step + 1} / ${replay.path.size}",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Button(onClick = onContinue, modifier = Modifier.fillMaxWidth()) {
+            Text(if (replay.isDone) "DALJE" else "PRESKOČI")
+        }
+    }
 }

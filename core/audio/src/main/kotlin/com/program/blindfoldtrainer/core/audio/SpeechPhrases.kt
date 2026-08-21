@@ -130,6 +130,9 @@ interface SpeechPhrases {
     /** Nema više nepotrošenih polja. Kraj šetnje, ne pad. */
     val walkStuck: String
 
+    /** Najava ponovnog prikaza odrađene šetnje, polje po polje. */
+    val walkReplay: String
+
     /** „Sad kao top" — dama se smenjuje, pa se red mora znati. */
     val walkAsRook: String
     val walkAsBishop: String
@@ -339,6 +342,8 @@ internal object EnglishPhrases : SpeechPhrases {
     override val walkVisited = "You have been there already."
 
     override val walkStuck = "No square left. The walk ends here."
+
+    override val walkReplay = "Here is the walk you made."
 
     override val walkAsRook = "Now as a rook."
     override val walkAsBishop = "Now as a bishop."
