@@ -78,6 +78,12 @@ Modul je time prvi koji **prima porudžbinu oslonca**; dotad je bila zakucana na
 Ime polja bi odradilo baš onaj posao koji zadatak traži. Ovo je i jedino mesto u
 modulu gde tempo vodi **sat, a ne govor** — jer se dok se crta ne govori.
 
+Skakač dobija duži korak (1,7 s naspram 1,1 s), i to nije olakšica: topov sledeći
+potez pada na liniju na kojoj već gledaš pa se pročita usput, dok skakačev pada
+pored nje i mora se potražiti. Isti sat bi za skakača značio manje stvarnog
+vremena za čitanje, pa bi vežba merila brzinu oka umesto pamćenja putanje. Sa
+težinom tempo i dalje nema veze.
+
 Promašaj ne zaustavlja i ne vraća: odmah se kaže koje je polje bilo, pa se ide
 dalje. Da se stajalo na istom mestu, jedno pogrešno prepoznato polje bi zaključalo
 krug; da se ćutke prelazilo dalje, izgubio bi se korak i sve iza toga bi ispalo

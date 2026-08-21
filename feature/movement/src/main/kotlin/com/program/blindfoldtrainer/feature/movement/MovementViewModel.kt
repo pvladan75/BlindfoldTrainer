@@ -279,6 +279,9 @@ private const val BREATH_MILLIS = 450L
  */
 private const val PROMPT_STEP_MILLIS = 1_100L
 
+/** Skakačev skok se ne pročita usput nego se potraži — vidi `promptStepFor`. */
+private const val KNIGHT_STEP_MILLIS = 1_700L
+
 @HiltViewModel
 class MovementViewModel @Inject constructor(
     private val speaker: Speaker,
@@ -645,9 +648,8 @@ class MovementViewModel @Inject constructor(
      * **Ćuti dok crta.** Ime polja bi odradilo baš onaj posao koji zadatak traži
      * od tebe, pa bi vežba merila slušanje umesto gledanja.
      *
-     * Korak ide po satu, jer ovde nema govora koji bi ga vodio. Tempo je prvi
-     * predlog i nema veze sa težinom: brže crtanje ne traži drugu veštinu nego
-     * samo bolji vid.
+     * Korak ide po satu, jer ovde nema govora koji bi ga vodio, i **zavisi od
+     * figure** — vidi [promptStepFor].
      */
     private fun showPrompt(piece: PieceType, path: List<Square>) {
         _uiState.update {
@@ -661,7 +663,7 @@ class MovementViewModel @Inject constructor(
 
             path.indices.forEach { step ->
                 _uiState.update { it.copy(replay = it.replay?.copy(step = step)) }
-                delay(PROMPT_STEP_MILLIS)
+                delay(promptStepFor(piece))
             }
 
             // Tabla nestaje; odavde se prepričava.
@@ -669,6 +671,21 @@ class MovementViewModel @Inject constructor(
             speaker.say(interrupt = false) { retellNow }
         }
     }
+
+    /**
+     * Koliko jedan korak stoji, po figuri.
+     *
+     * Skakač dobija više vremena, i to **nije olakšica**. Topov sledeći potez
+     * pada na liniju na kojoj već gledaš, pa se pročita usput; skakačev pada
+     * pored nje i mora se potražiti. Isti sat bi za skakača značio manje
+     * stvarnog vremena za čitanje, pa bi vežba merila brzinu oka umesto
+     * pamćenja putanje.
+     *
+     * Sa **težinom** tempo i dalje nema veze: brže crtanje ne traži drugu
+     * veštinu nego samo bolji vid. Težina skalira dužinu i figuru.
+     */
+    private fun promptStepFor(piece: PieceType): Long =
+        if (piece == PieceType.KNIGHT) KNIGHT_STEP_MILLIS else PROMPT_STEP_MILLIS
 
     /**
      * Koliko traga ostaje iza figure, po prečki.
