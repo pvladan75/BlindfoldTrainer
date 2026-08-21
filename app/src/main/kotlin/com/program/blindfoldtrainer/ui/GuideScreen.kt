@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import com.program.blindfoldtrainer.R
 import com.program.blindfoldtrainer.core.model.Checkup
 import com.program.blindfoldtrainer.core.model.Skill
-import com.program.blindfoldtrainer.core.progress.SkillStage
 import com.program.blindfoldtrainer.core.model.TaskSpec
 import com.program.blindfoldtrainer.core.model.requires
 import com.program.blindfoldtrainer.core.moduleapi.TrainingModule
@@ -60,14 +59,6 @@ fun GuideScreen(
      * i nudi na kartici.
      */
     checkups: List<Checkup>,
-    /**
-     * Dokle je koja veština stigla.
-     *
-     * Uputstvo je dotle objašnjavalo **redosled gradnje** — šta na čemu stoji —
-     * a ne i gde se čitalac nalazi u njoj. Slika sa stanjem odgovara na obe
-     * stvari odjednom, i to na istom mestu na kom se pravilo i objašnjava.
-     */
-    levels: Map<Skill, SkillStage> = emptyMap(),
     onBack: () -> Unit
 ) {
     // Ko šta meri — po tome se zna čime se veština vežba. Zadatak nosi više
@@ -134,11 +125,12 @@ fun GuideScreen(
                     // Slika ide **pre** teksta: ona zamenjuje pola objašnjenja,
                     // a ostatak tek posle nje ima gde da se zakači.
                     Spacer(Modifier.height(4.dp))
-                    SkillGraph(levels = levels)
-                    if (levels.isNotEmpty()) {
-                        Spacer(Modifier.height(10.dp))
-                        SkillGraphLegend()
-                    }
+                    // Slika ovde stoji **bez tvog stanja**, namerno: uputstvo
+                    // objašnjava pravilo, a pravilo je isto za svakoga. Ista slika
+                    // sa tvojim stanjem stoji u Napretku, gde se i pita „gde
+                    // stojim" — ovde bi to bio odgovor na pitanje koje se ne
+                    // postavlja.
+                    SkillGraph()
                     Spacer(Modifier.height(14.dp))
                     Body(R.string.guide_deps)
                     Spacer(Modifier.height(10.dp))

@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.program.blindfoldtrainer.R
 import androidx.annotation.StringRes
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -83,13 +84,10 @@ fun SkillGraph(
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current
 
-    val boxColor = MaterialTheme.colorScheme.surfaceVariant
-    val startedColor = MaterialTheme.colorScheme.secondaryContainer
-    val holdingColor = MaterialTheme.colorScheme.primaryContainer
-    val masteredColor = MaterialTheme.colorScheme.primary
     val edgeColor = MaterialTheme.colorScheme.outline
     val textColor = MaterialTheme.colorScheme.onSurface
     val onMasteredColor = MaterialTheme.colorScheme.onPrimary
+    val fills = stageFills()
 
     val labels = Skill.entries.associateWith { stringResource(it.labelRes()) }
 
@@ -215,31 +213,40 @@ fun SkillGraph(
             // Boja raste sa stanjem, pa se slika čita jednim pogledom: bledo je
             // ono što još nije dodirnuto, puno je ono što je savladano.
             val stage = levels[skill]
-            val fill = when (stage) {
-                SkillStage.STARTED -> startedColor
-                SkillStage.HOLDING -> holdingColor
-                SkillStage.MASTERED -> masteredColor
-                else -> boxColor
-            }
 
             drawRoundRect(
-                color = fill,
+                color = fills.getValue(stage ?: SkillStage.UNTRIED),
                 topLeft = rect.topLeft,
                 size = rect.size,
                 cornerRadius = CornerRadius(cornerPx, cornerPx)
             )
-            if (stage == SkillStage.HOLDING || stage == SkillStage.MASTERED) {
+
+            // **Drugi kanal uz boju: debljina ivice.** Stanja se razlikuju i po
+            // svetlini i po okviru, pa se slika čita i kad se boje ne razaznaju.
+            val border = when (stage) {
+                SkillStage.STARTED -> strokePx
+                SkillStage.HOLDING -> strokePx * 2f
+                else -> 0f
+            }
+            if (border > 0f) {
                 drawRoundRect(
                     color = edgeColor,
                     topLeft = rect.topLeft,
                     size = rect.size,
                     cornerRadius = CornerRadius(cornerPx, cornerPx),
-                    style = Stroke(width = strokePx)
+                    style = Stroke(width = border)
                 )
             }
 
             val text = measurer.measure(
-                text = labels.getValue(skill),
+                // Kvačica uz ime je **treći kanal**, i nosi ga baš stanje kome je
+                // najviše stalo da se prepozna. Bez nje bi „savladano" zavisilo
+                // samo od toga koliko je kutija tamnija od susedne.
+                text = if (stage == SkillStage.MASTERED) {
+                    "${labels.getValue(skill)}  ✓"
+                } else {
+                    labels.getValue(skill)
+                },
                 // Savladano je puna boja, pa tekst na njoj mora da promeni svoju —
                 // inače se ime izgubi baš na veštini koju treba da pohvali.
                 style = if (stage == SkillStage.MASTERED) {
@@ -294,6 +301,32 @@ private fun orderedFloors(): List<List<Skill>> {
 }
 
 /**
+ * Boja kutije po stanju — **jedna boja, četiri svetline**.
+ *
+ * Prvo su stanja bila u različitim bojama (druga, treća, primarna), i to je sa
+ * uređaja stiglo nazad kao neupotrebljivo: dve od njih se ne razlikuju svakome.
+ * Oko osam odsto muškaraca slabije razlikuje boje, i to se ne popravlja biranjem
+ * „boljih" nijansi.
+ *
+ * Zato se hue više ne koristi kao podatak. Nosi ga **svetlina**, koja se vidi bez
+ * obzira na vrstu daltonizma, a uz nju idu još dva kanala: **debljina ivice** i
+ * **kvačica** na savladanom. Ko boje razaznaje, vidi isto što i pre; ko ne, i
+ * dalje čita sliku.
+ */
+@Composable
+private fun stageFills(): Map<SkillStage, Color> {
+    val accent = MaterialTheme.colorScheme.primary
+    val idle = MaterialTheme.colorScheme.surfaceVariant
+    return mapOf(
+        SkillStage.NOT_MEASURED to idle,
+        SkillStage.UNTRIED to idle,
+        SkillStage.STARTED to accent.copy(alpha = 0.30f),
+        SkillStage.HOLDING to accent.copy(alpha = 0.65f),
+        SkillStage.MASTERED to accent
+    )
+}
+
+/**
  * Šta koja boja na slici znači.
  *
  * Bez ovoga su boje ukras: čovek vidi da su neke kutije tamnije, ali ne zna je
@@ -306,12 +339,13 @@ private fun orderedFloors(): List<List<Skill>> {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SkillGraphLegend(modifier: Modifier = Modifier) {
+    val fills = stageFills()
     val entries = listOf(
-        SkillStage.UNTRIED to MaterialTheme.colorScheme.surfaceVariant,
-        SkillStage.STARTED to MaterialTheme.colorScheme.secondaryContainer,
-        SkillStage.HOLDING to MaterialTheme.colorScheme.primaryContainer,
-        SkillStage.MASTERED to MaterialTheme.colorScheme.primary
-    )
+        SkillStage.UNTRIED,
+        SkillStage.STARTED,
+        SkillStage.HOLDING,
+        SkillStage.MASTERED
+    ).map { it to fills.getValue(it) }
 
     FlowRow(
         modifier = modifier.fillMaxWidth(),
@@ -327,7 +361,12 @@ fun SkillGraphLegend(modifier: Modifier = Modifier) {
                 )
                 Spacer(Modifier.size(5.dp))
                 Text(
-                    text = stringResource(stage.labelRes()),
+                    // Kvačica stoji i u legendi, da se veza sa slikom vidi odmah.
+                    text = if (stage == SkillStage.MASTERED) {
+                        "${stringResource(stage.labelRes())} ✓"
+                    } else {
+                        stringResource(stage.labelRes())
+                    },
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

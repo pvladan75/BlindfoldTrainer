@@ -79,12 +79,27 @@ Ovo je dotle znao samo Predlog, i to za jednu jedinu veštinu, onu koju je sam
 izabrao. Ko na kartici pročita da negde stoji slabo, imao je pravo da odmah sazna
 i čime se to popravlja.
 
-#### Stablo u uputstvu nosi tvoje stanje
+#### Stablo sa stanjem stoji u Napretku, ne u uputstvu
 
-Slika je dotle pokazivala **samo redosled gradnje** — šta na čemu stoji — dakle
-tuđu teoriju umesto tvog stanja. Sad se svaka kutija boji po stanju, uz legendu
-ispod. Isto stanje ide i u opis za čitač ekrana: boja je za oko, a onome ko sliku
-sluša mora stići rečima.
+Prvo je bilo obrnuto i sa uređaja je vraćeno: **uputstvo objašnjava pravilo, a
+pravilo je isto za svakoga.** Slika tamo ostaje bez stanja. Ista slika sa stanjem
+stoji na vrhu Napretka, gde se i pita „gde stojim" — osam kartica jedna ispod
+druge kaže gde stojiš po svakoj veštini, ali ne i kako one stoje jedna prema
+drugoj.
+
+Isto stanje ide i u opis za čitač ekrana: boja je za oko, a onome ko sliku sluša
+mora stići rečima.
+
+#### Boje su morale da prestanu da budu podatak
+
+Prva verzija je stanja razlikovala **različitim bojama** — druga, treća, primarna
+— i sa uređaja je stiglo da se dve od njih ne razaznaju. Oko osam odsto muškaraca
+slabije razlikuje boje, i to se ne popravlja biranjem „boljih" nijansi.
+
+Sad nosi **svetlina**: jedna boja u četiri jačine, što se vidi bez obzira na vrstu
+daltonizma. Uz nju idu još dva kanala — **debljina ivice** i **kvačica** na
+savladanom, stanju kome je najviše stalo da se prepozna. Ko boje razaznaje vidi
+isto što i pre; ko ne, i dalje čita sliku.
 
 #### Šta je ostalo
 

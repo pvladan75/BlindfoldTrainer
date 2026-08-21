@@ -113,6 +113,31 @@ fun ProgressScreen(
                 }
             }
 
+            // **Slika pre spiska.** Osam kartica jedna ispod druge kaže gde
+            // stojiš po svakoj veštini, ali ne i kako one stoje jedna prema
+            // drugoj — a upravo to je pitanje sa kojim se ovaj ekran otvara.
+            // Ista slika stoji i u uputstvu, ali tamo bez stanja: tamo se
+            // objašnjava pravilo, ovde se čita tvoje mesto u njemu.
+            item(key = "graph") {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = stringResource(R.string.progress_graph_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        SkillGraph(
+                            levels = Skill.entries.associateWith {
+                                progress.levelOf(it, tasks.values.toList()).stage
+                            }
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        SkillGraphLegend()
+                    }
+                }
+            }
+
             // Redosled je iz modela, ne po uspehu: spisak koji se prekraja pri
             // svakoj sesiji se ne pamti, a profil se čita više puta.
             items(Skill.entries, key = { it.key }) { skill ->
