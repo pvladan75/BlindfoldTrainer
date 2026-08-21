@@ -47,6 +47,19 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### „Mate in 7" je bio jedini engleski na ekranu
+
+U „Dokrajči protivnika" je pod „Cilj" stajala oznaka iz sadržaja partija —
+doslovno, na engleskom. Broj poteza do mata se već umeo pročitati iz nje
+(`movesToMate`), samo se prikazivala **cela tuđa rečenica** umesto broja.
+
+Stanje sad nosi broj, a ekran ga sam sastavlja: **„Mat u 7"**.
+
+Pravilo koje odatle sledi, jer će se ponoviti sa svakim uvezenim sadržajem:
+**sadržaj ostaje na svom jeziku, ali ono što se vidi mora da bude na jeziku
+aplikacije.** Uvezene partije, oznake i imena turnira se ne prevode; iz njih se
+vadi podatak i sastavlja rečenica.
+
 ### Moduli su crtali ispod sata i ispod navigacione trake
 
 Sa uređaja, sa pet slika: u „Postavi po diktatu", „Putanji skakača" i „Prati

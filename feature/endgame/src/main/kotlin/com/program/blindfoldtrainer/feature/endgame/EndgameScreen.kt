@@ -179,7 +179,7 @@ private fun StatsPanel(uiState: EndgameUiState) {
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Stat("Pozicija", "${uiState.puzzleNumber}/${uiState.puzzleCount}")
-            Stat("Cilj", uiState.evaluationLabel.ifBlank { "Mat" })
+            Stat("Cilj", uiState.movesToMate?.let { "Mat u $it" } ?: "Mat")
             Stat("Promašaji", "${uiState.mistakes}")
             Stat("Vreme", formatDuration(uiState.elapsedMillis))
         }

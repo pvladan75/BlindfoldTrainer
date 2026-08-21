@@ -80,7 +80,15 @@ data class EndgameUiState(
     val mistakes: Int = 0,
     val outcome: EndgameOutcome = EndgameOutcome.IN_PROGRESS,
     val statusMessage: String = "",
-    val evaluationLabel: String = "",
+    /**
+     * Broj poteza do mata, ako se dao pročitati iz sadržaja.
+     *
+     * Nosi se **broj, a ne tuđa rečenica**. Ranije je ovde stajala oznaka iz
+     * sadržaja partija doslovno — „Mate in 7" — pa je usred srpske aplikacije na
+     * ekranu stajao engleski. Sadržaj je uvezen i ostaje na svom jeziku; ono što
+     * se vidi mora da bude na jeziku aplikacije.
+     */
+    val movesToMate: Int? = null,
     val isEngineThinking: Boolean = false,
     val elapsedMillis: Long = 0,
     val isLoading: Boolean = true,
@@ -451,7 +459,7 @@ class EndgameViewModel @Inject constructor(
                 puzzleCount = puzzles.size,
                 outcome = EndgameOutcome.IN_PROGRESS,
                 statusMessage = if (settings.eyesFree) "Ti si na potezu" else "Zapamti poziciju, pa igraj",
-                evaluationLabel = puzzle.evaluation,
+                movesToMate = puzzle.movesToMate,
                 isLoading = false,
                 infoMessage = null
             )
