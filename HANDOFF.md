@@ -37,6 +37,47 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### Tabla u Geometriji izlazi samo posle promašaja
+
+Izlazila je posle **svakog** odgovora, uz obrazloženje da se veza gradi i kad se
+pogodi. Ne gradi se, ili se gradi zanemarljivo: ono što uči je **pokušaj da se
+odgovor proizvede**, ne to što ti se posle pokaže. Kad si već pogodio, slika ne
+dodaje ništa — troši vreme i uči oko da čeka potvrdu, a veština koja se ovde meri
+je baš to da ti tabla ne treba.
+
+Posle promašaja je obrnuto: to je jedino mesto gde se nešto zaista ispravlja, jer
+se vidi **gde** je polje pogrešno smešteno.
+
+**Bez opcije.** Razmatran je prekidač „prikaz rešenja: da / ne" i odbačen: to je
+podešavanje za nešto što treba prosto da bude tačno, a korisnik ni ne bi znao šta
+da izabere prvi put. Ovako se samo podešava — ko greši često dobija mapu često, a
+kako napreduje, prikaz se sam povlači.
+
+Pauza posle promašaja je **900 ms umesto 600**, jer se sa uređaja javilo da se ne
+stigne ni pogledati. Produženje ne košta ništa: plaća se samo na greškama, a tačan
+odgovor i dalje prolazi bez zastoja.
+
+#### Odatle sledi da se dva oslonca ovde razlikuju samo po tome gledaš li
+
+I to nije mana nego priroda zadatka. Oslonac je „koliko slike aplikacija drži
+umesto tebe", a kod „koje je boje polje" **slike i nema**: pitanje je jedno polje,
+odgovor je jedna reč. Prikaz table je i bio izmišljen da bi najviši oslonac imao
+šta da bude.
+
+Za ovaj zadatak dakle stvarno stoji **gledaš / ne gledaš** — tačno onaj izvorni
+koncept iz odeljka iznad. Ostali zadaci imaju pravu sliku i tamo oslonac znači ono
+što treba.
+
+#### Pritisak dok traje povratna informacija ne radi ništa
+
+Provereno na pitanje sa uređaja: `onAnswer` odbija sve dok povratna informacija
+stoji, pa se ne može ni slučajno odgovoriti na pitanje koje se još nije čulo. Za
+onoga ko vežba ležeći, njegova povratna informacija je izgovorena ispravka, ne
+tabla.
+
+Zone i dalje vibriraju na dodir i kad je ulaz zatvoren — prst oseti odziv iako se
+ništa nije desilo. Nije ispravljeno; zabeleženo da postoji.
+
 ### Zapisano: vežba se i ležeći
 
 Osnovna zamisao od koje je sve krenulo, a koja je usput ispala iz rečnika iako

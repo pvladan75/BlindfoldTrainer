@@ -102,6 +102,15 @@ internal fun setupFor(difficulty: Difficulty) = when (difficulty) {
 }
 
 private const val FEEDBACK_PAUSE_MILLIS = 600L
+
+/**
+ * Pauza posle promašaja — pola duže, jer tada izlazi tabla.
+ *
+ * Sa uređaja: „ne stignem ni da pogledam". Šeststo milisekundi je dovoljno da se
+ * primi „pogrešio si", ali ne i da se **nađe polje** na tabli, a upravo je to
+ * jedini razlog zbog kog se tabla i pokazuje.
+ */
+private const val WRONG_PAUSE_MILLIS = 900L
 private const val TICK_MILLIS = 100L
 
 /**
@@ -111,6 +120,17 @@ private const val TICK_MILLIS = 100L
  * 3,5 s — pola bi otišlo na slušanje. Dodatak plaća čitanje, ne razmišljanje.
  */
 private const val EYES_FREE_GRACE_MILLIS = 1_500L
+/**
+ * Bez ekrana pauzu određuje **izgovor**, ne slika.
+ *
+ * Sledeće pitanje sme da krene tek kad se ispravka dočuje — inače bi je preseklo
+ * ili gurnulo u red, pa bi sat kretao pre nego što se pitanje uopšte čuje.
+ *
+ * Ko vežba ležeći i ne gleda u ekran, njemu tabla ne znači ništa; njegova
+ * povratna informacija je ova rečenica. Pritisak dok ona traje **ne radi ništa** —
+ * `onAnswer` odbija sve dok povratna informacija stoji — pa se ne može ni
+ * slučajno odgovoriti na pitanje koje se još nije čulo.
+ */
 private const val EYES_FREE_FEEDBACK_PAUSE_MILLIS = 1_600L
 
 @HiltViewModel
@@ -224,10 +244,23 @@ class GeometryViewModel @Inject constructor(
                 solved = it.solved + if (feedback == Feedback.CORRECT) 1 else 0,
                 mistakes = it.mistakes + if (feedback == Feedback.CORRECT) 0 else 1,
                 remainingMillis = null,
-                // Uz punu podršku se istina **pokaže**, i to posle svakog
-                // odgovora a ne samo posle greške: veza „e4 je tamno" se gradi
-                // i kad se pogodi.
-                revealedSquare = if (_support.value == Support.FULL) square else null
+                // Tabla se pokazuje **samo posle promašaja**.
+                //
+                // Dotle je izlazila posle svakog odgovora, uz obrazloženje da se
+                // veza gradi i kad se pogodi. Ne gradi se, ili se gradi zanemarljivo:
+                // ono što uči je **pokušaj da se odgovor proizvede**, ne to što ti
+                // se posle pokaže. Kad si već pogodio, slika ne dodaje ništa — samo
+                // troši vreme i uči oko da čeka potvrdu, a veština koja se ovde meri
+                // je baš to da ti tabla ne treba.
+                //
+                // Posle promašaja je obrnuto: to je jedino mesto gde se nešto zaista
+                // ispravlja, jer se vidi **gde** je polje pogrešno smešteno.
+                //
+                // Samo se i podešava: ko greši često dobija mapu često, a kako
+                // napreduje, prikaz se sam povlači. Bez ijedne opcije.
+                revealedSquare = square.takeIf {
+                    _support.value == Support.FULL && feedback != Feedback.CORRECT
+                }
             )
         }
 
@@ -236,7 +269,7 @@ class GeometryViewModel @Inject constructor(
         if (_support.value == Support.NONE) speaker.say { spokenFeedback(feedback, square) }
 
         viewModelScope.launch {
-            delay(feedbackPause())
+            delay(feedbackPause(feedback))
             if (_uiState.value.questionNumber >= setup.questionCount) {
                 finish()
             } else {
@@ -254,13 +287,19 @@ class GeometryViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Bez ekrana je pauza duža: ispravka se izgovara, a sledeće pitanje sme da
-     * krene tek kad se dočuje — inače bi ga preseklo ili gurnulo u red pa bi sat
-     * kretao pre nego što se pitanje uopšte čuje.
-     */
-    private fun feedbackPause(): Long =
-        if (_support.value == Support.NONE) EYES_FREE_FEEDBACK_PAUSE_MILLIS else FEEDBACK_PAUSE_MILLIS
+    /** Koliko se stoji na odgovoru pre sledećeg pitanja. */
+    private fun feedbackPause(feedback: Feedback): Long = when {
+        // Bez ekrana pauzu određuje **izgovor**, ne slika: table nema, pa nema ni
+        // šta da se gleda. Ispravka i potvrda traju slično, pa je pauza jedna.
+        _support.value == Support.NONE -> EYES_FREE_FEEDBACK_PAUSE_MILLIS
+
+        // Posle promašaja izlazi tabla, a 600 ms nije dovoljno ni da se pogleda.
+        // Produženje ne košta ništa jer se plaća **samo na greškama** — tačan
+        // odgovor i dalje prolazi bez zastoja.
+        feedback != Feedback.CORRECT -> WRONG_PAUSE_MILLIS
+
+        else -> FEEDBACK_PAUSE_MILLIS
+    }
 
     private fun finish() {
         questionJob?.cancel()

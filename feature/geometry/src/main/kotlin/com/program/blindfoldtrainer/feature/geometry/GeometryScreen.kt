@@ -218,8 +218,10 @@ private fun QuestionPrompt(uiState: GeometryUiState) {
             color = SquareError
         )
 
-        // Vežba, ne test: posle odgovora se **pokaže** gde to polje stoji, i to
-        // i kad je odgovor tačan — veza koordinate i mesta se gradi i tada.
+        // Vežba, ne test: posle **promašaja** se pokaže gde to polje stoji, jer
+        // se tek tada nešto i ispravlja. Posle tačnog odgovora slika ne dodaje
+        // ništa — vidi obrazloženje uz `revealedSquare`.
+        //
         // Mesto je zauzeto i dok table nema, da odgovor ne skakuće po ekranu.
         Box(
             modifier = Modifier.fillMaxWidth(0.62f).aspectRatio(1f),

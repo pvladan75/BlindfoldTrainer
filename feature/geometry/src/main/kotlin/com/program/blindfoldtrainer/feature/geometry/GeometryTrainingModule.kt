@@ -31,13 +31,13 @@ class GeometryTrainingModule @Inject constructor() : TrainingModule {
         difficultyDetailOf(difficulty)
 
     /**
-     * Ovde „uz tablu" **ne znači da tabla stoji dok odgovaraš** — boja polja se
-     * zna napamet ili se ne zna. Tabla dolazi posle odgovora, da se vidi gde je
-     * polje bilo; to je razlika između testa i vežbe.
+     * Ovde najviši oslonac **ne znači da tabla stoji dok odgovaraš** — boja polja
+     * se zna napamet ili se ne zna. Tabla dolazi tek posle promašaja, da se vidi
+     * gde je polje bilo; to je razlika između testa i vežbe.
      */
     override fun supportDetail(support: Support, taskId: String?): String = when (support) {
         Support.NONE -> "polje se izgovara, istina takođe"
-        else -> "tabla se pokaže tek posle odgovora"
+        else -> "tabla se pokaže tek posle promašaja"
     }
 
     @Composable
