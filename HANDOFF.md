@@ -60,9 +60,18 @@ sa **neograničenom visinom**, da bi se izračunalo šta ostaje težinskima. Tab
 tada nema šta da poredi, `aspectRatio(1f)` uzme punu širinu, i kvadrat postane
 visok koliko je ekran širok. U portretu prolazi; u pejzažu prelije.
 
-Svih devet tabli sad dobija `Modifier.weight(1f, fill = false)` — gornju granicu
-po visini, bez rastezanja. `aspectRatio` odatle sam bira manju stranu. Raspored se
-**ne menja**: ista kolona, isti redosled, samo tabla stane.
+Svih devet tabli sad dobija `Modifier.weight(BOARD_WEIGHT, fill = false)` — gornju
+granicu po visini, bez rastezanja. `aspectRatio` odatle sam bira manju stranu.
+Raspored se **ne menja**: ista kolona, isti redosled, samo tabla stane.
+
+**Udeo ne sme da bude `1f`**, i to je stiglo sa druge runde slika: tada se tabla i
+`Spacer(Modifier.weight(1f))` — praznina koja gura dugmad na dno — dele
+**pola-pola**, pa je tabla na tabletu ostajala upola manja nego što bi stala, uz
+gomilu neiskorišćenog prostora ispod nje. Sa `9f` tabla uzima gotovo sve što ima, a
+praznina samo ono što tabla ne može da iskoristi jer mora da ostane kvadratna.
+
+U portretu se ništa ne menja: tamo je tabla ionako ograničena širinom, pa joj veći
+udeo visine ne treba.
 
 Rezervisano mesto u Geometriji je vezano isto tako; ono je bilo `fillMaxWidth(0.62f)`
 i na širokom ekranu je samo gutalo dugmad za odgovor.

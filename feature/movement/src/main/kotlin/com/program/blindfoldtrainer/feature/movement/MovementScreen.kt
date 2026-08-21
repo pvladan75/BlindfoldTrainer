@@ -179,7 +179,7 @@ private fun WalkReplay(replay: Replay, onContinue: () -> Unit) {
         )
 
         // Tabla staje u visinu koja je ostala; bez toga se u pejzažu prelije.
-        ChessBoard(board = board, tints = tints, modifier = Modifier.weight(1f, fill = false))
+        ChessBoard(board = board, tints = tints, modifier = Modifier.weight(BOARD_WEIGHT, fill = false))
 
         Text(
             text = "${replay.step + 1} / ${replay.path.size}",
@@ -195,3 +195,17 @@ private fun WalkReplay(replay: Replay, onContinue: () -> Unit) {
         }
     }
 }
+
+
+/**
+ * Koliko slobodne visine tabla sme da uzme, naspram praznine koja gura dugmad na dno.
+ *
+ * Ne sme da bude `1f`. Tada se tabla i `Spacer(Modifier.weight(1f))` dele
+ * **pola-pola**, pa na širokom ekranu tabla ostane upola manja nego što bi stala,
+ * uz gomilu neiskorišćenog prostora ispod nje.
+ *
+ * Sa ovakvim odnosom tabla uzima gotovo sve što ima, a praznina samo ono što tabla
+ * **ne može** da iskoristi jer mora da ostane kvadratna. U portretu se ništa ne
+ * menja: tamo je tabla ionako ograničena širinom, pa joj veći udeo visine ne treba.
+ */
+private const val BOARD_WEIGHT = 9f

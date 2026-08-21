@@ -180,7 +180,7 @@ fun CheckScreen(
             onSquareClick = viewModel::onSquareClicked,
             // Tabla staje u visinu koja je ostala — vidi obrazloženje u
             // EndgameScreen-u; bez toga se u pejzažu prelije preko ekrana.
-            modifier = Modifier.weight(1f, fill = false)
+            modifier = Modifier.weight(BOARD_WEIGHT, fill = false)
         )
 
         if (memorizing) {
@@ -234,3 +234,17 @@ private fun buildTints(uiState: CheckUiState): Map<Square, SquareTint> = buildMa
 
 /** Jedina bela figura u zadatku; stoji ovde da se ne pravi u svakom kadru. */
 private val WHITE_KNIGHT = Piece(PieceType.KNIGHT, Color.WHITE)
+
+
+/**
+ * Koliko slobodne visine tabla sme da uzme, naspram praznine koja gura dugmad na dno.
+ *
+ * Ne sme da bude `1f`. Tada se tabla i `Spacer(Modifier.weight(1f))` dele
+ * **pola-pola**, pa na širokom ekranu tabla ostane upola manja nego što bi stala,
+ * uz gomilu neiskorišćenog prostora ispod nje.
+ *
+ * Sa ovakvim odnosom tabla uzima gotovo sve što ima, a praznina samo ono što tabla
+ * **ne može** da iskoristi jer mora da ostane kvadratna. U portretu se ništa ne
+ * menja: tamo je tabla ionako ograničena širinom, pa joj veći udeo visine ne treba.
+ */
+private const val BOARD_WEIGHT = 9f
