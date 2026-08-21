@@ -24,9 +24,22 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.program.blindfoldtrainer.R
+import androidx.annotation.StringRes
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.requires
 import com.program.blindfoldtrainer.core.model.skillFloors
+import com.program.blindfoldtrainer.core.progress.SkillStage
 import kotlin.math.abs
 
 /**
@@ -54,17 +67,29 @@ import kotlin.math.abs
 @Composable
 fun SkillGraph(
     modifier: Modifier = Modifier,
-    /** Veštine koje treba istaći — za sada nijedna; kasnije: šta je automatsko. */
-    highlight: Set<Skill> = emptySet()
+    /**
+     * Dokle je koja veština stigla.
+     *
+     * Slika je dotle pokazivala **samo redosled gradnje** — šta na čemu stoji —
+     * a ne i gde se ti nalaziš u njoj. To je bila i najveća rupa: stablo je
+     * objašnjavalo tuđu teoriju umesto tvog stanja.
+     *
+     * Prazna mapa daje sliku kakva je i bila, pa uputstvo radi i pre nego što
+     * ijedna sesija postoji.
+     */
+    levels: Map<Skill, SkillStage> = emptyMap()
 ) {
     val floors = remember { orderedFloors() }
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current
 
     val boxColor = MaterialTheme.colorScheme.surfaceVariant
-    val strongColor = MaterialTheme.colorScheme.primaryContainer
+    val startedColor = MaterialTheme.colorScheme.secondaryContainer
+    val holdingColor = MaterialTheme.colorScheme.primaryContainer
+    val masteredColor = MaterialTheme.colorScheme.primary
     val edgeColor = MaterialTheme.colorScheme.outline
     val textColor = MaterialTheme.colorScheme.onSurface
+    val onMasteredColor = MaterialTheme.colorScheme.onPrimary
 
     val labels = Skill.entries.associateWith { stringResource(it.labelRes()) }
 
@@ -73,12 +98,15 @@ fun SkillGraph(
     // nije, pa se redovi prvo pokupe a tek onda spoje.
     val spokenRows = Skill.entries.map { skill ->
         val needs = skill.requires.map { labels.getValue(it) }
-        if (needs.isEmpty()) {
+        val base = if (needs.isEmpty()) {
             "${labels.getValue(skill)} — ${stringResource(R.string.guide_deps_root)}"
         } else {
             "${labels.getValue(skill)} — " +
                 stringResource(R.string.guide_deps_needs, needs.joinToString())
         }
+        // Boja je za oko; onome ko sliku sluša isto stanje mora stići rečima.
+        val stage = levels[skill]?.let { stringResource(it.labelRes()) }
+        if (stage == null) base else "$base ($stage)"
     }
     val spoken = spokenRows.joinToString(". ")
 
@@ -184,14 +212,23 @@ fun SkillGraph(
         }
 
         places.forEach { (skill, rect) ->
-            val filled = skill in highlight
+            // Boja raste sa stanjem, pa se slika čita jednim pogledom: bledo je
+            // ono što još nije dodirnuto, puno je ono što je savladano.
+            val stage = levels[skill]
+            val fill = when (stage) {
+                SkillStage.STARTED -> startedColor
+                SkillStage.HOLDING -> holdingColor
+                SkillStage.MASTERED -> masteredColor
+                else -> boxColor
+            }
+
             drawRoundRect(
-                color = if (filled) strongColor else boxColor,
+                color = fill,
                 topLeft = rect.topLeft,
                 size = rect.size,
                 cornerRadius = CornerRadius(cornerPx, cornerPx)
             )
-            if (filled) {
+            if (stage == SkillStage.HOLDING || stage == SkillStage.MASTERED) {
                 drawRoundRect(
                     color = edgeColor,
                     topLeft = rect.topLeft,
@@ -203,7 +240,13 @@ fun SkillGraph(
 
             val text = measurer.measure(
                 text = labels.getValue(skill),
-                style = labelStyle,
+                // Savladano je puna boja, pa tekst na njoj mora da promeni svoju —
+                // inače se ime izgubi baš na veštini koju treba da pohvali.
+                style = if (stage == SkillStage.MASTERED) {
+                    labelStyle.copy(color = onMasteredColor)
+                } else {
+                    labelStyle
+                },
                 constraints = Constraints(
                     maxWidth = (rect.width - gapPx).toInt().coerceAtLeast(1)
                 )
@@ -248,4 +291,57 @@ private fun orderedFloors(): List<List<Skill>> {
     }
 
     return ordered
+}
+
+/**
+ * Šta koja boja na slici znači.
+ *
+ * Bez ovoga su boje ukras: čovek vidi da su neke kutije tamnije, ali ne zna je
+ * li to bolje ili gore. Legenda stoji **odmah ispod slike**, jer se gleda uz nju
+ * a ne posle nje.
+ *
+ * „Nije mereno" se ne pokazuje — to nije stanje tvoje veštine nego rupa u onome
+ * što aplikacija nudi, i objašnjeno je tekstom ispod.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun SkillGraphLegend(modifier: Modifier = Modifier) {
+    val entries = listOf(
+        SkillStage.UNTRIED to MaterialTheme.colorScheme.surfaceVariant,
+        SkillStage.STARTED to MaterialTheme.colorScheme.secondaryContainer,
+        SkillStage.HOLDING to MaterialTheme.colorScheme.primaryContainer,
+        SkillStage.MASTERED to MaterialTheme.colorScheme.primary
+    )
+
+    FlowRow(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        entries.forEach { (stage, color) ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier
+                        .size(10.dp)
+                        .background(color, RoundedCornerShape(3.dp))
+                )
+                Spacer(Modifier.size(5.dp))
+                Text(
+                    text = stringResource(stage.labelRes()),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+/** Stanje veštine rečima — za čitač ekrana i za legendu ispod slike. */
+@StringRes
+internal fun SkillStage.labelRes(): Int = when (this) {
+    SkillStage.NOT_MEASURED -> R.string.progress_not_measured
+    SkillStage.UNTRIED -> R.string.stage_untried
+    SkillStage.STARTED -> R.string.stage_started
+    SkillStage.HOLDING -> R.string.stage_holding_short
+    SkillStage.MASTERED -> R.string.stage_mastered
 }

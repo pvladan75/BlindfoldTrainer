@@ -45,7 +45,11 @@ import com.program.blindfoldtrainer.core.progress.Benchmarks
 import com.program.blindfoldtrainer.core.progress.Depth
 import com.program.blindfoldtrainer.core.progress.ProgressSnapshot
 import com.program.blindfoldtrainer.core.progress.SkillEntry
+import com.program.blindfoldtrainer.core.progress.SkillLevel
 import com.program.blindfoldtrainer.core.progress.SkillProfile
+import com.program.blindfoldtrainer.core.progress.SkillStage
+import com.program.blindfoldtrainer.core.progress.levelOf
+import com.program.blindfoldtrainer.core.progress.practiceFor
 import com.program.blindfoldtrainer.core.progress.TaskProfile
 import com.program.blindfoldtrainer.core.progress.SkillTrend
 
@@ -115,6 +119,8 @@ fun ProgressScreen(
                 SkillCard(
                     skill = skill,
                     profile = progress.bySkill[skill],
+                    level = progress.levelOf(skill, tasks.values.toList()),
+                    practice = progress.practiceFor(skill, tasks.values.toList()),
                     checkup = progress.lastCheckup(skill),
                     isAutomatic = progress.isAutomatic(skill, benchmarks),
                     foundationsMissing = progress.foundationsMissing(skill, benchmarks),
@@ -141,6 +147,9 @@ fun ProgressScreen(
 private fun SkillCard(
     skill: Skill,
     profile: SkillProfile?,
+    level: SkillLevel,
+    /** Kojim zadatkom i na kojoj prečki se veština sad gradi. */
+    practice: Pair<TaskSpec, Support>?,
     checkup: SkillEntry?,
     isAutomatic: Boolean,
     foundationsMissing: Set<Skill>,
@@ -174,27 +183,22 @@ private fun SkillCard(
                     fontWeight = FontWeight.Bold
                 )
 
-                // Nivo dolazi **iz provere** — jedinog merenja koje je svima
-                // jednako. Vežbe daju napredak, ali ne i mesto na lestvici.
-                if (checkup != null) {
-                    Text(
-                        text = stringResource(
-                            R.string.checkup_level,
-                            checkup.tally.solved,
-                            checkup.tally.attempted,
-                            secondsLabel(checkup.tally.millisPerAttempt)
-                        ),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                } else if (profile == null) {
-                    Text(
-                        text = stringResource(R.string.progress_not_measured),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                } else if (isAutomatic) {
+                // **Nivo je prečka koju veština drži**, ne broj tačnih odgovora.
+                // Dotle je ovde stajao rezultat poslednje provere — merenje koje
+                // je svima jednako, ali koje kaže kako je prošao jedan dan, a ne
+                // dokle si stigao. Provera sad stoji niže, kao potvrda i datum.
+                Text(
+                    text = level.headline(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (level.stage == SkillStage.NOT_MEASURED) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    }
+                )
+
+                if (isAutomatic) {
                     Text(
                         text = stringResource(R.string.progress_automatic),
                         style = MaterialTheme.typography.labelLarge,
@@ -222,11 +226,40 @@ private fun SkillCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            // Vežbana a neproverena veština ima napredak ali nema nivo, i to se
-            // kaže — inače bi obim vežbanja izgledao kao dokaz o nivou.
-            if (checkup == null && profile != null) {
+            // **Kuda po nju.** Ko pročita da negde stoji slabo ima pravo da odmah
+            // sazna i čime se to popravlja — dotle je to znao samo Predlog, i to
+            // za jednu jedinu veštinu, onu koju je sam izabrao.
+            if (practice != null && level.stage != SkillStage.MASTERED) {
+                val (task, rung) = practice
+                Spacer(Modifier.height(10.dp))
                 Text(
-                    text = stringResource(R.string.checkup_never),
+                    text = stringResource(
+                        R.string.progress_practice,
+                        stringResource(taskLabelRes(task.id)),
+                        stringResource(rung.labelRes())
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            // **Provera je potvrda, ne nivo.** Nivo je prečka iznad; provera kaže
+            // koliko je ta tvrdnja sveža. Naslepo vene brže nego što se stiče, pa
+            // stara mera nije mera — otud i datum uz rezultat, a ne rezultat sam.
+            if (profile != null || checkup != null) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = if (checkup == null) {
+                        stringResource(R.string.checkup_never)
+                    } else {
+                        stringResource(
+                            R.string.checkup_confirmed,
+                            checkup.tally.solved,
+                            checkup.tally.attempted,
+                            daysAgoLabel(checkup.atMillis)
+                        )
+                    },
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -317,6 +350,42 @@ private fun SkillCard(
             }
         }
     }
+}
+
+/**
+ * Koliko je davno bila provera, rečima.
+ *
+ * Datum se ne pokazuje jer se ne pamti — „pre 12 dana" odmah kaže je li tvrdnja
+ * još sveža, a „6. avgust" traži računanje.
+ */
+@Composable
+private fun daysAgoLabel(atMillis: Long): String {
+    val days = ((System.currentTimeMillis() - atMillis) / DAY_MILLIS).toInt().coerceAtLeast(0)
+    return when (days) {
+        0 -> stringResource(R.string.ago_today)
+        1 -> stringResource(R.string.ago_yesterday)
+        else -> stringResource(R.string.ago_days, days)
+    }
+}
+
+private const val DAY_MILLIS = 24L * 60 * 60 * 1000
+
+/**
+ * Nivo veštine u jednoj reči.
+ *
+ * Namerno bez procenta: broj kao „73%" izgleda tačno a nije — sastavljen je od
+ * nejednakih zadataka i pada od jedne loše večeri. Prečka je grublja i istinita.
+ */
+@Composable
+private fun SkillLevel.headline(): String = when (stage) {
+    SkillStage.NOT_MEASURED -> stringResource(R.string.progress_not_measured)
+    SkillStage.UNTRIED -> stringResource(R.string.stage_untried)
+    SkillStage.STARTED -> stringResource(R.string.stage_started)
+    SkillStage.MASTERED -> stringResource(R.string.stage_mastered)
+    SkillStage.HOLDING -> stringResource(
+        R.string.stage_holding,
+        stringResource(requireNotNull(holds).labelRes())
+    )
 }
 
 /**

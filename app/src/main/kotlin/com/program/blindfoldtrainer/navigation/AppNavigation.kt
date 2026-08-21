@@ -17,6 +17,8 @@ import com.program.blindfoldtrainer.core.model.Checkups
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Skill
+import com.program.blindfoldtrainer.core.progress.levelOf
 import com.program.blindfoldtrainer.core.moduleapi.ModuleArgs
 import com.program.blindfoldtrainer.ui.GuideScreen
 import com.program.blindfoldtrainer.ui.MainMenuScreen
@@ -194,6 +196,11 @@ fun AppNavigation(registry: ModuleRegistry) {
             GuideScreen(
                 modules = registry.all,
                 checkups = registry.offerableCheckups,
+                // Slika veština u uputstvu nosi i **tvoje stanje**, ne samo
+                // pravilo. Računa se ovde jer su i registar i napredak već tu.
+                levels = Skill.entries.associateWith {
+                    progress.levelOf(it, allTasks).stage
+                },
                 onBack = { navController.popBackStack() }
             )
         }

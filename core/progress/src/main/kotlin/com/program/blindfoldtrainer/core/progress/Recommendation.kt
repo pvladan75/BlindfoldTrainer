@@ -166,6 +166,8 @@ private fun ProgressSnapshot.standingOf(task: TaskSpec): Float =
  * Uspeh se meri orijentirom te prečke kad ga ima; gde ga nema, praznom rukom —
  * [DEFAULT_SUCCESS] tačnosti.
  */
+internal fun ProgressSnapshot.nextRungFor(task: TaskSpec): Support = nextRung(task)
+
 private fun ProgressSnapshot.nextRung(task: TaskSpec): Support {
     val history = skillHistory
         .filter { !it.isCheckup && it.taskId == task.id }

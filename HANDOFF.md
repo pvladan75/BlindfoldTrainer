@@ -37,6 +37,65 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### Nivo veštine je konačno jedan pojam
+
+Do sada su o istoj stvari govorila **tri različita broja**: nivo iz provere
+(`4/5`), `standing` kao mešavina prečke i tačnosti, i orijentir po zadatku i
+prečki. Svaki je merio nešto tačno, ali nijedan nije odgovarao na pitanje zbog
+kog se Napredak otvara — **gde stojim i šta mi još fali**. Sa uređaja je stiglo
+baš to: „nemamo jasan pokazatelj".
+
+Odluka je zapravo bila doneta ranije i stoji niže u ovom fajlu — *„Nivo je prečka
+na lestvici podrške koju veština drži"* — samo nije bila napravljena. Sad jeste.
+
+#### Pet stanja, ništa novo pod njima
+
+`SkillLevel` u `:core:progress` se izvodi iz **orijentira koji već postoje**:
+
+- `NOT_MEASURED` — nijedan zadatak je ne meri; rupa u ponudi, ne slabost
+- `UNTRIED` — meri se, ali je nisi dodirnuo
+- `STARTED` — vežbana, orijentir još nigde
+- `HOLDING` — orijentir dostignut na prečki koju nosi uz sebe
+- `MASTERED` — orijentir na **najtežoj prečki** koju ijedan njen zadatak nudi
+
+Prečka se priznaje iz **bilo kog** zadatka koji veštinu meri: zadaci su različiti
+poslovi iste veštine, a traženje svih bi kažnjavalo modul sa više njih. Zadatak
+koji veštinu samo **nosi** ne ulazi — po njemu se u njen profil i ne upisuje, pa
+bi obećavao prečku do koje se vežbanjem baš te veštine ne dolazi.
+
+#### Provera je sišla na potvrdu
+
+Rezultat provere više nije naslov kartice. Naslov je prečka; provera stoji ispod
+kao **potvrda i datum**: „potvrđeno proverom: 4/5 · pre 12 dana". Naslepo vene
+brže nego što se stiče, pa stara mera nije mera — i to se sad vidi bez računanja.
+
+#### „Kuda po nju"
+
+Uz svaku veštinu koja nije savladana stoji red **„Gradi se ovim: Šetnja figurom ·
+bez table"**. Bira se zadatak sa najslabijim stanjem među onima koji je mere, a
+prečka je ista ona koju bi put poručio — `nextRung` se zove, ne prepisuje.
+
+Ovo je dotle znao samo Predlog, i to za jednu jedinu veštinu, onu koju je sam
+izabrao. Ko na kartici pročita da negde stoji slabo, imao je pravo da odmah sazna
+i čime se to popravlja.
+
+#### Stablo u uputstvu nosi tvoje stanje
+
+Slika je dotle pokazivala **samo redosled gradnje** — šta na čemu stoji — dakle
+tuđu teoriju umesto tvog stanja. Sad se svaka kutija boji po stanju, uz legendu
+ispod. Isto stanje ide i u opis za čitač ekrana: boja je za oko, a onome ko sliku
+sluša mora stići rečima.
+
+#### Šta je ostalo
+
+**Održavanje.** Savladano nije završeno — posle savladanosti veština treba da ide
+u povremenu proveru da još stoji, i da se vrati u cilj ako padne. Bez toga put i
+dalje ide samo ka najslabijem i tiho pušta da najjače propada. `MASTERED` sad
+postoji kao stanje, pa se preporuka ima na šta osloniti; sama promena pravila je
+sledeći korak.
+
+**402 testa, nijedan ne pada. Nije viđeno na uređaju.**
+
 ### Napredak je sklopljen, i tri sitnice sa ekrana
 
 Sa uređaja je stiglo da je Napredak **presložen za snalaženje**, i to dok podataka
