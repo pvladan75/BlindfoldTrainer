@@ -37,6 +37,369 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### „Ponovi" je prestao da vraća istu nedoumicu
+
+Stanje na **21. avgust 2026.**, kraj dana. Tri izmene, sve u `:core:audio`, pa
+važe u **svim** modulima.
+
+#### Ponavlja se fonetski
+
+„B" i „D" se preko zvučnika razlikuju tek toliko koliko dozvoli soba. Čovek koji
+je pritisnuo „ponovi" je već jednom pogrešno čuo, a ponoviti mu isto istim rečima
+znači ponuditi istu nedoumicu drugi put.
+
+Pri ponavljanju kolone zato idu imenima: **„bravo pet", ne „b pet"**. Koristi se
+`PHONETIC_FILES` okrenuta — ista tablica po kojoj se polje i **prima** glasom.
+Test to i drži: sve što se fonetski izgovori mora da se prepozna natrag, inače bi
+se korisniku nudio izgovor koji sam program ne razume.
+
+Prvo izgovaranje ostaje kratko; fonetski oblik je za drugi pokušaj, ne za svaki.
+
+#### Ponavlja se cela najava, ne poslednji poziv
+
+Ovo je bila greška koja se nije videla iz opisa. `lastSpoken` se prepisivao pri
+**svakom** pozivu, a jedna najava ide iz više njih — „skakač sa", „e četiri",
+„cilj", „g sedam". „Ponovi" je zato vraćao samo „g sedam": jedini deo koji je
+čovek sigurno već čuo, jer je bio poslednji.
+
+Sad se najava skuplja kroz ceo dah. Nova počinje kad se preseče ono što je teklo
+ili kad u redu ničega nije bilo — modul ništa ne označava niti mora da zna za to.
+
+#### Ono što ima svoje dugme ne otima „ponovi"
+
+`Speaker.aside { }`: sve izgovoreno unutar bloka se ne pamti za ponavljanje.
+Primenjeno na čitanje pozicije (Završnica, Parovi) i čitanje stanja (Putanja
+skakača, Kretanje figura).
+
+Bez toga jedan dodir na „pozicija" pojede „ponovi", pa se do rečenice koja je
+zaista promakla više ne može — dok se pozicija ionako dobija ponovnim dodirom na
+njeno sopstveno dugme.
+
+**357 testova, nijedan ne pada.** Deset novih pokriva fonetski oblik.
+
+**Nije viđeno na uređaju.**
+
+### Nazad na obrazac ostalih modula
+
+Stanje na **21. avgust 2026.**, kraj dana. Po odluci korisnika, unos u „Kretanju
+figura" radi **isto kao u svih osam ostalih modula**: mikrofon se otvara po
+jednom polju i sam se zaustavlja, a primljeno polje se izgovara.
+
+Time otpada sve što je ovaj modul radio drugačije — neprekidno slušanje,
+mikrofon koji prati govor, vibracija umesto potvrde — i sa njima i cela porodica
+grešaka koju su doneli. Redosled je bio: uvedeno neprekidno slušanje → aplikacija
+sluša samu sebe → praćenje govora da se skloni sebi s puta → trka u tom praćenju
+zatvori mikrofon zauvek. Ništa od toga ne postoji kad mikrofon otvara korisnik.
+
+**Argument je bio jednoobraznost, i jači je nego što je izgledao.** Ušteđeni
+dodir između dva poteza ionako pada u trenutak u kom se i tako misli, pa ne
+ubrzava ništa; a jedan pokret naučen jednom vredi u svakom modulu.
+
+Ćutanje posle tačnog poteza je otišlo sa istim obrazloženjem. Bilo je zamišljeno
+da čuva ritam niza, ali ćutanje ne razlikuje „primljeno" od „nisam te čuo" — a to
+je usred šetnje od dvanaest poteza najskuplja moguća nedoumica.
+
+#### Šta je iz te tri runde ostalo
+
+Iako je iskustvo vraćeno, dve ispravke iz njega **ostaju i vrede svuda**:
+
+1. **`Speaker.isSpeaking`**, sa osiguračem u `AndroidSpeaker`. Modul više ne
+   reda krugove tajmerom nego čeka stvarnu tišinu — greška zbog koje je novo
+   pitanje presecalo prethodni odgovor nije imala veze sa mikrofonom.
+2. **Red čekanja pre podizanja motora se skuplja**, ne prepisuje. Ranije je od
+   nekoliko rečenica zatraženih pre nego što se TTS podigne preživela samo
+   poslednja.
+
+`EyesFreeControls` je vraćen u zatečeni oblik: `pulses` je izašao, jer ga posle
+ovoga niko ne traži, a nekorišćen ulaz u zajedničkom sloju je poziv na
+razilaženje.
+
+**347 testova, nijedan ne pada. Nije viđeno na uređaju.**
+
+### Potvrda je prestala da bude rečenica
+
+Stanje na **21. avgust 2026.**, treće probanje. Petlja je proradila i korisnik je
+kroz nju prošao; sve tri primedbe odatle su o **ceni potvrde**.
+
+#### Ponavljanje polja je izbačeno
+
+Aplikacija je ponavljala svako primljeno polje. Pitanje koje se zaista postavlja
+je „je li stiglo", a ne „koje polje si rekao" — to korisnik zna, i ima fonetsku
+azbuku („bravo pet") da to i osigura kad Vosk okleva.
+
+Uz to je ponavljanje **gasilo mikrofon dok traje**, jer mikrofon prati govor. Za
+odgovor od tri polja to su bila tri ćutanja usred sastavljanja odgovora.
+
+Umesto toga ide **kratka vibracija**. `EyesFreeControls` je zato dobio
+`pulses: Flow<Buzz>` — vibracija koju modul zatraži mimo dodira. To je jedina
+povratna informacija koja ne troši vreme i ne prekida slušanje, a u samom
+`Buzz`-u je već pisalo da je vibracija jedino što stiže pre govora.
+
+Vibrira i **šetnja**, na svaki prihvaćen potez. Pravilo „aplikacija ćuti dok je
+tačno" time ostaje netaknuto, a tiho više ne znači i bez odgovora: greška se i
+dalje izgovara, pa se „primljeno" i „pogrešno" razlikuju bez ijedne suvišne reči.
+
+#### „Gotovo" se vraća na jedan dodir
+
+Dva dodira su bila odgovor na to što je zona okidala slučajno — a to se dešavalo
+dok se mikrofon još palio rukom i dok je korisnik pipao po ekranu tražeći kako se
+uopšte odgovara. Sa mikrofonom koji se otvara sam, ruka nema šta da traži, pa je
+i povod otpao.
+
+Rečenica „pritisni još jednom" je uz to gasila mikrofon i odlagala drugi dodir
+koji je ionako već bio namera. Dug dodir i dalje briše sastavljeni odgovor — to
+ostaje jedina zaštita, i dovoljna je jer se odnosi na grešku koja se stvarno
+dešava.
+
+**347 testova, nijedan ne pada. Nije viđeno na uređaju.**
+
+### Mikrofon se nije otvarao — trka u praćenju govora
+
+Stanje na **21. avgust 2026.**, drugo probanje. Simptom: pitanje se čuje,
+izgovoreno polje ne stiže nigde, a na kraju aplikacija kaže baš ono što je
+korisnik i rekao.
+
+Uzrok je bio u `speakParts`, u kodu napisanom istog dana. `lastQueuedId` se
+pomerao **unutar** petlje, a `_isSpeaking` se dizao **posle** nje — dok javljanja
+o kraju izgovora stižu sa tuđe niti i umeju da preteknu taj kod. Odatle dve tihe
+trke, obe kvare mikrofon:
+
+- kraj **prvog** dela se primi kao kraj celog reda → mikrofon se otvori usred
+  govora i aplikacija čuje samu sebe;
+- kraj **poslednjeg** dela stigne pre nego što se zastavica digne → ostaje
+  podignuta zauvek, mikrofon se ne otvori nikad. To je ono što se videlo.
+
+Sad se oznaka poslednjeg dela i zastavica postavljaju **pre prvog `speak`**.
+
+#### Osigurač, jer zaglavljena zastavica ubija modul
+
+Motor koji proguta javljanje o kraju ostavljao bi modul sa zatvorenim mikrofonom
+i bez ijednog načina da se to razreši iznutra. Uz svaki izgovor se zato naoruža
+rok — osnovica plus dodatak po znaku — koji zastavicu spusti ako ništa ne stigne.
+Nije mehanizam nego mreža: rok je višestruko duži od svake rečenice koja se
+stvarno izgovara, pa u ispravnom radu ne opali.
+
+#### Domet sad ponavlja svako primljeno polje
+
+Ćutanje je bilo pravilo za **šetnju**, gde čuva ritam niza. U dometu niza nema —
+odgovor se sastavlja — pa se bez potvrde nije znalo ni da li je polje primljeno
+ni šta se do sada sakupilo. Ponavlja se i polje koje je već u odgovoru: ono jeste
+primljeno, a ćutanje bi ličilo na to da nije.
+
+#### Ulaz se otvara tek kad je govor u redu
+
+Između kraja jednog kruga i početka sledećeg je ostajao trenutak tišine u kom se
+mikrofon upali pa odmah ugasi — a paljenje vibrira, pa je to bio i lažan znak
+„sad govori“. Stanje je dobilo `isBetweenRounds`, a najava se stavlja u red
+**pre** nego što se ulaz otvori.
+
+**347 testova, nijedan ne pada. Nije viđeno na uređaju.**
+
+### Prvo probanje „Kretanja figura" na uređaju
+
+Stanje na **21. avgust 2026.** Sa uređaja su stigle tri primedbe, i sve tri su
+bile ista greška gledana sa tri strane.
+
+#### Govor je presecao sam sebe
+
+Krugovi su se redali **tajmerom** — 1,2 s pa sledeće pitanje — a sledeće pitanje
+je počinjalo sa `interrupt = true`. Tajmer je pogađao koliko rečenica traje, a to
+zavisi od jezika, od brzine govora koju je korisnik podesio i od toga koliko se
+polja nabraja. Kad promaši, novo pitanje preseče prethodni odgovor na pola reči.
+
+`Speaker` je zato dobio **`isSpeaking: StateFlow<Boolean>`**, a `AndroidSpeaker`
+ga puni preko `UtteranceProgressListener`. Zatečena vrednost je „ćuti" — govornik
+koji ne prati svoj govor time kaže „ne znam", i modul se ponaša kao ranije.
+
+Prati se **oznaka poslednjeg stavljenog dela**, ne brojač: `QUEUE_FLUSH` pobaca
+ono što je čekalo, a javljanja za pobačene delove stižu posle toga i brojač bi
+skliznuo ispod nule zauvek. Uz to su oznake postale jedinstvene kroz ceo rad —
+staro „part-0" se ponavljalo pri svakom izgovoru, pa se dva izgovora nisu
+razlikovala.
+
+Modul sad čeka `awaitSilence()`, a **sopstvenu najavu nikad ne preseca**;
+`interrupt = true` je ostao samo tamo gde korisnik traži da čuje nešto sad.
+
+#### Aplikacija je slušala samu sebe
+
+Ovo je bio pravi razlog za „ne mogu da pohvatam kako unosim poteze". Modul je
+uveo **neprekidno slušanje**, čega drugi moduli nemaju — `listenForSquare` se sam
+zaustavi posle jednog polja, pa im mikrofon i inače stoji ugašen dok se govori.
+
+Vosk prepoznaje polja iz zvučnika kao i iz usta. Najava „šetnja topom sa e5" je
+ulazila nazad kao da je korisnik rekao e5 — potez odbijen, a nikad izgovoren.
+
+Sad mikrofon **prati govor**: ćuti dok aplikacija govori, sluša čim ućuti. Time
+se usput dobija i odgovor na „ne znam kad treba da počnem" — zone već vibriraju
+kad slušanje krene, pa je znak fizički, bez gledanja. Zona kaže i **zašto** ćuti:
+„SAČEKAJ" dok se govori, „NASTAVI" kad je korisnik sam pauzirao.
+
+Praćenje kreće **pošto je govor već u redu**, da mikrofon ne bi na trenutak čuo
+tišinu, upalio se i odmah ugasio — baš na to se `VoiceInput` žali.
+
+#### Pravilo se sada i kaže
+
+Ceo modul ima jedno pravilo — govori kad aplikacija ućuti — a ono se nije imalo
+odakle saznati. Sesija zato počinje jednom rečenicom o tome.
+
+#### „Gotovo" traži dva dodira
+
+Slučajan dodir je trošio celo pitanje: odgovor bi otišao nedovršen i upisao se
+kao promašaj. Mehanika je ista kao kod odustajanja, pa se ne uči ponovo. Dug
+dodir i dalje briše sastavljeni odgovor.
+
+#### Usput ispravljeno u `AndroidSpeaker`
+
+Govor zatražen **pre nego što se motor podigne** se skupljao u jednu promenljivu
+koja se prepisivala, pa je od nekoliko rečenica preživela samo poslednja. Najava
+koja se kaže jednom bi se tako izgubila, i to samo pri prvom ulasku posle
+pokretanja aplikacije — najgora vrsta greške za pronaći. Sad se red skuplja.
+
+**347 testova, nijedan ne pada. Nije viđeno na uređaju.**
+
+### Deveti modul: „Kretanje figura"
+
+Stanje na **20. avgust 2026.** Prvi modul **bez pozicije** — jedna figura po
+praznoj tabli. Nastao je iz korisnikove primedbe da boja polja ne deluje kao
+prirodan ulaz u igru naslepo; prirodnije je znati **kuda figura stiže**. Boja
+ostaje alat (skakač svakim potezom menja boju polja), ne gradivo.
+
+#### Tri zadatka, i zašto baš tri
+
+1. **Domet na liniji** (`reach_on_line`) — „lovac je na e5, koja polja na
+   b-liniji dohvata?" Odgovor je b8 i b2; dami se pridružuje b5; **skakač ne
+   stiže ni na jedno**. Prazan odgovor je valjan, pa se pitanje ne može rešavati
+   nagađanjem. Meri domet figure.
+2. **Šetnja figurom** (`walk_piece`) — top, lovac, ili naizmenična dama.
+3. **Šetnja skakačem** (`walk_knight`) — odvojen zadatak, **ne težina
+   prethodnog**. Sa jednim jedinim osloncem `TaskProfile` ima tačno jednu
+   pregradu, pa bi šetnja topom i šetnja skakačem upale u isti broj. Isto pravilo
+   po kom se preko modula ne sabira, jedan sprat niže.
+
+Obe šetnje mere **ažuriranje pozicije** — korisnikovu najslabiju veštinu, koja je
+do sada imala jedan jedini zadatak i to na najlakšem osloncu.
+
+#### Zabrana ponavljanja je kičma vežbe
+
+Bez nje se topom sa e4 može reći e5, e4, e5 unedogled — sve legalno, nula napora.
+Sa njom se uz trenutno polje mora držati i **rastući spisak potrošenih**, pa se
+greška gomila kroz niz. Odatle i `heldUntil`.
+
+Tri odluke koje su donete pre koda:
+
+- **Greška ne prekida šetnju.** Figura ostaje gde je bila. Jedan promašaj u
+  dvanaestom potezu ne sme da poništi jedanaest dobrih.
+- **Zaglavljivanje nije greška nego kraj.** Skakač uz zabranu ponavljanja ume da
+  se zatvori; dužina je rezultat.
+- **Aplikacija ćuti dok je tačno.** Progovara samo na grešci, i kaže **koju** —
+  „tako se ne ide" i „tu si već bio" nisu isti promašaj.
+
+#### Dama ide naizmenično
+
+Prvi potez kao top, drugi po dijagonali, pa opet. Uz polje se time drži i **čime
+si stigao** — dve veze umesto jedne. Nije šahovsko pravilo nego pravilo vežbe, pa
+i stoji u `Walk`, a ne u `:core:chess`, gde dama i dalje znači top plus lovac.
+Kralj je izbačen: njegova šetnja ne traži ništa što ostale ne traže više.
+
+#### Jedini oslonac je „bez table"
+
+Uz tablu bi se odgovor pročitao umesto izračunao — to nije lakša ista vežba nego
+druga vežba. Posledica je da je ovo **prvi modul u kom se težina penje sama**:
+prečka nema kuda, pa `nextStep` iz predloga radi ceo posao. Ekran zato nema dva
+lica nego jedno — same zone.
+
+Srednji red zona se menja po zadatku: kod dometa je **GOTOVO** (jer se „nijedno"
+ne vidi po broju izgovorenih polja, a glas prepoznaje polja a ne njihovo
+odsustvo), kod šetnje **STANJE**. Dug dodir na GOTOVO briše odgovor — izgovoreno
+polje se inače ne može povući.
+
+Mikrofon sluša **neprekidno**, preko `listen { … true }`: paljenje posle svakog
+polja bi razbilo ritam gore nego bilo koja potvrda.
+
+#### Novo u jezgru
+
+`EmptyBoard` u `:core:chess` — domet figure po praznoj tabli i presek tog dometa
+sa jednom kolonom ili redom. Odvojeno od `MoveGenerator`-a iz istog razloga kao
+`KnightPath`: ovde se ne igra partija.
+
+#### Orijentiri su prvi predlog
+
+Po pokušaju, gde je pokušaj **jedno pitanje** odnosno **jedan izgovoreni potez**:
+domet 15 s uz 80%, šetnja figurom 10 s uz 85%, šetnja skakačem 15 s uz 80%.
+Dužine su 8 / 12 / 12 poteza za figuru i 6 / 10 / 14 za skakača. Sve to se menja
+bez diranja istorije.
+
+### Meni se ređa po stablu veština
+
+Redosled je bio redosled deklaracije u `ModuleId`, pa je **Završnica stajala
+prva** — najteži modul u aplikaciji. Sad se izvodi iz `skillFloors()`, po dva
+ključa: **odakle modul počinje** (najniži sprat koji njegovi zadaci mere) i
+**dokle doseže** (najviši sprat koji uopšte dodiruje). Bez drugog ključa bi
+Završnica stajala uz Parove — obe počinju od ažuriranja, ali Završnica traži i
+računanje naslepo.
+
+Ne prepisuje se nego izvodi, iz istog razloga iz kog se i slika zavisnosti u
+uputstvu crta iz `requires`. `ModuleId.ordinal` se nigde ne čuva — u bazu ide
+`key` — pa promena redosleda ne dira napredak.
+
+**347 testova, nijedan ne pada.** Novi pokrivaju domet po praznoj tabli, pravila
+šetnje i redosled u meniju.
+
+**Nije viđeno na uređaju.**
+
+### Predlog je slao na najlakšu težinu
+
+Stanje na **20. avgust 2026.**
+
+`Recommendation` je nosio veštinu, zadatak i prečku, a **težinu nije nosio
+uopšte** — pa je navigacija na tom putu ukucavala `Difficulty.EASY`. Ko je
+otvarao modul iz menija birao je težinu sam; ko je slušao **Predlog**, dobijao
+je najlakšu, svaki put, i to nigde nije pisalo.
+
+Posledica je merljiva: „Najkraći put skakača" ima rastojanje 2 / 3 / 4 po
+težini, a korisnik koji uglavnom sluša predlog nikad nije video ništa dalje od
+dva skoka — 6.2 s po zadatku naspram orijentira od 20 s. Vežba nije bila
+prerasla; bila je neotvorena.
+
+#### Težina se bira po istom pravilu kao prečka, ali **na toj prečki**
+
+`nextStep` gleda poslednje dve sesije tog zadatka **na prečki koja je upravo
+izabrana**: dvaput ispunjen orijentir → težina gore, promašaj → težina dole,
+inače se ostaje. Isto pravilo kao `nextRung`, samo nad drugom osom.
+
+**Dve lestvice se time ne penju uporedo.** Kad prečka ima kuda da se pomeri,
+težina zatiče praznu istoriju na novoj prečki i vraća se na najlakšu; kad je
+prečka na kraju svoje lestvice, težina preuzima posao. Da se pomere obe na isti
+signal, skok bi bio dvostruk.
+
+Nije uvedena treća lestvica: prečka je i dalje prava mera težine za rad naslepo,
+a ovo je samo ono što se unutar nje moglo skalirati a nije se.
+
+#### Šta je za to moralo da se zapiše
+
+`SkillEntry` je dobio **`difficulty`**. Bez toga istorija nije imala po čemu da
+bira sledeću težinu. Migracije nema — `SkillEntry` se izvodi iz `SessionResult`
+pri svakom čitanju, a `SessionResult.difficulty` je oduvek zapisan.
+
+`recommend` je dobio **`difficultiesFor: (String) -> List<Difficulty>`**. Težine
+deklariše modul, a `:core:progress` module ne poznaje; veza se pravi u školjci,
+gde registar ionako stoji. Prazna ponuda daje `difficulty = null` — modul koji
+težine ne nudi je ne dobija ni na predlogu, umesto da se izmisli najlakša.
+
+#### Kartica sad kaže i težinu
+
+`path_offer_graded` — zadatak · oslonac · težina. Prećutana odluka je i dalje
+odluka; razlog je isti onaj zbog kog na kartici stoji i „koliko pomoći".
+
+Uz to je izvučen `SkillEntry.meets(task)` — provera „da li je sesija ispunila
+orijentir svoje prečke" je do sada stajala dvaput prepisana unutar `nextRung`, a
+sad je treba i `nextStep`. Jedina promena u ponašanju je da sesija **bez ijednog
+pokušaja** nije uspeh ni kad je orijentir 0% (nijedan zadatak takav nema).
+
+**302 testa, nijedan ne pada.** Osam novih pokriva težinu u predlogu.
+
+**Nije viđeno na uređaju.**
+
 ### Zadatak i prečka se sad biraju u meniju
 
 Kartica modula ima dva nova reda iznad dugmića za težinu: **„Zadatak"** i
