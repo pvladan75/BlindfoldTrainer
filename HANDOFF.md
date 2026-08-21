@@ -37,6 +37,33 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### Težina kaže šta znači, ne samo koliko je teška
+
+„Lako, srednje, teško" kaže **redosled, ne cenu**. U Putanji skakača je to
+razlika između dva i četiri skoka, u Diktatu između tri i sedam figura, a u
+Završnici između slabije i najjače odbrane — a sa kartice se to nije videlo
+nigde. Otud i lako ostane godinama na prvoj trećini a da se ne zna šta se
+propušta.
+
+`TrainingModule` je dobio **`difficultyDetail(difficulty, taskId)`**. Odgovara
+modul, jer jedino on zna šta skalira, i odgovara **iz istog `setupFor` po kom
+zaista radi** — prepisan broj bi se razišao sa stvarnim čim neko promeni jedno a
+ne i drugo. Zbog toga su `Setup` i `setupFor` u svim modulima postali `internal`.
+
+Detalj stoji **na samom dugmetu, ispod imena**. Ime ostaje iznad, jer se po njemu
+i dalje zna šta je teže — sam broj to ne kaže onome ko modul otvara prvi put.
+
+Gde figura ulazi u težinu, ona je i vest: „Domet na liniji" kaže „top i lovac /
+i dama / i skakač", a „Šetnja figurom" na najtežoj „damom, 12 poteza", jer se tu
+ne dodaju potezi nego naizmenična dama.
+
+Završnica je jedina koja **ne izvodi broj** nego bira reč: menja se samo dubina
+motora, a „dubina 12" ne znači ništa nikome ko ne zna kako motor radi.
+
+Uz to `quantity()` u `:core:moduleapi` — brojevi u rečenici na srpskom, sa
+izuzetkom koji se lako previdi: **11 do 14 idu uz množinu** iako se završavaju na
+1 do 4. Bez toga bi „12 poteza" ispalo „12 potez".
+
 ### Kartica je nudila prečke koje zadatak ne ume
 
 Videlo se tek kad je „Kretanje figura" dobilo zadatke sa različitim brojem

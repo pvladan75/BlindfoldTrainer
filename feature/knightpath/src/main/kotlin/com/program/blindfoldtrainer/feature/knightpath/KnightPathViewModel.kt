@@ -9,6 +9,7 @@ import com.program.blindfoldtrainer.core.audio.listenForSquare
 import com.program.blindfoldtrainer.core.chess.KnightPath
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.Difficulty
+import com.program.blindfoldtrainer.core.moduleapi.quantity
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.model.Benchmark
@@ -70,9 +71,13 @@ data class KnightPathUiState(
  * Podešavanja po težini. Rastojanje je ono što zadatak čini teškim — dva poteza
  * se vide odmah, četiri se moraju izvesti.
  */
-private data class Setup(val taskCount: Int, val distance: Int)
+internal data class Setup(val taskCount: Int, val distance: Int)
 
-private fun setupFor(difficulty: Difficulty) = when (difficulty) {
+/** Šta težina znači: koliko je skokova do cilja. To je ceo zadatak. */
+internal fun difficultyDetailOf(difficulty: Difficulty): String =
+    quantity(setupFor(difficulty).distance, "skok", "skoka")
+
+internal fun setupFor(difficulty: Difficulty) = when (difficulty) {
     Difficulty.EASY -> Setup(taskCount = 8, distance = 2)
     Difficulty.MEDIUM -> Setup(taskCount = 10, distance = 3)
     Difficulty.HARD -> Setup(taskCount = 10, distance = 4)

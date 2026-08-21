@@ -25,6 +25,10 @@ class GeometryTrainingModule @Inject constructor() : TrainingModule {
     override val difficulties = listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD)
     override val needs = setOf(Capability.SPEECH_OUTPUT)
 
+
+    override fun difficultyDetail(difficulty: Difficulty, taskId: String?): String? =
+        difficultyDetailOf(difficulty)
+
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {
         GeometryScreen(

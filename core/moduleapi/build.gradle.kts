@@ -30,4 +30,6 @@ dependencies {
     api(project(":core:model"))
     api(platform(libs.androidx.compose.bom))
     api(libs.androidx.ui)
+
+    testImplementation(libs.junit)
 }

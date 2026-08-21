@@ -91,7 +91,20 @@ data class EndgameUiState(
         get() = outcome == EndgameOutcome.IN_PROGRESS && !isEngineThinking && !isMemorizing
 }
 
-private data class Setup(val puzzleCount: Int, val engineDepth: Int)
+internal data class Setup(val puzzleCount: Int, val engineDepth: Int)
+
+/**
+ * Šta težina znači: **koliko se protivnik dobro brani**.
+ *
+ * Broj pozicija je isti na sve tri, pa bi ga navesti značilo reći da se ništa ne
+ * menja. Menja se dubina motora, a ona se ne izgovara brojem — „dubina 12" ne
+ * znači ništa nikome ko ne zna kako motor radi.
+ */
+internal fun difficultyDetailOf(difficulty: Difficulty): String = when (difficulty) {
+    Difficulty.EASY -> "slabija odbrana"
+    Difficulty.MEDIUM -> "jača odbrana"
+    Difficulty.HARD -> "najjača odbrana"
+}
 
 /** Stanje partije pre jednog tvog poteza. */
 private data class UndoPoint(

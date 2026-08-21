@@ -32,6 +32,10 @@ class DictationTrainingModule @Inject constructor() : TrainingModule {
      * vežbe nema, pa režim bez ekrana ovaj modul ne podnosi.
      */
 
+
+    override fun difficultyDetail(difficulty: Difficulty, taskId: String?): String? =
+        difficultyDetailOf(difficulty)
+
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {
         DictationScreen(

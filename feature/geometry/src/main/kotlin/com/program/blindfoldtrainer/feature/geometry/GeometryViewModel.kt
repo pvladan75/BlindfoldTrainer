@@ -6,6 +6,8 @@ import com.program.blindfoldtrainer.core.audio.Speaker
 import com.program.blindfoldtrainer.core.audio.SpeechVoice
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.Difficulty
+import com.program.blindfoldtrainer.core.moduleapi.quantity
+import com.program.blindfoldtrainer.core.moduleapi.secondsLabel
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.model.Settings
@@ -85,9 +87,15 @@ internal val SQUARE_COLOR = TaskSpec(
  * Podešavanja po težini. Lako nema sat i služi da se nauči obrazac; teško je
  * dovoljno brzo da se ne stigne brojati polja u glavi.
  */
-private data class Setup(val questionCount: Int, val perQuestionMillis: Long?)
+internal data class Setup(val questionCount: Int, val perQuestionMillis: Long?)
 
-private fun setupFor(difficulty: Difficulty) = when (difficulty) {
+/** Šta težina znači: koliko polja, i koliko vremena po polju. */
+internal fun difficultyDetailOf(difficulty: Difficulty): String = setupFor(difficulty).let {
+    val squares = quantity(it.questionCount, "polje", "polja")
+    if (it.perQuestionMillis == null) squares else "$squares · ${secondsLabel(it.perQuestionMillis)} s"
+}
+
+internal fun setupFor(difficulty: Difficulty) = when (difficulty) {
     Difficulty.EASY -> Setup(questionCount = 10, perQuestionMillis = null)
     Difficulty.MEDIUM -> Setup(questionCount = 15, perQuestionMillis = 6_000)
     Difficulty.HARD -> Setup(questionCount = 20, perQuestionMillis = 3_500)

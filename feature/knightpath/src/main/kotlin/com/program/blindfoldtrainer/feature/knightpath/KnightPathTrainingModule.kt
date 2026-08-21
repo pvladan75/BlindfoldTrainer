@@ -25,6 +25,10 @@ class KnightPathTrainingModule @Inject constructor() : TrainingModule {
     override val difficulties = listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD)
     override val needs = setOf(Capability.SPEECH_OUTPUT, Capability.VOICE_INPUT)
 
+
+    override fun difficultyDetail(difficulty: Difficulty, taskId: String?): String? =
+        difficultyDetailOf(difficulty)
+
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {
         KnightPathScreen(

@@ -12,6 +12,7 @@ import com.program.blindfoldtrainer.core.chess.Move
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.designsystem.board.PieceVisibility
 import com.program.blindfoldtrainer.core.model.Difficulty
+import com.program.blindfoldtrainer.core.moduleapi.quantity
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.model.Benchmark
@@ -74,9 +75,14 @@ data class PairsUiState(
 )
 
 /** Sastav sesije po težini. */
-private data class Setup(val pieceCount: Int, val stepsPerPuzzle: Int, val puzzleCount: Int)
+internal data class Setup(val pieceCount: Int, val stepsPerPuzzle: Int, val puzzleCount: Int)
 
-private fun setupFor(difficulty: Difficulty) = when (difficulty) {
+/** Šta težina znači: koliko se figura drži u glavi i koliko poteza traje niz. */
+internal fun difficultyDetailOf(difficulty: Difficulty): String = setupFor(difficulty).let {
+    "${quantity(it.pieceCount, "figura", "figure", "figura")} · ${it.stepsPerPuzzle} poteza"
+}
+
+internal fun setupFor(difficulty: Difficulty) = when (difficulty) {
     Difficulty.EASY -> Setup(pieceCount = 3, stepsPerPuzzle = 8, puzzleCount = 5)
     Difficulty.MEDIUM -> Setup(pieceCount = 4, stepsPerPuzzle = 12, puzzleCount = 5)
     Difficulty.HARD -> Setup(pieceCount = 5, stepsPerPuzzle = 16, puzzleCount = 5)

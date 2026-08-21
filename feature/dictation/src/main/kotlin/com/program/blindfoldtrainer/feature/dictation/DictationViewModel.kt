@@ -10,6 +10,7 @@ import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.chess.gradeReconstruction
 import com.program.blindfoldtrainer.core.chess.randomSparsePosition
 import com.program.blindfoldtrainer.core.model.Difficulty
+import com.program.blindfoldtrainer.core.moduleapi.quantity
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.model.Benchmark
@@ -90,9 +91,13 @@ data class DictationUiState(
  * Ovde ne raste pritisak vremena nego **koliko se odjednom drži u glavi**: čitanje
  * se sme ponoviti koliko god puta, pa je jedina prava težina broj figura.
  */
-private data class Setup(val taskCount: Int, val pieceCount: Int)
+internal data class Setup(val taskCount: Int, val pieceCount: Int)
 
-private fun setupFor(difficulty: Difficulty) = when (difficulty) {
+/** Šta težina znači: koliko se figura diktira. */
+internal fun difficultyDetailOf(difficulty: Difficulty): String =
+    quantity(setupFor(difficulty).pieceCount, "figura", "figure", "figura")
+
+internal fun setupFor(difficulty: Difficulty) = when (difficulty) {
     Difficulty.EASY -> Setup(taskCount = 5, pieceCount = 3)
     Difficulty.MEDIUM -> Setup(taskCount = 6, pieceCount = 5)
     Difficulty.HARD -> Setup(taskCount = 6, pieceCount = 7)

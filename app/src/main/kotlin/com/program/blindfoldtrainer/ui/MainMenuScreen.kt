@@ -42,6 +42,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.program.blindfoldtrainer.R
 import com.program.blindfoldtrainer.core.model.Capability
@@ -576,6 +578,13 @@ private fun ModuleCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 module.difficulties.forEach { difficulty ->
+                    // **Šta težina znači** stoji na samom dugmetu, ispod imena.
+                    // „Lako, srednje, teško" kaže samo redosled, a ne i cenu: u
+                    // Putanji skakača je to razlika između dva i četiri skoka.
+                    // Ime ostaje iznad, jer se po njemu i dalje zna šta je teže —
+                    // sam broj to ne kaže onome ko modul otvara prvi put.
+                    val detail = module.difficultyDetail(difficulty, shownTask)
+
                     FilledTonalButton(
                         onClick = {
                             onStart(
@@ -588,12 +597,23 @@ private fun ModuleCard(
                                 )
                             )
                         },
+                        contentPadding = PaddingValues(vertical = 10.dp, horizontal = 8.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(
-                            text = stringResource(difficulty.labelRes()),
-                            fontWeight = FontWeight.SemiBold
-                        )
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = stringResource(difficulty.labelRes()),
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            if (detail != null) {
+                                Text(
+                                    text = detail,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     }
                 }
             }

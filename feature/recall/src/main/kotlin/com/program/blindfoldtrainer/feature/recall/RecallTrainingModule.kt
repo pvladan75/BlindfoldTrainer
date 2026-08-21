@@ -30,6 +30,10 @@ class RecallTrainingModule @Inject constructor() : TrainingModule {
      * drugačiji oblik pitanja.
      */
 
+
+    override fun difficultyDetail(difficulty: Difficulty, taskId: String?): String? =
+        difficultyDetailOf(difficulty)
+
     @Composable
     override fun Screen(args: ModuleArgs, onFinish: (SessionResult) -> Unit) {
         RecallScreen(

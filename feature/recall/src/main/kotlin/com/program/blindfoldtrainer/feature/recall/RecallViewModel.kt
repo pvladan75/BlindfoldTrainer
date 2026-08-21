@@ -9,6 +9,8 @@ import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.chess.gradeReconstruction
 import com.program.blindfoldtrainer.core.chess.randomSparsePosition
 import com.program.blindfoldtrainer.core.model.Difficulty
+import com.program.blindfoldtrainer.core.moduleapi.quantity
+import com.program.blindfoldtrainer.core.moduleapi.secondsLabel
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.model.Benchmark
@@ -80,9 +82,14 @@ data class RecallUiState(
  * Podešavanja po težini. Raste broj figura, a pada vreme gledanja — teško je
  * prekratko da se pozicija „pročita" polje po polje.
  */
-private data class Setup(val taskCount: Int, val pieceCount: Int, val memorizeMillis: Long)
+internal data class Setup(val taskCount: Int, val pieceCount: Int, val memorizeMillis: Long)
 
-private fun setupFor(difficulty: Difficulty) = when (difficulty) {
+/** Šta težina znači: koliko figura, i koliko dugo se gledaju. */
+internal fun difficultyDetailOf(difficulty: Difficulty): String = setupFor(difficulty).let {
+    "${quantity(it.pieceCount, "figura", "figure", "figura")} · ${secondsLabel(it.memorizeMillis)} s"
+}
+
+internal fun setupFor(difficulty: Difficulty) = when (difficulty) {
     Difficulty.EASY -> Setup(taskCount = 5, pieceCount = 3, memorizeMillis = 6_000)
     Difficulty.MEDIUM -> Setup(taskCount = 6, pieceCount = 4, memorizeMillis = 5_000)
     Difficulty.HARD -> Setup(taskCount = 6, pieceCount = 5, memorizeMillis = 4_000)

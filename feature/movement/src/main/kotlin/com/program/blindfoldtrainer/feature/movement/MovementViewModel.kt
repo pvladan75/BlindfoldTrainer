@@ -17,6 +17,7 @@ import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.SkillTally
 import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.model.TaskSpec
+import com.program.blindfoldtrainer.core.moduleapi.quantity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -219,13 +220,13 @@ internal val MOVEMENT_TASKS = listOf(REACH_ON_LINE, RETELL_PATH, WALK_PIECE, WAL
  * prvi modul u kom je tako. Zato skalira obe stvari koje zadatak čine težim:
  * dužinu i, kod šetnje figurom, samu figuru.
  */
-private data class Setup(
+internal data class Setup(
     val roundCount: Int,
     val moves: Int,
     val pieces: List<PieceType>
 )
 
-private fun setupFor(task: MovementTask, difficulty: Difficulty): Setup = when (task) {
+internal fun setupFor(task: MovementTask, difficulty: Difficulty): Setup = when (task) {
     // Pitanja su kratka, pa ih ide više; teže je ono što se pita, ne koliko.
     MovementTask.REACH -> when (difficulty) {
         Difficulty.EASY -> Setup(10, 0, listOf(PieceType.ROOK, PieceType.BISHOP))
@@ -256,6 +257,49 @@ private fun setupFor(task: MovementTask, difficulty: Difficulty): Setup = when (
         Difficulty.EASY -> Setup(3, 6, listOf(PieceType.KNIGHT))
         Difficulty.MEDIUM -> Setup(3, 10, listOf(PieceType.KNIGHT))
         Difficulty.HARD -> Setup(3, 14, listOf(PieceType.KNIGHT))
+    }
+}
+
+/**
+ * Šta težina znači — **po zadatku**, jer ne skalira svuda isto.
+ *
+ * U dometu raste spisak figura, u prepričavanju i šetnji dužina putanje, a na
+ * najtežoj šetnji figurom ulazi naizmenična dama umesto još poteza. Zato se ne
+ * može reći jednom rečenicom za ceo modul.
+ */
+internal fun difficultyDetailOf(difficulty: Difficulty, taskId: String?): String {
+    val task = when (taskId) {
+        RETELL_PATH.id -> MovementTask.RETELL
+        WALK_PIECE.id -> MovementTask.WALK
+        WALK_KNIGHT.id -> MovementTask.KNIGHT_WALK
+        else -> MovementTask.REACH
+    }
+
+    val setup = setupFor(task, difficulty)
+    val pieces = setup.pieces
+
+    // Gde figura ulazi u težinu, ona je i vest — broj poteza uz nju kaže manje.
+    return when (task) {
+        MovementTask.REACH -> when {
+            PieceType.KNIGHT in pieces -> "i skakač"
+            PieceType.QUEEN in pieces -> "i dama"
+            else -> "top i lovac"
+        }
+
+        MovementTask.RETELL -> if (PieceType.KNIGHT in pieces) {
+            "skakač, ${setup.moves} poteza"
+        } else {
+            quantity(setup.moves, "potez", "poteza")
+        }
+
+        // Na najtežoj se ne dodaju potezi nego dama, pa se to i kaže.
+        MovementTask.WALK -> if (PieceType.QUEEN in pieces) {
+            "damom, ${setup.moves} poteza"
+        } else {
+            quantity(setup.moves, "potez", "poteza")
+        }
+
+        MovementTask.KNIGHT_WALK -> quantity(setup.moves, "potez", "poteza")
     }
 }
 

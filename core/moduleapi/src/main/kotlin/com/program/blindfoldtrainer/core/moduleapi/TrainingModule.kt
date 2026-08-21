@@ -39,6 +39,25 @@ interface TrainingModule {
         get() = Difficulty.entries
 
     /**
+     * Šta težina **konkretno znači** u ovom modulu, za dati zadatak.
+     *
+     * „Lako, srednje, teško" kaže samo redosled, a ne i cenu: u Putanji skakača
+     * to je razlika između dva i četiri skoka, u Diktatu između tri i sedam
+     * figura, a u Završnici između slabije i najjače odbrane. Bez toga se bira
+     * naslepo, i lako se godinama ostane na prvoj trećini a da se ne zna šta se
+     * propušta.
+     *
+     * Odgovara **modul**, a ne školjka, jer jedino on zna šta skalira. Odgovor
+     * mora biti **kratak** — stoji ispod dugmeta široko trećinu ekrana.
+     *
+     * Izvodi se iz istog podešavanja po kom modul zaista radi, ne prepisuje:
+     * prepisan broj se razilazi sa stvarnim čim neko promeni jedno a ne i drugo.
+     *
+     * `null` znači da se modul nije izjasnio; tada stoji samo opšte ime težine.
+     */
+    fun difficultyDetail(difficulty: Difficulty, taskId: String? = null): String? = null
+
+    /**
      * Šta modulu treba od školjke. Školjka na osnovu ovoga traži dozvolu za
      * mikrofon i podiže Stockfish **pre** ulaska u modul, umesto da svaki modul
      * to petlja sam.

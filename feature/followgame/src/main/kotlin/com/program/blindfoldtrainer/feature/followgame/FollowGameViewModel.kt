@@ -11,6 +11,7 @@ import com.program.blindfoldtrainer.core.chess.PgnGame
 import com.program.blindfoldtrainer.core.chess.Position
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.Difficulty
+import com.program.blindfoldtrainer.core.moduleapi.quantity
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.model.Benchmark
@@ -84,9 +85,18 @@ data class FollowGameUiState(
  * Podešavanja po težini. Razmak je ono što odlučuje: što je više poteza između
  * dva pitanja, to se duže mora držati cela pozicija u glavi.
  */
-private data class Setup(val questionCount: Int, val plyGap: Int)
+internal data class Setup(val questionCount: Int, val plyGap: Int)
 
-private fun setupFor(difficulty: Difficulty) = when (difficulty) {
+/**
+ * Šta težina znači: **na koliko poteza stiže pitanje**.
+ *
+ * Razmak se u kodu meri polupotezima, a čoveku se kaže u potezima — u partiji se
+ * broje potezi, ne polupotezi.
+ */
+internal fun difficultyDetailOf(difficulty: Difficulty): String =
+    "pitanje na ${quantity(setupFor(difficulty).plyGap / 2, "potez", "poteza")}"
+
+internal fun setupFor(difficulty: Difficulty) = when (difficulty) {
     Difficulty.EASY -> Setup(questionCount = 5, plyGap = 4)
     Difficulty.MEDIUM -> Setup(questionCount = 6, plyGap = 6)
     Difficulty.HARD -> Setup(questionCount = 8, plyGap = 8)

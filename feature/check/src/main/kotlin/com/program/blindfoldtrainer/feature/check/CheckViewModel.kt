@@ -12,6 +12,7 @@ import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.chess.randomCheckPuzzle
 import com.program.blindfoldtrainer.core.model.Benchmark
 import com.program.blindfoldtrainer.core.model.Difficulty
+import com.program.blindfoldtrainer.core.moduleapi.quantity
 import com.program.blindfoldtrainer.core.model.ModuleId
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.model.SettingsRepository
@@ -302,9 +303,13 @@ class CheckViewModel @Inject constructor(
     }
 }
 
-private data class Setup(val taskCount: Int, val pieceCount: Int, val minMoves: Int)
+internal data class Setup(val taskCount: Int, val pieceCount: Int, val minMoves: Int)
 
-private fun setupFor(difficulty: Difficulty) = when (difficulty) {
+/** Šta težina znači: koliko crnih figura drži tablu. */
+internal fun difficultyDetailOf(difficulty: Difficulty): String =
+    quantity(setupFor(difficulty).pieceCount, "figura", "figure", "figura")
+
+internal fun setupFor(difficulty: Difficulty) = when (difficulty) {
     Difficulty.EASY -> Setup(taskCount = 5, pieceCount = 3, minMoves = 2)
     Difficulty.MEDIUM -> Setup(taskCount = 6, pieceCount = 5, minMoves = 2)
     Difficulty.HARD -> Setup(taskCount = 6, pieceCount = 8, minMoves = 3)
