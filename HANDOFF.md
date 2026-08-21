@@ -37,6 +37,26 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### Kartica je nudila prečke koje zadatak ne ume
+
+Videlo se tek kad je „Kretanje figura" dobilo zadatke sa različitim brojem
+prečki. Kartica je prečke uzimala iz **unije svih zadataka modula**, pa je uz
+izabran „Domet na liniji" — koji ume samo bez table — nudila sva četiri oslonca.
+Dodir na „uz tablu" bi se onda kroz `nearestSupport` ćutke sveo nazad na „bez
+table", i čovek bi dobio nešto drugo nego što je izabrao.
+
+Prečke se sad uzimaju iz **izabranog zadatka**. Posledica je i da se ceo red
+prečki sakrije kad zadatak ima samo jednu — kartica „Kretanja figura" se time
+sa četiri zadatka i četiri oslonca svodi na četiri zadatka i, za većinu njih,
+nijedan izbor oslonca.
+
+Promena zadatka briše izabranu prečku, a ono što se šalje modulu se filtrira još
+jednom: nesaglasno se **ne prikazuje**, isto pravilo po kom registar ne nudi
+proveru čiji se zadatak i veština ne poklapaju.
+
+Ovo je bilo prisutno i ranije — „Daj šah" ima dva zadatka sa različitim prečkama
+— samo se nije primetilo dok razlika nije bila tri prečke naspram jedne.
+
 ### „Vidi pa reci" — modul ide u oba smera
 
 Stanje na **21. avgust 2026.**, kraj. Četvrti zadatak u „Kretanju figura":

@@ -461,16 +461,32 @@ private fun ModuleCard(
             // Zatečeno stanje ostaje **neizabrano**: dok se ne dodirne, modul
             // dobija `null` i odlučuje sam, tačno kao pre. Chip koji svetli
             // pokazuje šta bi se tada dogodilo, da izbor ne izgleda prazan.
-            val rungs = remember(module.id) { module.rungs() }
             var chosenRung by remember(module.id) { mutableStateOf<Support?>(null) }
             var chosenTask by remember(module.id) { mutableStateOf<String?>(null) }
             var open by remember(module.id) { mutableStateOf(false) }
 
+            val shownTask = chosenTask ?: module.defaultTaskId
+
+            // **Prečke pripadaju zadatku, ne modulu.** Dok su se uzimale iz unije
+            // svih zadataka, kartica je nudila prečke koje izabrani zadatak ne
+            // ume: „Domet na liniji" radi samo bez table, a nudile su mu se sve
+            // četiri. Izbor bi se onda ćutke sveo na najbližu koju zadatak ima,
+            // pa bi čovek dobio nešto drugo nego što je dodirnuo.
+            //
+            // Isto pravilo po kom registar ne nudi proveru čiji se zadatak i
+            // veština ne poklapaju: nesaglasno se **ne prikazuje**, umesto da se
+            // tiho ispravi.
+            val rungs = remember(module.id, shownTask) {
+                module.tasks.find { it.id == shownTask }?.supports?.sortedBy { it.ordinal }
+                    ?: module.rungs()
+            }
+
             val pickableTask = module.tasks.size > 1
             val pickableRung = rungs.size > 1
 
-            val shownTask = chosenTask ?: module.defaultTaskId
-            val shownRung = chosenRung ?: if (eyesFree) rungs.lastOrNull() else rungs.firstOrNull()
+            // Prečka izabrana za prošli zadatak ne mora da postoji u novom.
+            val shownRung = chosenRung?.takeIf { it in rungs }
+                ?: if (eyesFree) rungs.lastOrNull() else rungs.firstOrNull()
 
             if (pickableTask || pickableRung) {
                 // **Sklopljeno po zatečenom.** Osam kartica sa po dva reda dugmića
@@ -522,7 +538,12 @@ private fun ModuleCard(
                     module.tasks.forEach { task ->
                         FilterChip(
                             selected = task.id == shownTask,
-                            onClick = { chosenTask = task.id },
+                            onClick = {
+                                chosenTask = task.id
+                                // Novi zadatak nosi svoje prečke; stari izbor bi
+                                // se u njemu svodio na nešto drugo.
+                                chosenRung = null
+                            },
                             label = { Text(stringResource(taskLabelRes(task.id))) }
                         )
                     }
@@ -561,7 +582,9 @@ private fun ModuleCard(
                                 ModuleArgs(
                                     difficulty = difficulty,
                                     taskId = chosenTask,
-                                    support = chosenRung
+                                    // Šalje se samo prečka koju izabrani zadatak
+                                    // zaista ume; inače `null`, pa modul bira sam.
+                                    support = chosenRung?.takeIf { it in rungs }
                                 )
                             )
                         },
@@ -582,6 +605,12 @@ private fun ModuleCard(
  * Prečke koje ovaj modul ume — **unija zadataka**, isto pravilo po kom se sabiraju
  * i veštine. Zadatak koji tu prečku ne ume dobija najbližu koju ume, pa izbor
  * nikad ne odvede u prazno.
+ */
+/**
+ * Sve prečke koje modul uopšte ume — **unija zadataka**.
+ *
+ * Koristi se samo kao odstupnica, kad se izabrani zadatak ne nađe. Ono što se
+ * nudi na kartici ide iz **zadatka**, jer prečke i pripadaju njemu.
  */
 private fun TrainingModule.rungs(): List<Support> =
     tasks.flatMap { it.supports }.distinct().sortedBy { it.ordinal }
