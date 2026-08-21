@@ -315,6 +315,21 @@ private fun SkillCard(
                         textAlign = TextAlign.Start
                     )
                 }
+
+                // Predlog ostaje jedan; ostali se samo **imenuju**, bez dugmeta.
+                // Ko traži drugu vežbu za istu veštinu sad zna da postoji.
+                if (practice.others.isNotEmpty()) {
+                    val names = practice.others.map { stringResource(taskLabelRes(it.id)) }
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(
+                            R.string.progress_practice_others,
+                            names.joinToString(", ")
+                        ),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
             // **Provera je potvrda, ne nivo.** Nivo je prečka iznad; provera kaže

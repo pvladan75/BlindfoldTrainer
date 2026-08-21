@@ -212,7 +212,8 @@ fun ProgressSnapshot.practiceFor(
     return PracticeStep(
         task = chosen,
         support = support,
-        difficulty = nextStepFor(chosen, support, difficultiesFor(chosen.id))
+        difficulty = nextStepFor(chosen, support, difficultiesFor(chosen.id)),
+        others = measuring.filterNot { it.id == chosen.id }
     )
 }
 
@@ -227,7 +228,16 @@ data class PracticeStep(
     val task: TaskSpec,
     val support: Support,
     /** `null` kad modul težine ne nudi. */
-    val difficulty: Difficulty?
+    val difficulty: Difficulty?,
+    /**
+     * Ostali zadaci koji istu veštinu **mere**.
+     *
+     * Predlog ostaje **jedan** — spisak od tri jednako dobre opcije nije pomoć
+     * nego odlaganje. Ali ni prećutati ih ne valja: ko je „Boju polja" odradio
+     * triput danas ima pravo da zna da isto gradi i „Domet na liniji", umesto da
+     * misli da za tu veštinu postoji samo jedna vežba.
+     */
+    val others: List<TaskSpec> = emptyList()
 )
 
 /** Neprobano ide pre svega merenog: o njemu se ne zna ništa, a to je vrednije. */

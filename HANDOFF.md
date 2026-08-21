@@ -37,6 +37,40 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### Šta bi bio „presek"
+
+Zapisano da se ne izgubi, jer je do sada postojalo samo u razgovoru.
+
+**Presek nije novi ekran nego jedno sedenje.** Napredak pokazuje ono što je vežba
+usput proizvela; presek je **namerno, ujednačeno merenje u jednoj tački u
+vremenu**, uporedivo sa istim takvim merenjem mesec dana kasnije. Vežba daje
+napredak, provera daje nivo — presek je provera svih veština za redom.
+
+Delovi koji već postoje:
+
+- `Checkups.ALL` — po jedna provera za **šest od osam** veština; nema ih oporavak
+  slike i računanje naslepo, jer ih nijedan zadatak ne meri.
+- `ModuleArgs.rounds` — provera sama kaže koliko traje, pa je kratka.
+- `SkillLevel` — nivo po veštini, uporediv.
+
+Šta fali:
+
+1. **Redanje u jedno sedenje.** Sad se provera nudi jedna po jedna, na kartici u
+   meniju. Presek bi ih pustio jednu za drugom, sa mogućnošću da se prekine i
+   nastavi.
+2. **Jedan ekran sa ishodom**, sa datumom, koji se čuva i može da se uporedi sa
+   prethodnim presekom.
+3. **Čitanje razmaka.** Najvredniji deo i jedini koji ne postoji nigde: temelj
+   koji je **automatski sam**, a sprat iznad njega **pada rano**, potpis je stanja
+   „znam, ali ne pod opterećenjem". Broj za to već postoji — `heldUntil`, dokle je
+   slika izdržala pre prve greške — samo se nigde ne poredi sa nivoom temelja.
+4. **Dve veštine bez provere** ostaju rupa dok im se ne napravi zadatak koji ih
+   meri; presek to mora da kaže, a ne da ih preskoči u tišini.
+
+Redosled po kom bi se radilo: prvo (1) i (2), jer daju upotrebljiv presek odmah;
+(3) posle, jer traži da se prvo skupi nekoliko preseka da se vidi šta razmak
+uopšte pokazuje.
+
 ### Kretanje figura je upisivalo veštine koje ne meri
 
 Jedini modul koji je u `bySkill` slao **celu listu veština zadatka**; ostalih osam
@@ -1080,6 +1114,30 @@ Ovo je jedini deo preuređenja početnog ekrana koji **ne traži nijednu odluku 
 strukturi**: ništa se ne premešta, ne preimenuje, ne grupiše.
 
 ### Šta je ostalo otvoreno
+
+0. **Pedagoško-psihološki tekst uz objavu** — traži se pre prevoda i pre
+   objavljivanja, za sajt i/ili za samu aplikaciju. Korisniku mora biti jasno
+   **zašto** vežba baš to što vežba i **zašto vežbanje bez plana nije racionalno**.
+   Gradivo za taj tekst je već izgovoreno u razgovoru i stoji rasuto po ovom
+   fajlu; treba ga sastaviti na jedno mesto. Kičma:
+
+   - **Radna memorija je jedna.** Dok traženje polja e4 troši pažnju, nema se čime
+     držati pozicija — pa držanje ne napreduje ma koliko se vežbalo. Odatle ceo
+     redosled u stablu veština; on nije pedagoška preporuka nego mehanika.
+   - **Vežba koja veštinu samo nosi je ne gradi.** Slanje naviše da bi se
+     popravilo dole je obrnut smer: „Prati partiju" nije mesto gde se grade
+     koordinate, nego mesto gde se zbog njih pada.
+   - **Izolovan test sistematski precenjuje temelje.** Boja polja za 3,8 s je
+     merena dok se ne radi ništa drugo; isti posao dok se drži pet figura nije
+     isti posao. Zato se stanje čita i iz **razmaka između spratova**, ne samo iz
+     pojedinačnog broja.
+   - **Nivo je oslonac, ne procenat**, i **savladano nije završeno** — naslepo vene
+     brže nego što se stiče.
+   - **„Nije mereno" je pun i pošten odgovor.** Nula bi rekla „loš si u tome", a
+     istina je „o tome još ništa ne znamo".
+
+   Tekst je namenjen i roditelju i detetu koje vežba, pa mora da stoji bez
+   žargona ovog fajla.
 
 1. **Preuređenje ekrana i navigacije** — grupisanje srodnog, sistematizacija gde
    se šta nalazi. **Čeka podatke iz upotrebe**, po dogovoru: prvo videti gde se
