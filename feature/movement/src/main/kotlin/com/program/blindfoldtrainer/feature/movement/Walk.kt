@@ -3,6 +3,7 @@ package com.program.blindfoldtrainer.feature.movement
 import com.program.blindfoldtrainer.core.chess.EmptyBoard
 import com.program.blindfoldtrainer.core.chess.PieceType
 import com.program.blindfoldtrainer.core.chess.Square
+import kotlin.random.Random
 
 /** Kako je primljeno jedno izgovoreno polje. */
 enum class Step {
@@ -107,4 +108,41 @@ data class Walk(
 
         return next to step
     }
+}
+
+/**
+ * Nasumična putanja od [moves] poteza, po istim pravilima po kojima se i šeta.
+ *
+ * Postoji zbog zadatka **„vidi pa reci"**: tamo putanju crta aplikacija a
+ * prepričava je čovek, pa mora da izgleda kao putanja koju bi i sam prošao —
+ * inače bi se učilo na obrascu koji u vežbi ne postoji. Zato prolazi kroz
+ * [Walk], a ne kroz zaseban izbor poteza: zabrana ponavljanja tako važi sama od
+ * sebe i ne može da se raziđe sa pravilom šetnje.
+ *
+ * Zaglavljivanje je moguće — skakač uz zabranu ponavljanja ume da se zatvori —
+ * pa se pokušava više puta. Ako nijedan pokušaj ne stigne do tražene dužine,
+ * vraća se **najduži nađen**: kraća putanja je i dalje valjan zadatak, dok
+ * praznina ne bi bila.
+ */
+internal fun randomWalkPath(
+    piece: PieceType,
+    moves: Int,
+    random: Random = Random,
+    attempts: Int = 20
+): List<Square> {
+    require(moves > 0) { "putanja bez poteza ne bi bila putanja" }
+
+    var longest = emptyList<Square>()
+
+    repeat(attempts) {
+        var walk = Walk(piece, Square(random.nextInt(64)), moves)
+        while (walk.movesMade < moves && !walk.isStuck) {
+            walk = walk.announce(walk.options.random(random)).first
+        }
+
+        if (walk.movesMade >= moves) return walk.visited
+        if (walk.visited.size > longest.size) longest = walk.visited
+    }
+
+    return longest
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="movement_title">Kretanje figura</string>
-    <string name="movement_description">Jedna figura po praznoj tabli. Dokle dohvata, i kuda može da prošeta a da se ne vrati na polje na kom je već bila. Uvek bez table.</string>
+    <string name="movement_description">Jedna figura po praznoj tabli. Dokle dohvata, kuda može da prošeta a da se ne vrati na polje na kom je već bila, i kojom je putanjom prošla kad je vidiš pa je ispričaš.</string>
 </resources>

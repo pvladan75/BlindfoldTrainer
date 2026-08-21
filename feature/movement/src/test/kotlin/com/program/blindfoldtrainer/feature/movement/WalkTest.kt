@@ -162,3 +162,55 @@ class WalkTest {
         assertEquals(2, walk(PieceType.KNIGHT, "a1").options.size)
     }
 }
+
+/** Putanju koju aplikacija nacrta pravi isti mehanizam kao i šetnju. */
+class RandomWalkPathTest {
+
+    private val random = kotlin.random.Random(20260821)
+
+    private fun path(piece: PieceType, moves: Int) = randomWalkPath(piece, moves, random)
+
+    @Test
+    fun `putanja ima trazenu duzinu, u poljima jedno vise od poteza`() {
+        listOf(PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT, PieceType.QUEEN)
+            .forEach { piece ->
+                val squares = path(piece, moves = 6)
+                assertEquals("$piece", 7, squares.size)
+            }
+    }
+
+    /** Ako se putanja vrati na polje, prestala bi da bude ono što vezba trazi. */
+    @Test
+    fun `nijedno polje se ne ponavlja`() {
+        repeat(50) {
+            val squares = path(PieceType.KNIGHT, moves = 8)
+            assertEquals(squares.size, squares.toSet().size)
+        }
+    }
+
+    /** Svaki potez mora biti legalan za figuru, i to po pravilima same setnje. */
+    @Test
+    fun `svaki korak je legalan potez te figure`() {
+        repeat(50) {
+            val squares = path(PieceType.KNIGHT, moves = 7)
+            var walk = Walk(PieceType.KNIGHT, squares.first(), targetMoves = squares.size)
+            squares.drop(1).forEach { square ->
+                val (next, step) = walk.announce(square)
+                assertEquals(Step.ACCEPTED, step)
+                walk = next
+            }
+        }
+    }
+
+    /** Dama i u nacrtanoj putanji ide naizmenicno — inace bi vezba ucila drugo pravilo. */
+    @Test
+    fun `dama se i u nacrtanoj putanji smenjuje`() {
+        val squares = path(PieceType.QUEEN, moves = 6)
+        var walk = Walk(PieceType.QUEEN, squares.first(), targetMoves = squares.size)
+        squares.drop(1).forEach { square ->
+            val (next, step) = walk.announce(square)
+            assertEquals(Step.ACCEPTED, step)
+            walk = next
+        }
+    }
+}

@@ -37,6 +37,64 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### „Vidi pa reci" — modul ide u oba smera
+
+Stanje na **21. avgust 2026.**, kraj. Četvrti zadatak u „Kretanju figura":
+**Prepričaj putanju** (`retell_path`). Tabla nacrta kretanje figure, tabla
+nestane, a čovek putanju ispriča. Korisnikovim rečima, modul sad ima „reci pa
+vidi" (šetnje) i „vidi pa reci" (ovo).
+
+#### Meri veštinu koju ništa nije vežbalo sa te strane
+
+`NOTATION` je definisana u oba smera — „zapis se čuje i vidi; i obrnuto, viđeno
+se ume izgovoriti" — ali ju je do sada merio samo Diktat, i to **od zapisa ka
+slici**. Drugi smer nije vežbao niko.
+
+Napomena za kasnije: veština se korisniku prikazuje kao **„Prevod zapisa u
+sliku"**, što imenuje samo jedan od dva smera koje pokriva. Ime je user-visible
+tekst i nije dirano.
+
+#### Prečka je koliko traga ostaje
+
+Ovde se rešilo pitanje sa kojim je korisnik i došao — jedna ručica, dva posla.
+Nije bilo potrebe da bude jedna:
+
+- **težina** → broj poteza (4 / 5 / 7) i figura (top i lovac → skakač);
+- **oslonac** → koliko pređenih polja ostaje obojeno iza figure.
+
+Brisanje prethodnog traga je doslovno definicija oslonca — „koliko slike
+aplikacija drži umesto tebe". Otud tri prečke: `FULL` ostavlja ceo trag pa se
+putanja pročita sa table, `PARTIAL` ostavlja dva polja, `TRACE` nijedno.
+
+**`NONE` namerno ne postoji.** Bez slike nema šta da se prevede, pa najteža
+prečka ovde nije „bez table" nego „bez traga". Zadatak sme da nema sve prečke —
+isto pravilo po kom Geometrija ima samo krajeve.
+
+Modul je time prvi koji **prima porudžbinu oslonca**; dotad je bila zakucana na
+`NONE`, jer su svi zadaci bili bez table.
+
+#### Ćuti dok crta
+
+Ime polja bi odradilo baš onaj posao koji zadatak traži. Ovo je i jedino mesto u
+modulu gde tempo vodi **sat, a ne govor** — jer se dok se crta ne govori.
+
+Promašaj ne zaustavlja i ne vraća: odmah se kaže koje je polje bilo, pa se ide
+dalje. Da se stajalo na istom mestu, jedno pogrešno prepoznato polje bi zaključalo
+krug; da se ćutke prelazilo dalje, izgubio bi se korak i sve iza toga bi ispalo
+pogrešno iako se zna.
+
+Putanja se posle prepričavanja pokaže **samo ako je promašena** — ko ju je
+ispričao tačno je već zna, pa bi mu prikaz bio čekanje.
+
+#### Putanju pravi isti mehanizam koji i šeta
+
+`randomWalkPath` prolazi kroz `Walk`, ne kroz zaseban izbor poteza: zabrana
+ponavljanja i naizmenična dama tako važe same od sebe i ne mogu da se raziđu sa
+pravilima šetnje. Nacrtana putanja mora da izgleda kao putanja koju bi čovek i
+sam prošao, inače bi se učilo na obrascu koji u vežbi ne postoji.
+
+**381 test, nijedan ne pada. Nije viđeno na uređaju.**
+
 ### Šetnja se posle vežbe pokaže na tabli
 
 Stanje na **21. avgust 2026.**, posle prvog probanja šetnje. Šetnja je do sada

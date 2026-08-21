@@ -31,8 +31,8 @@ android {
 dependencies {
     implementation(project(":core:moduleapi"))
     implementation(project(":core:audio"))
-    // Tabla se ne vidi **dok se radi** — jedini ulaz i izlaz su tada glas i
-    // zone. Pojavljuje se tek posle odrađene šetnje, kao odgovor.
+    // Tabla nosi pitanje u „Prepričaj putanju" i odgovor posle šetnje. Dok se
+    // šeta se ne vidi — tada su jedini ulaz i izlaz glas i zone.
     implementation(project(":core:designsystem"))
 
     implementation(libs.androidx.lifecycle.viewmodel.compose)

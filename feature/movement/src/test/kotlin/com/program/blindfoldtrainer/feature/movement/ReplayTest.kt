@@ -54,6 +54,32 @@ class ReplayTest {
         assertEquals(Square.fromAlgebraic("g6"), replay(99).current)
     }
 
+    /**
+     * Trag je **prečka prevedena u sliku**: uz punu podršku ostaje ceo, pa se
+     * putanja pročita sa table i ništa se ne pamti.
+     */
+    @Test
+    fun `pun trag ostavlja sva predjena polja`() {
+        assertEquals(squares("d3", "c5", "d7"), replay(3).behind)
+    }
+
+    /** Dva polja: vidi se odakle si došao, ali se oblik ne moze procitati. */
+    @Test
+    fun `deo slike ostavlja samo poslednja dva polja`() {
+        val partial = replay(4).copy(trail = 2)
+
+        assertEquals(squares("d7", "f8"), partial.behind)
+    }
+
+    /** Bez traga se pamti sve; vidi se samo polje na kom figura stoji. */
+    @Test
+    fun `bez traga iza figure nema niceg`() {
+        val trace = replay(4).copy(trail = 0)
+
+        assertTrue(trace.behind.isEmpty())
+        assertEquals(Square.fromAlgebraic("g6"), trace.current)
+    }
+
     /** Šetnja koja se zaglavila odmah ima samo polazno polje — i to je valjan prikaz. */
     @Test
     fun `putanja od jednog polja se prikazuje bez greske`() {

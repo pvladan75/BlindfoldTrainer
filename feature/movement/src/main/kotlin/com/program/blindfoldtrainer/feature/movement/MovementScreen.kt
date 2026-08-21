@@ -33,15 +33,19 @@ import com.program.blindfoldtrainer.core.designsystem.board.ChessBoard
 import com.program.blindfoldtrainer.core.designsystem.board.SquareTint
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.model.Support
 
 /**
- * Modul ima **dva lica, ali ne po osloncu**.
+ * Ekran ima **dva lica: tablu i zone**, ali granica nije tamo gde se očekuje.
  *
- * Dok se radi, table nema ni na jednoj prečki: uz nju bi se odgovor pročitao
- * umesto izračunao. Tabla se pojavljuje tek **pošto je šetnja gotova**, i tada
- * nije pomoć nego odgovor — vidi [Replay].
+ * Tabla se pojavljuje na tri načina, i samo je jedan od njih pomoć:
  *
- * Dok se radi, menja se **srednji red zona**, jer se dva zadatka ne pitaju isto:
+ * - posle šetnje, da pokaže kuda si prošao — to je **odgovor**;
+ * - u „Prepričaj putanju", dok se putanja crta — to je **pitanje**;
+ * - u šetnji dok se radi — **nikad**, jer bi se odgovor pročitao umesto
+ *   izračunao.
+ *
+ * Zone se javljaju kad je red na tebe, a njihov srednji red zavisi od zadatka:
  *
  * ```
  * ┌───────────────────────────────┐
@@ -61,6 +65,8 @@ fun MovementScreen(
     difficulty: Difficulty,
     /** Porudžbina puta; bez nje modul radi svoj zatečeni zadatak. */
     taskId: String? = null,
+    /** Porudžbina puta; bez nje zadatak uzima svoju najlakšu prečku. */
+    support: Support? = null,
     onFinish: (SessionResult) -> Unit,
     /** Koliko krugova; bez porudžbine koliko težina kaže. */
     rounds: Int? = null,
@@ -69,7 +75,9 @@ fun MovementScreen(
     val uiState by viewModel.uiState.collectAsState()
     val voiceState by viewModel.voiceState.collectAsState()
 
-    LaunchedEffect(difficulty, taskId) { viewModel.startOnce(difficulty, taskId, rounds) }
+    LaunchedEffect(difficulty, taskId) {
+        viewModel.startOnce(difficulty, taskId, support, rounds)
+    }
 
     LaunchedEffect(uiState.isFinished) {
         if (uiState.isFinished) onFinish(viewModel.buildResult())
@@ -165,7 +173,7 @@ private fun WalkReplay(replay: Replay, onContinue: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
         Text(
-            text = "Tvoja šetnja",
+            text = if (replay.isPrompt) "Zapamti putanju" else "Tvoja šetnja",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
         )
@@ -178,8 +186,11 @@ private fun WalkReplay(replay: Replay, onContinue: () -> Unit) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        Button(onClick = onContinue, modifier = Modifier.fillMaxWidth()) {
-            Text(if (replay.isDone) "DALJE" else "PRESKOČI")
+        // Pitanje se ne preskače: dugme bi preskočilo baš ono što treba videti.
+        if (!replay.isPrompt) {
+            Button(onClick = onContinue, modifier = Modifier.fillMaxWidth()) {
+                Text(if (replay.isDone) "DALJE" else "PRESKOČI")
+            }
         }
     }
 }

@@ -133,6 +133,18 @@ interface SpeechPhrases {
     /** Najava ponovnog prikaza odrađene šetnje, polje po polje. */
     val walkReplay: String
 
+    /** „Prati lovca" — pre nego što tabla počne da crta putanju. */
+    fun retellWatch(piece: String): String
+
+    /** Tabla je nestala; sad se putanja prepričava. */
+    val retellNow: String
+
+    /** Promašeno polje; iza ove reči ide ono koje je zaista bilo na redu. */
+    val retellWrong: String
+
+    /** Koliko polja još treba izgovoriti. */
+    fun retellLeft(squares: Int): String
+
     /** „Sad kao top" — dama se smenjuje, pa se red mora znati. */
     val walkAsRook: String
     val walkAsBishop: String
@@ -344,6 +356,15 @@ internal object EnglishPhrases : SpeechPhrases {
     override val walkStuck = "No square left. The walk ends here."
 
     override val walkReplay = "Here is the walk you made."
+
+    override fun retellWatch(piece: String) = "Watch the $piece."
+
+    override val retellNow = "Now say the path, from the first square."
+
+    override val retellWrong = "No. It was"
+
+    override fun retellLeft(squares: Int) =
+        if (squares == 1) "One square to go." else "$squares squares to go."
 
     override val walkAsRook = "Now as a rook."
     override val walkAsBishop = "Now as a bishop."

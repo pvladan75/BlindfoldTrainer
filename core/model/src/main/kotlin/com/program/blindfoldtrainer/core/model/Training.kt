@@ -40,11 +40,11 @@ enum class ModuleId(val key: String) {
     DICTATION("dictation"),
 
     /**
-     * Jedna figura po **praznoj tabli**: dokle dohvata, i kuda može da prošeta
-     * bez vraćanja na polje.
+     * Jedna figura po **praznoj tabli**: dokle dohvata, kuda može da prošeta bez
+     * vraćanja na polje, i kojom je putanjom prošla.
      *
-     * Jedini modul bez pozicije. Zato je i jedini koji nema nijednu prečku sa
-     * tablom — uz tablu bi se odgovor pročitao umesto izračunao.
+     * Jedini modul bez pozicije, i jedini koji ide **u oba smera** — od zapisa
+     * ka slici u šetnji, i od slike ka zapisu u prepričavanju putanje.
      */
     MOVEMENT("movement");
 

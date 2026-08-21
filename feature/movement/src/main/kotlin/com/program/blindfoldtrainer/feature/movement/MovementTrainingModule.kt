@@ -15,10 +15,14 @@ import dagger.multibindings.IntoSet
 import javax.inject.Inject
 
 /**
- * **Kretanje figura** — jedna figura po praznoj tabli.
+ * **Kretanje figura** — jedna figura po praznoj tabli, u oba smera.
  *
- * Jedini modul bez pozicije, i jedini koji nema nijednu prečku sa tablom: uz
- * tablu bi se odgovor pročitao umesto izračunao.
+ * „Reci pa vidi" su šetnje: sam biraš polja, pa ti se posle pokaže kuda si
+ * prošao. „Vidi pa reci" je prepričavanje: tabla nacrta putanju, pa je ti
+ * ispričaš.
+ *
+ * Tabla se u šetnjama **ne vidi dok se radi** — uz nju bi se odgovor pročitao
+ * umesto izračunao. U prepričavanju je tabla samo pitanje, pa tamo i stoji.
  */
 class MovementTrainingModule @Inject constructor() : TrainingModule {
 
@@ -36,6 +40,7 @@ class MovementTrainingModule @Inject constructor() : TrainingModule {
         MovementScreen(
             difficulty = args.difficulty,
             taskId = args.taskId,
+            support = args.support,
             rounds = args.rounds,
             onFinish = onFinish
         )

@@ -46,7 +46,7 @@ data class Line(val isFile: Boolean, val index: Int) {
 }
 
 /** Koju vrstu zadatka modul upravo radi. */
-enum class MovementTask { REACH, WALK, KNIGHT_WALK }
+enum class MovementTask { REACH, RETELL, WALK, KNIGHT_WALK }
 
 /**
  * Odrađena šetnja, prikazana natrag — polje po polje, uz izgovaranje.
@@ -70,12 +70,28 @@ data class Replay(
     /** Dokle je prikaz stigao. */
     val step: Int = 0,
     /** Prikaz je došao do kraja i čeka se dodir. */
-    val isDone: Boolean = false
+    val isDone: Boolean = false,
+    /**
+     * Ovo je **pitanje**, ne odgovor.
+     *
+     * Ista tabla služi dvema stvarima: da posle šetnje pokaže šta si prošao, i
+     * da u „Prepričaj putanju" postavi zadatak. Razlika nije u crtežu nego u
+     * tome sme li se preskočiti — pitanje se ne preskače.
+     */
+    val isPrompt: Boolean = false,
+    /**
+     * Koliko pređenih polja ostaje obojeno iza figure.
+     *
+     * Ovo je prečka podrške, prevedena u sliku: uz punu podršku ostaje ceo trag
+     * pa se putanja pročita sa table, a na najtežoj se ne vidi ništa osim polja
+     * na kom figura stoji.
+     */
+    val trail: Int = Int.MAX_VALUE
 ) {
     val current: Square get() = path[step.coerceIn(path.indices)]
 
     /** Polja kroz koja se već prošlo — bez onog na kom figura sad stoji. */
-    val behind: List<Square> get() = path.take(step)
+    val behind: List<Square> get() = path.take(step).takeLast(trail.coerceAtLeast(0))
 }
 
 data class MovementUiState(
@@ -101,8 +117,10 @@ data class MovementUiState(
     /** Prikaz odrađene šetnje; `null` dok se radi. */
     val replay: Replay? = null,
 
-    // — Domet na liniji —
+    // — Domet na liniji i Prepričaj putanju —
     val piece: PieceType? = null,
+    /** Putanja koja se prepričava — istina sa kojom se poredi. */
+    val expected: List<Square> = emptyList(),
     val from: Square? = null,
     val line: Line? = null,
     /** Polja koja je korisnik do sada izgovorio u ovom pitanju. */
@@ -127,6 +145,34 @@ internal val REACH_ON_LINE = TaskSpec(
     skills = listOf(Skill.PIECE_GEOMETRY, Skill.COORDINATES),
     supports = listOf(Support.NONE),
     benchmarks = mapOf(Support.NONE to Benchmark(millisPerAttempt = 15_000, minAccuracy = 0.8f))
+)
+
+/**
+ * **Prepričaj putanju** — tabla nacrta kretanje, ti ga ispričaš.
+ *
+ * Jedini zadatak u modulu koji ide **od slike ka zapisu**; sve ostalo ide
+ * obrnuto. Zato i meri [Skill.NOTATION]: „viđeno se ume izgovoriti" je pola te
+ * veštine, a do sada je nijedan zadatak nije vežbao sa te strane — Diktat radi
+ * samo drugi smer.
+ *
+ * **Tabla ovde nije pomoć nego pitanje.** Otud i jedini zadatak u modulu koji je
+ * uopšte ima dok se radi, i jedini koji nema [Support.NONE]: bez slike nema šta
+ * da se prevede, pa najteža prečka nije „bez table" nego „bez traga".
+ *
+ * Dok se putanja crta ništa se ne izgovara. Ime polja bi rešilo baš onaj posao
+ * koji zadatak traži.
+ */
+internal val RETELL_PATH = TaskSpec(
+    id = "retell_path",
+    skills = listOf(Skill.NOTATION, Skill.POSITION_HOLD, Skill.COORDINATES),
+    // Prečka je koliko traga ostaje iza figure — doslovno „koliko slike
+    // aplikacija drži umesto tebe".
+    supports = listOf(Support.FULL, Support.PARTIAL, Support.TRACE),
+    benchmarks = mapOf(
+        Support.FULL to Benchmark(millisPerAttempt = 6_000, minAccuracy = 0.85f),
+        Support.PARTIAL to Benchmark(millisPerAttempt = 8_000, minAccuracy = 0.8f),
+        Support.TRACE to Benchmark(millisPerAttempt = 10_000, minAccuracy = 0.75f)
+    )
 )
 
 /**
@@ -160,8 +206,11 @@ internal val WALK_KNIGHT = TaskSpec(
     benchmarks = mapOf(Support.NONE to Benchmark(millisPerAttempt = 15_000, minAccuracy = 0.8f))
 )
 
-/** Redosled je pedagoški: kratko pitanje pre dugog niza. */
-internal val MOVEMENT_TASKS = listOf(REACH_ON_LINE, WALK_PIECE, WALK_KNIGHT)
+/**
+ * Redosled je pedagoški: kratko pitanje pre dugog niza, a **prepoznavanje pre
+ * smišljanja** — lakše je ispričati putanju koju si video nego smisliti svoju.
+ */
+internal val MOVEMENT_TASKS = listOf(REACH_ON_LINE, RETELL_PATH, WALK_PIECE, WALK_KNIGHT)
 
 /**
  * Podešavanja po težini.
@@ -195,6 +244,14 @@ private fun setupFor(task: MovementTask, difficulty: Difficulty): Setup = when (
         Difficulty.HARD -> Setup(3, 12, listOf(PieceType.QUEEN))
     }
 
+    // Skalira se i duzina i figura: pravolinijska putanja se cita sa table
+    // gotovo bez pamcenja, dok se skakacev skok mora zapamtiti kao skok.
+    MovementTask.RETELL -> when (difficulty) {
+        Difficulty.EASY -> Setup(4, 4, listOf(PieceType.ROOK, PieceType.BISHOP))
+        Difficulty.MEDIUM -> Setup(4, 5, listOf(PieceType.KNIGHT))
+        Difficulty.HARD -> Setup(4, 7, listOf(PieceType.KNIGHT))
+    }
+
     MovementTask.KNIGHT_WALK -> when (difficulty) {
         Difficulty.EASY -> Setup(3, 6, listOf(PieceType.KNIGHT))
         Difficulty.MEDIUM -> Setup(3, 10, listOf(PieceType.KNIGHT))
@@ -213,6 +270,15 @@ private const val SPEECH_START_MILLIS = 500L
 /** Tišina između izgovorenog i sledećeg pitanja — da se dve stvari ne sliju. */
 private const val BREATH_MILLIS = 450L
 
+/**
+ * Koliko jedan korak stoji dok se putanja **crta**.
+ *
+ * Jedino mesto u modulu gde tempo vodi sat a ne govor — jer se dok se crta i ne
+ * govori. Prvi predlog: dovoljno sporo da se polje pročita, dovoljno brzo da se
+ * putanja od sedam poteza ne oteže.
+ */
+private const val PROMPT_STEP_MILLIS = 1_100L
+
 @HiltViewModel
 class MovementViewModel @Inject constructor(
     private val speaker: Speaker,
@@ -227,6 +293,15 @@ class MovementViewModel @Inject constructor(
     private lateinit var setup: Setup
     private var task: MovementTask = MovementTask.REACH
     private var difficulty: Difficulty = Difficulty.EASY
+
+    /**
+     * Prečka na kojoj se radi.
+     *
+     * Dugo je bila zakucana na [Support.NONE], jer je modul imao samo zadatke
+     * bez table. „Prepričaj putanju" je prvi koji ih ima više, pa se prečka sad
+     * prima kao porudžbina i svodi na najbližu koju zadatak ume.
+     */
+    private var support: Support = Support.NONE
     private var startedAtMillis = 0L
     private var isStarted = false
     private var roundJob: Job? = null
@@ -268,6 +343,11 @@ class MovementViewModel @Inject constructor(
      */
     fun onReadState() = speaker.aside {
         val state = _uiState.value
+        if (state.task == MovementTask.RETELL) {
+            speaker.say(interrupt = true) { retellLeft(state.expected.size - state.answer.size) }
+            return@aside
+        }
+
         if (state.task == MovementTask.REACH) {
             val piece = state.piece ?: return@aside
             val from = state.from ?: return@aside
@@ -362,11 +442,18 @@ class MovementViewModel @Inject constructor(
     }
 
     /** Bezbedno je zvati više puta — pokreće sesiju samo prvi put. */
-    fun startOnce(difficulty: Difficulty, taskId: String? = null, rounds: Int? = null) {
+    fun startOnce(
+        difficulty: Difficulty,
+        taskId: String? = null,
+        requestedSupport: Support? = null,
+        rounds: Int? = null
+    ) {
         if (isStarted) return
         isStarted = true
         this.difficulty = difficulty
         task = taskOf(taskId)
+        val spec = specOf(task)
+        support = spec.nearestSupport(requestedSupport ?: spec.supports.first())
         setup = setupFor(task, difficulty).let { base ->
             if (rounds == null || rounds <= 0) base else base.copy(roundCount = rounds)
         }
@@ -377,8 +464,10 @@ class MovementViewModel @Inject constructor(
         // Pravilo se kaže **jednom, pre svega ostalog**. Ceo modul ima samo jedno
         // pravilo — govori kad aplikacija ućuti — a ono se nije imalo odakle
         // saznati; sa uređaja je stiglo baš to, da se ne zna kako se odgovara.
-        speaker.say(interrupt = false) {
-            if (task == MovementTask.REACH) reachHowTo else walkHowTo
+        if (task != MovementTask.RETELL) {
+            speaker.say(interrupt = false) {
+                if (task == MovementTask.REACH) reachHowTo else walkHowTo
+            }
         }
 
         nextRound()
@@ -406,6 +495,11 @@ class MovementViewModel @Inject constructor(
             // sazna šta je pogođeno. Izgovara se i polje koje je već u odgovoru:
             // ono jeste primljeno, a ćutanje bi ličilo na to da nije.
             speaker.say(square, interrupt = false)
+            return
+        }
+
+        if (state.task == MovementTask.RETELL) {
+            onRetellSpoken(state, square)
             return
         }
 
@@ -437,6 +531,72 @@ class MovementViewModel @Inject constructor(
         if (next.isDone) endWalk(next)
     }
 
+    /**
+     * Jedno polje u prepričavanju putanje.
+     *
+     * Promašaj **ne zaustavlja i ne vraća** nego se odmah kaže koje je polje
+     * bilo, pa se ide dalje. Da se stajalo na istom mestu, jedno pogrešno
+     * prepoznato polje bi zaključalo krug; da se ćutke prelazilo dalje,
+     * izgubio bi se korak i sve iza toga bi ispalo pogrešno iako se zna.
+     * Ovako se posle greške i dalje zna gde si.
+     */
+    private fun onRetellSpoken(state: MovementUiState, square: Square) {
+        val index = state.answer.size
+        if (index > state.expected.lastIndex) return
+
+        val truth = state.expected[index]
+        val isCorrect = square == truth
+
+        _uiState.update {
+            it.copy(
+                answer = it.answer + square,
+                attempted = it.attempted + 1,
+                solved = it.solved + if (isCorrect) 1 else 0,
+                mistakes = it.mistakes + if (isCorrect) 0 else 1
+            )
+        }
+
+        if (isCorrect) {
+            speaker.say(square, interrupt = false)
+        } else {
+            speaker.say(interrupt = false) { retellWrong }
+            speaker.say(truth, interrupt = false)
+        }
+
+        if (index == state.expected.lastIndex) endRetell()
+    }
+
+    /**
+     * Kraj jednog prepričavanja.
+     *
+     * Putanja se pokaže **samo ako je promašena**. Ko ju je ispričao tačno je
+     * već zna, pa bi mu prikaz bio čekanje; ko nije, njemu je prikaz jedino
+     * mesto na kom vidi šta je zapravo bilo.
+     */
+    private fun endRetell() {
+        val state = _uiState.value
+        val piece = state.piece ?: return
+
+        // Dubina je koliko je polja izgovoreno **tačno i po redu** pre prve
+        // greške; posle nje se ne broji, jer se dalje ide uz pomoć.
+        val held = state.expected.zip(state.answer).takeWhile { (truth, said) -> truth == said }.size
+        bestHeld = maxOf(bestHeld ?: held, held)
+
+        _uiState.update { it.copy(isBetweenRounds = true) }
+
+        if (state.answer == state.expected) {
+            speaker.say(interrupt = false) { allCorrect }
+            roundJob?.cancel()
+            roundJob = viewModelScope.launch {
+                awaitSilence()
+                nextRound()
+            }
+            return
+        }
+
+        showTruth(piece, state.expected)
+    }
+
     private fun endWalk(walk: Walk) {
         _uiState.update { it.copy(isBetweenRounds = true) }
 
@@ -450,25 +610,78 @@ class MovementViewModel @Inject constructor(
         val held = walk.heldUntil ?: walk.movesMade
         bestHeld = maxOf(bestHeld ?: held, held)
 
-        _uiState.update { it.copy(replay = Replay(walk.piece, walk.visited)) }
+        showTruth(walk.piece, walk.visited)
+    }
+
+    /**
+     * Pokazuje putanju natrag, uz izgovaranje — odgovor, ne pitanje.
+     *
+     * Korak čeka da se prethodno polje **izgovori**, umesto da se pogađa koliko
+     * izgovor traje. Otud i osećaj da prikaz ide onoliko brzo koliko se stiže
+     * pratiti.
+     */
+    private fun showTruth(piece: PieceType, path: List<Square>) {
+        _uiState.update { it.copy(replay = Replay(piece, path)) }
 
         roundJob?.cancel()
         roundJob = viewModelScope.launch {
             awaitSilence()
             speaker.say(interrupt = false) { walkReplay }
 
-            // Korak čeka da se prethodno polje **izgovori**, umesto da se pogađa
-            // koliko izgovor traje. Otud i osećaj da prikaz ide onoliko brzo
-            // koliko se stiže pratiti.
-            walk.visited.indices.forEach { step ->
+            path.indices.forEach { step ->
                 if (_uiState.value.replay == null) return@launch
                 _uiState.update { it.copy(replay = it.replay?.copy(step = step)) }
-                speaker.say(walk.visited[step], interrupt = false)
+                speaker.say(path[step], interrupt = false)
                 awaitSilence()
             }
 
             _uiState.update { it.copy(replay = it.replay?.copy(isDone = true)) }
         }
+    }
+
+    /**
+     * Crta putanju koju treba zapamtiti — pitanje, ne odgovor.
+     *
+     * **Ćuti dok crta.** Ime polja bi odradilo baš onaj posao koji zadatak traži
+     * od tebe, pa bi vežba merila slušanje umesto gledanja.
+     *
+     * Korak ide po satu, jer ovde nema govora koji bi ga vodio. Tempo je prvi
+     * predlog i nema veze sa težinom: brže crtanje ne traži drugu veštinu nego
+     * samo bolji vid.
+     */
+    private fun showPrompt(piece: PieceType, path: List<Square>) {
+        _uiState.update {
+            it.copy(replay = Replay(piece, path, isPrompt = true, trail = trailFor(support)))
+        }
+
+        roundJob?.cancel()
+        roundJob = viewModelScope.launch {
+            speaker.say(interrupt = false) { retellWatch(nameOf(piece)) }
+            awaitSilence()
+
+            path.indices.forEach { step ->
+                _uiState.update { it.copy(replay = it.replay?.copy(step = step)) }
+                delay(PROMPT_STEP_MILLIS)
+            }
+
+            // Tabla nestaje; odavde se prepričava.
+            _uiState.update { it.copy(replay = null, isBetweenRounds = false) }
+            speaker.say(interrupt = false) { retellNow }
+        }
+    }
+
+    /**
+     * Koliko traga ostaje iza figure, po prečki.
+     *
+     * Uz punu podršku putanja se pročita sa table i ništa se ne pamti; na
+     * najtežoj se ne vidi ništa osim polja na kom figura stoji, pa se pamti sve.
+     * [Support.PARTIAL] ostavlja dva polja — dovoljno da se vidi odakle se
+     * došlo, premalo da se pročita oblik.
+     */
+    private fun trailFor(support: Support): Int = when (support) {
+        Support.FULL -> Int.MAX_VALUE
+        Support.PARTIAL -> 2
+        else -> 0
     }
 
     /**
@@ -516,6 +729,25 @@ class MovementViewModel @Inject constructor(
 
         val piece = setup.pieces.random()
         val from = Square(Random.nextInt(64))
+
+        if (task == MovementTask.RETELL) {
+            val path = randomWalkPath(piece, setup.moves)
+            _uiState.update {
+                it.copy(
+                    roundNumber = it.roundNumber + 1,
+                    piece = piece,
+                    expected = path,
+                    answer = emptyList(),
+                    walk = null,
+                    // Ulaz je zatvoren **dok se crta**: polje izgovoreno tada bi
+                    // ušlo kao prvi odgovor, a putanja se još ni ne zna cela.
+                    // Otvara ga [showPrompt] kad tabla nestane.
+                    isBetweenRounds = true
+                )
+            }
+            showPrompt(piece, path)
+            return
+        }
 
         if (task == MovementTask.REACH) {
             val line = lineFor(from)
@@ -597,6 +829,7 @@ class MovementViewModel @Inject constructor(
     }
 
     private fun taskOf(taskId: String?): MovementTask = when (taskId) {
+        RETELL_PATH.id -> MovementTask.RETELL
         WALK_PIECE.id -> MovementTask.WALK
         WALK_KNIGHT.id -> MovementTask.KNIGHT_WALK
         else -> MovementTask.REACH
@@ -604,6 +837,7 @@ class MovementViewModel @Inject constructor(
 
     private fun specOf(task: MovementTask): TaskSpec = when (task) {
         MovementTask.REACH -> REACH_ON_LINE
+        MovementTask.RETELL -> RETELL_PATH
         MovementTask.WALK -> WALK_PIECE
         MovementTask.KNIGHT_WALK -> WALK_KNIGHT
     }
@@ -636,7 +870,7 @@ class MovementViewModel @Inject constructor(
             mistakes = state.mistakes,
             elapsedMillis = elapsed,
             completed = state.isFinishedCleanly,
-            support = Support.NONE,
+            support = support,
             taskId = spec.id,
             // Veštinu koju zadatak **meri** nosi ceo rezultat; ostale idu uz nju
             // istim brojevima, jer ih ista sesija zaista i dodiruje.
