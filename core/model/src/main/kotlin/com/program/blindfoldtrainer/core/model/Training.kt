@@ -11,7 +11,13 @@ enum class ModuleId(val key: String) {
     /** Dobijena pozicija protiv Stockfish-a, naslepo. */
     ENDGAME("endgame"),
 
-    /** Niz poteza stiže glasom, korisnik pokazuje polje na kojem se figure sreću. */
+    /**
+     * Jedna figura napada drugu; potez tu vezu raskida i pravi novu, a traži se
+     * polje figure sa kojom je pomerena figura sada u vezi.
+     *
+     * Ključ ostaje `pairs` iako se modul više ne zove tako: po njemu se čuva
+     * napredak, pa bi promena obrisala istoriju.
+     */
     PAIRS("pairs"),
 
     /** Boja polja, odnos dva polja, šta leži između. */

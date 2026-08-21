@@ -183,7 +183,7 @@
     <!-- Imena vrsta zadataka; po njima se profil razlaže. -->
     <string name="task_square_color">Boja polja</string>
     <string name="task_shortest_path">Najkraći put skakača</string>
-    <string name="task_meeting_square">Polje susreta</string>
+    <string name="task_meeting_square">Polje nove veze</string>
     <string name="task_where_is_piece">Gde stoji figura</string>
     <string name="task_attackers">Ko napada figuru</string>
     <string name="task_safe_path">Šah kroz držana polja</string>

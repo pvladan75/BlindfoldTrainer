@@ -461,11 +461,15 @@ class PairsViewModel @Inject constructor(
 }
 
 /**
- * Potezi stižu glasom dok je tabla prazna; traži se polje na kom se figure sreću.
+ * Potezi stižu glasom dok je tabla prazna; traži se polje figure sa kojom je
+ * pomerena figura **ušla u vezu** — jedna napada drugu.
  *
- * Meri **ažuriranje**: svaki potez menja sliku, a odgovor je tačan samo ako je
- * slika ostala tačna kroz ceo niz. Držanje ide uz to, jer se pozicija mora
- * nositi između poteza.
+ * Meri **ažuriranje**: svaki potez raskida jednu vezu i pravi drugu, pa je
+ * odgovor tačan samo ako je slika ostala tačna kroz ceo niz. Držanje ide uz to,
+ * jer se pozicija mora nositi između poteza.
+ *
+ * `id` ostaje `meeting_square` iako se zadatak sad zove drugačije: po njemu se
+ * čuva napredak i po njemu put traži zadatak.
  */
 internal val PAIRS_MEETING_SQUARE = TaskSpec(
     id = "meeting_square",

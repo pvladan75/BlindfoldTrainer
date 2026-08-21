@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="pairs_title">Interaktivni parovi</string>
-    <string name="pairs_description">Potezi stižu glasom dok je tabla prazna. Pokaži polje na kojem se figure sreću i drži poziciju u glavi.</string>
+    <string name="pairs_title">Raskini vezu</string>
+    <string name="pairs_description">Dve figure stoje u vezi — jedna napada drugu. Svaki potez tu vezu raskida i pravi novu. Reci na kom polju stoji figura sa kojom je pomerena figura sada u vezi. Potezi stižu glasom, a tablu držiš u glavi.</string>
 </resources>

@@ -37,6 +37,21 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### „Interaktivni parovi" su postali „Raskini vezu"
+
+Ime je štrčalo među ostalima — sva druga imenuju radnju ili cilj, a
+„interaktivni" korisniku ne kaže ništa. Opis je uz to govorio o „polju na kom se
+figure sreću", što je zaobilazilo pravilo umesto da ga kaže.
+
+Pravilo je: dve figure stoje u vezi — jedna napada drugu. Svaki potez tu vezu
+**raskida i pravi novu**, a traži se polje figure sa kojom je pomerena figura
+sada u vezi. Opis to sad i kaže, a zadatak se zove „Polje nove veze".
+
+**Ključevi nisu dirani.** `ModuleId.PAIRS` ostaje `pairs`, a zadatak ostaje
+`meeting_square`: po njima se čuva napredak i po njima put traži zadatak, pa bi
+promena obrisala istoriju. To sad piše i uz oba, da se sledeći put ne pomisli da
+je propust.
+
 ### Težina kaže šta znači, ne samo koliko je teška
 
 „Lako, srednje, teško" kaže **redosled, ne cenu**. U Putanji skakača je to
