@@ -130,6 +130,11 @@ fun MainMenuScreen(
             return@Scaffold
         }
 
+        // Koja je kartica rasklopljena. Stoji **na nivou liste**, ne u kartici:
+        // tako otvaranje jedne zatvara ostale, a `LazyColumn` ionako odbacuje
+        // stanje stavke koja izađe sa ekrana.
+        var openModule by rememberSaveable { mutableStateOf<String?>(null) }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
@@ -156,6 +161,13 @@ fun MainMenuScreen(
                 ModuleCard(
                     module = module,
                     eyesFree = eyesFree,
+                    expanded = module.id.key == openModule,
+                    // **Otvorena je jedna.** Devet rasklopljenih kartica je opet
+                    // spisak koji se skroluje minut; otvaranje jedne zato zatvara
+                    // ostale samo od sebe.
+                    onToggle = {
+                        openModule = if (module.id.key == openModule) null else module.id.key
+                    },
                     onStart = { args -> onStart(module, args) }
                 )
             }
@@ -399,18 +411,72 @@ private fun VoiceNotice(onOpenSettings: () -> Unit) {
     }
 }
 
+/**
+ * Kartica modula, **sklopljena po zatečenom**.
+ *
+ * Rasklopljena nosi opis, spisak veština, birač zadatka i oslonca i tri dugmeta za
+ * težinu. Puta devet modula, početni ekran je bio spisak koji se skroluje minut —
+ * a u trenutku izbora potrebna je **jedna kartica**.
+ *
+ * Sklopljena ostaju ime, ikona i red koji kaže **šta bi se pokrenulo**. To je i
+ * jedini podatak koji se traži dok se bira; ostalo je za onoga ko je već stao.
+ *
+ * Unutar kartice je ranije postojao **još jedan sklop**, za zadatak i oslonac. Sad
+ * ih je jedan: dva sklopa jedan u drugom su se ionako otvarala zajedno.
+ */
 @Composable
 private fun ModuleCard(
     module: TrainingModule,
     eyesFree: Boolean,
+    expanded: Boolean,
+    onToggle: () -> Unit,
     onStart: (ModuleArgs) -> Unit
 ) {
+    // **`rememberSaveable`, ne `remember`.** Kartice stoje u `LazyColumn`, a on
+    // odbacuje sastav stavke koja izađe sa ekrana — sa njim i običan `remember`.
+    // Izbor bi se tako gubio pri skrolovanju, tiho i tek ponekad.
+    //
+    // Oslonac se pamti kao **ključ**, jer se `Support` ne ume sam sačuvati.
+    var chosenRungKey by rememberSaveable(module.id) { mutableStateOf<String?>(null) }
+    var chosenTask by rememberSaveable(module.id) { mutableStateOf<String?>(null) }
+
+    val chosenRung = chosenRungKey?.let { key -> Support.entries.find { it.key == key } }
+    val shownTask = chosenTask ?: module.defaultTaskId
+
+    // **Prečke pripadaju zadatku, ne modulu.** Dok su se uzimale iz unije svih
+    // zadataka, kartica je nudila prečke koje izabrani zadatak ne ume, pa bi se
+    // izbor ćutke sveo na najbližu koju ima — i čovek bi dobio nešto drugo nego
+    // što je dodirnuo. Isto pravilo po kom registar ne nudi nesaglasnu proveru.
+    val rungs = remember(module.id, shownTask) {
+        module.tasks.find { it.id == shownTask }?.supports?.sortedBy { it.ordinal }
+            ?: module.rungs()
+    }
+
+    val pickableTask = module.tasks.size > 1
+
+    // Prečke se **nude** samo kad su lestvica. Gde su samo dva načina rada —
+    // gledaš ili ne gledaš — izbor pripada podešavanjima, jer je to jedna odluka
+    // o tome kako vežbaš a ne devet po karticama.
+    val isLadder = module.tasks.find { it.id == shownTask }?.supportIsLadder != false
+    val pickableRung = rungs.size > 1 && isLadder
+
+    // I dalje se **vidi** šta će se pokrenuti, i kad se ne bira.
+    val tellsRung = rungs.size > 1
+
+    // Prečka izabrana za prošli zadatak ne mora da postoji u novom. Kad ništa
+    // nije dodirnuto, ovo je **odluka a ne nagoveštaj** — vidi šta se šalje niže.
+    val shownRung = chosenRung?.takeIf { it in rungs }
+        ?: if (eyesFree) rungs.lastOrNull() else rungs.firstOrNull()
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.fillMaxWidth().clickable { onToggle() },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     painter = painterResource(module.iconRes),
                     contentDescription = null,
@@ -418,11 +484,29 @@ private fun ModuleCard(
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Spacer(Modifier.size(12.dp))
-                Text(
-                    text = stringResource(module.titleRes),
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.weight(1f)
-                )
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(module.titleRes),
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+
+                    // **Šta će se pokrenuti** — jedini red koji ostaje i kad je
+                    // kartica sklopljena, jer je to jedini podatak koji se traži
+                    // dok se bira.
+                    val summary = listOfNotNull(
+                        shownTask.takeIf { pickableTask }?.let { stringResource(taskLabelRes(it)) },
+                        shownRung.takeIf { tellsRung }?.let { stringResource(it.labelRes()) }
+                    ).joinToString(" · ")
+
+                    if (summary.isNotEmpty()) {
+                        Text(
+                            text = summary,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
 
                 // Modul sam prijavljuje da ume glasom; meni to samo prikaže.
                 if (Capability.VOICE_INPUT in module.needs) {
@@ -433,9 +517,35 @@ private fun ModuleCard(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+
+                Spacer(Modifier.size(8.dp))
+                Icon(
+                    imageVector = if (expanded) {
+                        Icons.Default.KeyboardArrowUp
+                    } else {
+                        Icons.Default.KeyboardArrowDown
+                    },
+                    contentDescription = stringResource(R.string.menu_choice_toggle),
+                    modifier = Modifier.size(22.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
             }
 
-            Spacer(Modifier.height(6.dp))
+            // Da modul nema režim bez ekrana treba znati **pre** ulaska, pa to
+            // stoji i na sklopljenoj kartici — inače bi se saznalo tek unutra,
+            // pred tablom u koju se ne gleda.
+            if (eyesFree && !module.supportsEyesFree) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = stringResource(R.string.menu_module_no_eyes_free),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
+            if (!expanded) return@Column
+
+            Spacer(Modifier.height(10.dp))
 
             Text(
                 text = stringResource(module.descriptionRes),
@@ -457,112 +567,8 @@ private fun ModuleCard(
                 )
             }
 
-            // Da modul nema režim bez ekrana treba znati **pre** ulaska, a ne
-            // tek kad se unutra otvori tabla u koju se ne gleda.
-            if (eyesFree && !module.supportsEyesFree) {
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = stringResource(R.string.menu_module_no_eyes_free),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-
-            // Zadatak i prečka su se do sada birali samo **posredno** — globalnim
-            // režimom bez ekrana ili predlogom puta. To je ostavljalo dve rupe:
-            // srednja prečka se nije mogla dohvatiti bez dve uspešne sesije na
-            // punoj podršci, a drugi zadatak modula uopšte nije imao ulaz iz
-            // menija — put ga po svom prvom pravilu izbegava odmah posle vežbe.
-            //
-            // Zatečeno stanje ostaje **neizabrano**: dok se ne dodirne, modul
-            // dobija `null` i odlučuje sam, tačno kao pre. Chip koji svetli
-            // pokazuje šta bi se tada dogodilo, da izbor ne izgleda prazan.
-            // **`rememberSaveable`, ne `remember`.** Kartice stoje u `LazyColumn`,
-            // a on odbacuje sastav stavke koja izađe sa ekrana — sa njim i običan
-            // `remember`. Izbor bi se tako gubio pri skrolovanju, tiho i tek
-            // ponekad, što je najgora vrsta greške za pronaći.
-            //
-            // Oslonac se pamti kao **ključ**, jer se `Support` ne ume sam sačuvati.
-            var chosenRungKey by rememberSaveable(module.id) { mutableStateOf<String?>(null) }
-            var chosenTask by rememberSaveable(module.id) { mutableStateOf<String?>(null) }
-            var open by rememberSaveable(module.id) { mutableStateOf(false) }
-
-            val chosenRung = chosenRungKey?.let { key -> Support.entries.find { it.key == key } }
-
-            val shownTask = chosenTask ?: module.defaultTaskId
-
-            // **Prečke pripadaju zadatku, ne modulu.** Dok su se uzimale iz unije
-            // svih zadataka, kartica je nudila prečke koje izabrani zadatak ne
-            // ume: „Domet na liniji" radi samo bez table, a nudile su mu se sve
-            // četiri. Izbor bi se onda ćutke sveo na najbližu koju zadatak ima,
-            // pa bi čovek dobio nešto drugo nego što je dodirnuo.
-            //
-            // Isto pravilo po kom registar ne nudi proveru čiji se zadatak i
-            // veština ne poklapaju: nesaglasno se **ne prikazuje**, umesto da se
-            // tiho ispravi.
-            val rungs = remember(module.id, shownTask) {
-                module.tasks.find { it.id == shownTask }?.supports?.sortedBy { it.ordinal }
-                    ?: module.rungs()
-            }
-
-            val pickableTask = module.tasks.size > 1
-
-            // Prečke se **nude** samo kad su lestvica. Gde su samo dva načina
-            // rada — gledaš ili ne gledaš — izbor pripada podešavanjima, jer je
-            // to jedna odluka o tome kako vežbaš a ne osam po karticama.
-            val isLadder = module.tasks.find { it.id == shownTask }?.supportIsLadder != false
-            val pickableRung = rungs.size > 1 && isLadder
-
-            // I dalje se **vidi** šta će se pokrenuti, i kad se ne bira.
-            val tellsRung = rungs.size > 1
-
-            // Prečka izabrana za prošli zadatak ne mora da postoji u novom.
-            //
-            // Kad ništa nije dodirnuto, ovo je **odluka a ne nagoveštaj** — vidi
-            // šta se šalje modulu niže.
-            val shownRung = chosenRung?.takeIf { it in rungs }
-                ?: if (eyesFree) rungs.lastOrNull() else rungs.firstOrNull()
-
-            if (pickableTask || tellsRung) {
-                // **Sklopljeno po zatečenom.** Osam kartica sa po dva reda dugmića
-                // je meni koji se skroluje minut, a većina ljudi izbor nikad neće
-                // dodirnuti. Zato se ovde ne krije mogućnost nego samo kontrole:
-                // u jednom redu piše **šta će se dogoditi** ako se odmah krene, što
-                // je podatak koji ranije nije stajao nigde.
-                val summary = listOfNotNull(
-                    shownTask.takeIf { pickableTask }?.let { stringResource(taskLabelRes(it)) },
-                    shownRung.takeIf { tellsRung }?.let { stringResource(it.labelRes()) }
-                ).joinToString(" · ")
-
-                Spacer(Modifier.height(10.dp))
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { open = !open }
-                        .padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = summary,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Icon(
-                        imageVector = if (open) {
-                            Icons.Default.KeyboardArrowUp
-                        } else {
-                            Icons.Default.KeyboardArrowDown
-                        },
-                        contentDescription = stringResource(R.string.menu_choice_toggle),
-                        modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
-            if (open && pickableTask) {
-                Spacer(Modifier.height(6.dp))
+            if (pickableTask) {
+                Spacer(Modifier.height(12.dp))
                 Text(
                     text = stringResource(R.string.menu_task_label),
                     style = MaterialTheme.typography.labelSmall,
@@ -585,7 +591,7 @@ private fun ModuleCard(
                 }
             }
 
-            if (open && pickableRung) {
+            if (pickableRung) {
                 Spacer(Modifier.height(10.dp))
                 Text(
                     text = stringResource(R.string.menu_support_label),
@@ -602,25 +608,20 @@ private fun ModuleCard(
                         )
                     }
                 }
-
             }
 
             // **Šta oslonac ovde znači.** Imena su zajednička, ali posao nije:
             // najviši oslonac u Završnici znači da tabla stoji dok igraš, a u
-            // Geometriji da se pokaže tek posle promašaja.
-            //
-            // Stoji i kad se oslonac **ne bira** — tada je to jedino mesto na kom
-            // se vidi kako će vežba izgledati.
-            if (open) {
-                shownRung?.let { rung ->
-                    module.supportDetail(rung, shownTask)?.let { detail ->
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            text = detail,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+            // Geometriji da se pokaže tek posle promašaja. Stoji i kad se oslonac
+            // ne bira — tada je to jedino mesto na kom se vidi kako će izgledati.
+            shownRung?.let { rung ->
+                module.supportDetail(rung, shownTask)?.let { detail ->
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = detail,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 
@@ -631,35 +632,21 @@ private fun ModuleCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 module.difficulties.forEach { difficulty ->
-                    // Na dugmetu piše **šta težina znači**, a ne kako se zove.
-                    // „Lako, srednje, teško" kaže samo redosled — a redosled se
-                    // ionako vidi iz toga što dugmad stoje s leva na desno, od
-                    // najlakšeg. Ime je tako bilo jedini red koji ne govori ništa.
-                    //
-                    // Modul koji se nije izjasnio i dalje dobija opšte ime: bolje
-                    // slaba oznaka nego prazno dugme.
+                    // Na dugmetu piše **šta težina znači**, a ne kako se zove:
+                    // redosled se ionako vidi iz toga što stoje s leva na desno.
                     val detail = module.difficultyDetail(difficulty, shownTask)
 
                     FilledTonalButton(
                         onClick = {
-                            // **Šalje se ono što na kartici piše.**
-                            //
-                            // Dotle se slalo samo ono što je **dodirnuto**, a
-                            // netaknuto je išlo kao `null` — pa je modul odlučivao
-                            // sam, po globalnom podešavanju. Istaknuti čip je time
-                            // bio nagoveštaj, ne izbor, i to se razilazilo: kartica
-                            // je pisala „uz tablu", a pokretalo se bez table.
-                            //
-                            // Isto pravilo je time prestalo da postoji na dva
-                            // mesta — u meniju i u svakom modulu. Odlučuje ono koje
-                            // se **vidi**.
+                            // **Šalje se ono što na kartici piše.** Dotle se slalo
+                            // samo dodirnuto, a netaknuto je išlo kao `null` — pa
+                            // je modul odlučivao sam i kartica je umela da piše
+                            // jedno a pokrene drugo. Gde se oslonac ne bira, i
+                            // dalje ide `null`: tamo odlučuje podešavanje.
                             onStart(
                                 ModuleArgs(
                                     difficulty = difficulty,
                                     taskId = shownTask,
-                                    // Gde se oslonac ne bira, ne šalje se ni
-                                    // porudžbina: odlučuje podešavanje, kao i pre
-                                    // nego što je kartica dobila izbor.
                                     support = shownRung.takeIf { pickableRung }
                                 )
                             )
@@ -667,9 +654,6 @@ private fun ModuleCard(
                         contentPadding = PaddingValues(vertical = 10.dp, horizontal = 8.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        // Manji slog nego kod običnog dugmeta: ovde ne stoji ime
-                        // nego **podatak**, a „20 polja · 3,5 s" se u trećini
-                        // ekrana inače lomi tako da „s" ostane samo u drugom redu.
                         Text(
                             text = detail ?: stringResource(difficulty.labelRes()),
                             style = MaterialTheme.typography.labelLarge,
@@ -683,11 +667,6 @@ private fun ModuleCard(
     }
 }
 
-/**
- * Prečke koje ovaj modul ume — **unija zadataka**, isto pravilo po kom se sabiraju
- * i veštine. Zadatak koji tu prečku ne ume dobija najbližu koju ume, pa izbor
- * nikad ne odvede u prazno.
- */
 /**
  * Sve prečke koje modul uopšte ume — **unija zadataka**.
  *

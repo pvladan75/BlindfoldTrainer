@@ -28,7 +28,6 @@
     <string name="menu_xp">%1$d XP</string>
     <string name="menu_rank_next">Još %1$d XP do ranga %2$s</string>
     <string name="menu_rank_top">Vrh lestvice — nema višeg ranga.</string>
-    <string name="menu_achievements">Dostignuća: %1$d/%2$d</string>
 
     <string name="voice_title">Glasovni unos</string>
     <string name="voice_notice">Jezik prepoznavanja i preuzimanje paketa biraš u Podešavanjima.</string>

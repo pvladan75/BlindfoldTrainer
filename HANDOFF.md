@@ -47,6 +47,39 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### Početni ekran je sklopljen
+
+Devet kartica sa po pet blokova — opis, veštine, birač zadatka, birač oslonca i
+tri dugmeta za težinu — bio je spisak koji se skroluje minut. A u trenutku izbora
+potrebna je **jedna kartica**.
+
+Sklopljena kartica nosi ime, ikonu i **red koji kaže šta bi se pokrenulo**
+(zadatak · oslonac). To je jedini podatak koji se traži dok se bira; ostalo je za
+onoga ko je već stao. Uz to ostaje i crveno upozorenje da modul ne radi bez
+ekrana, jer se to mora znati **pre** ulaska.
+
+**Otvorena je jedna.** Stanje stoji na nivou liste, ne u kartici — tako otvaranje
+jedne zatvara ostale samo od sebe, bez dugmeta za zatvaranje. Uz to `LazyColumn`
+ionako odbacuje stanje stavke koja izađe sa ekrana.
+
+#### Jedan sklop umesto dva
+
+Unutar kartice je već postojao sklop, za zadatak i oslonac. Sad ih je jedan: dva
+sklopa jedan u drugom su se ionako otvarala zajedno, pa je unutrašnji bio samo
+još jedan dodir do istog ishoda.
+
+#### Šta nije dirano
+
+Navigacija. Otvorena stavka „preuređenje ekrana i navigacije" i dalje **čeka
+podatke iz upotrebe** — ovo je skraćivanje jednog ekrana, ne nova podela. Kad se
+skupi nekoliko nedelja korišćenja, po sadašnjoj proceni idu **tri mesta**: *Vežbaj*
+(predlog, provera, moduli), *Napredak* (presek, veštine, stablo) i *Ja* (profil,
+istrajnost, podešavanja, uputstvo).
+
+**Splash ekran — ne.** Aplikacija postoji da bi se ušlo u jednominutnu vežbu, a
+TTS i Vosk se ne podižu pri pokretanju nego pred ulazak u modul. Splash bi sakrio
+čekanje kojeg nema.
+
 ### Rang je prestao da se pretvara da je nivo
 
 Sa uređaja: *„rang ništa ne znači, a kad se u njega uđe otvara se Napredak."*
