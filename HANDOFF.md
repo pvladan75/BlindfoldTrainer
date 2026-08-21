@@ -37,6 +37,24 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### Kretanje figura je upisivalo veštine koje ne meri
+
+Jedini modul koji je u `bySkill` slao **celu listu veština zadatka**; ostalih osam
+šalju samo `task.measures`. Napisano je iz naizgled poštenije namere — sesija
+zaista dodiruje i ostale veštine.
+
+Ispalo je obrnuto. Orijentir postoji **samo za zadatak koji veštinu meri**, pa
+ostale nikad nemaju sa čim da uporede dobijene brojeve: veština dobije pokušaje,
+uđe u „u izgradnji", a zadatak joj pored imena zauvek piše „još nije utvrđeno".
+Tako je „Držanje pozicije" na ekranu nosilo „Šetnju figurom" i „Prepričaj
+putanju", koje je ne mere.
+
+Veština koja dobije pokušaje bez ijednog načina da od njih napravi nivo je gore
+nego prazna: **prazno se bar vidi kao prazno.**
+
+Stare sesije zadržavaju šta su upisale — istorija se ne prepravlja. Ispravka važi
+odsad.
+
 ### „Kuda po nju" je postalo dugme
 
 Sa uređaja: *„Sad kad bih hteo da unapredim Držanje pozicije, ne bih znao koju

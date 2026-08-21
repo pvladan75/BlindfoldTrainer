@@ -934,9 +934,18 @@ class MovementViewModel @Inject constructor(
             completed = state.isFinishedCleanly,
             support = support,
             taskId = spec.id,
-            // Veštinu koju zadatak **meri** nosi ceo rezultat; ostale idu uz nju
-            // istim brojevima, jer ih ista sesija zaista i dodiruje.
-            bySkill = spec.skills.associateWith { tally },
+            // **Samo veština koju zadatak meri**, kao i u svih osam ostalih modula.
+            //
+            // Ovde je jedno vreme stajala cela lista: sesija zaista dodiruje i
+            // ostale veštine, pa je delovalo poštenije da ih sve dobiju iste
+            // brojeve. Ispalo je obrnuto. Orijentir postoji samo za zadatak koji
+            // veštinu **meri**, pa ostale nikad nemaju sa čim da uporede te
+            // brojeve — dobiju pokušaje, uđu u „u izgradnji", a zadatak im pored
+            // imena zauvek piše „još nije utvrđeno".
+            //
+            // Da veština dobije pokušaje bez ijednog načina da od njih napravi
+            // nivo je gore nego da ih ne dobije: prazno se bar vidi kao prazno.
+            bySkill = mapOf(spec.measures to tally),
             // Kod dometa se greška ne gomila kroz niz, pa se dubina ni ne meri.
             heldUntil = bestHeld.takeIf { state.task != MovementTask.REACH }
         )
