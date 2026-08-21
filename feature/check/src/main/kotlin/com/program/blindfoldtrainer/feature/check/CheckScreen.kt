@@ -178,7 +178,9 @@ fun CheckScreen(
             tints = buildTints(uiState),
             visibility = visibility,
             onSquareClick = viewModel::onSquareClicked,
-            modifier = Modifier.fillMaxWidth()
+            // Tabla staje u visinu koja je ostala — vidi obrazloženje u
+            // EndgameScreen-u; bez toga se u pejzažu prelije preko ekrana.
+            modifier = Modifier.weight(1f, fill = false)
         )
 
         if (memorizing) {

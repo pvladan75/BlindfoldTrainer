@@ -178,7 +178,8 @@ private fun WalkReplay(replay: Replay, onContinue: () -> Unit) {
             fontWeight = FontWeight.Bold
         )
 
-        ChessBoard(board = board, tints = tints)
+        // Tabla staje u visinu koja je ostala; bez toga se u pejzažu prelije.
+        ChessBoard(board = board, tints = tints, modifier = Modifier.weight(1f, fill = false))
 
         Text(
             text = "${replay.step + 1} / ${replay.path.size}",

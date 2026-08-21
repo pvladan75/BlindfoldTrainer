@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -223,8 +224,15 @@ private fun QuestionPrompt(uiState: GeometryUiState) {
         // ništa — vidi obrazloženje uz `revealedSquare`.
         //
         // Mesto je zauzeto i dok table nema, da odgovor ne skakuće po ekranu.
+        // Mesto je vezano za **visinu**, ne samo za širinu. Sa `fillMaxWidth` je
+        // na tabletu u pejzažu ovaj kvadrat postajao viši od ekrana i gurao
+        // dugmad za odgovor van njega — pa se pitanje videlo, a odgovoriti se
+        // nije moglo.
         Box(
-            modifier = Modifier.fillMaxWidth(0.62f).aspectRatio(1f),
+            modifier = Modifier
+                .fillMaxWidth(0.62f)
+                .heightIn(max = 320.dp)
+                .aspectRatio(1f),
             contentAlignment = Alignment.Center
         ) {
             uiState.revealedSquare?.let { revealed ->

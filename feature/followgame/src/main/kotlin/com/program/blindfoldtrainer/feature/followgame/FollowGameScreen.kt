@@ -151,6 +151,7 @@ fun FollowGameScreen(
             board = Board.EMPTY,
             tints = buildTints(uiState),
             visibility = PieceVisibility.None,
+            modifier = Modifier.weight(1f, fill = false),
             onSquareClick = { viewModel.onSquareClicked(it) }
         )
 

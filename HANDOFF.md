@@ -47,6 +47,33 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### Tabla je prelivala ekran na tabletu
+
+Sa tableta, sedam slika. **Zone rade savršeno u pejzažu** — potvrđeno, i to je
+bila glavna briga. Ali tabla nije: u „Boji polja" nije bilo dugmadi SVETLO/TAMNO,
+u „Raskini vezu" je tabla isečena i gore i dole, a u Završnici i „Zapamti
+poziciju" nije bilo dugmadi ispod nje. Pitanje se vidi, odgovoriti se ne može.
+
+**Krivac nije tabla nego kolona.** Kad u `Column` postoji ijedan `weight` — a
+skoro svaki ekran ima `Spacer(Modifier.weight(1f))` na dnu — ostala deca se mere
+sa **neograničenom visinom**, da bi se izračunalo šta ostaje težinskima. Tabla
+tada nema šta da poredi, `aspectRatio(1f)` uzme punu širinu, i kvadrat postane
+visok koliko je ekran širok. U portretu prolazi; u pejzažu prelije.
+
+Svih devet tabli sad dobija `Modifier.weight(1f, fill = false)` — gornju granicu
+po visini, bez rastezanja. `aspectRatio` odatle sam bira manju stranu. Raspored se
+**ne menja**: ista kolona, isti redosled, samo tabla stane.
+
+Rezervisano mesto u Geometriji je vezano isto tako; ono je bilo `fillMaxWidth(0.62f)`
+i na širokom ekranu je samo gutalo dugmad za odgovor.
+
+#### Šta ovo znači za pejzaž
+
+Odluka „pejzaž isti raspored kao portret" je time **napravljena**, a ne odložena:
+ekrani se ne granaju po orijentaciji, nego stanu u ono što dobiju. Ostaje samo da
+se u pejzažu vidi mnogo prazne širine sa strane — to je izgled, ne upotrebljivost,
+i čeka odluku o podeli ekrana.
+
 ### Pejzaž je odložen, a rotacija je usput otkrila grešku
 
 Na pitanje „da li sad da podešavamo pejzaž": **ne sad.** Dva razloga.

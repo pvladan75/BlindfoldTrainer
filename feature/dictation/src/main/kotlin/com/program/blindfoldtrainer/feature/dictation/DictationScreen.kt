@@ -72,6 +72,7 @@ fun DictationScreen(
                 board = uiState.visibleBoard,
                 tints = buildTints(uiState),
                 visibility = PieceVisibility.All,
+                modifier = Modifier.weight(1f, fill = false),
                 onSquareClick = { viewModel.onSquareClicked(it) }
             )
 

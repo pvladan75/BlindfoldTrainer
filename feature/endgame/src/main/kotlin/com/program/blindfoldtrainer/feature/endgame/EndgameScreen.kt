@@ -132,6 +132,7 @@ fun EndgameScreen(
             board = uiState.position.board,
             tints = buildTints(uiState),
             visibility = uiState.visibility,
+            modifier = Modifier.weight(1f, fill = false),
             onSquareClick = { viewModel.onSquareClicked(it) }
         )
 
