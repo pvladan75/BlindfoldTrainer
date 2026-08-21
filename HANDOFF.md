@@ -1387,6 +1387,36 @@ strukturi**: ništa se ne premešta, ne preimenuje, ne grupiše.
 
 ### Šta je ostalo otvoreno
 
+0a. **Poreklo uvezenog sadržaja — pre objave.** Sve što je danas u aplikaciji je
+   **primer**, uzet sa autorovog računara da modul uopšte ima na čemu da radi;
+   nije odlučeno da to i ostane.
+
+   Šta je gde:
+
+   | fajl | šta je | koliko |
+   |---|---|---|
+   | `followgame/assets/games.pgn` | majstorske partije | 60 |
+   | `endgame/assets/*_puzzles.json` | pozicije sa matom u N | 60 / 60 / 120 |
+   | `pairs/assets/puzzles.zip` | generisane zagonetke | 37 fajlova |
+
+   **Zagonetke za „Raskini vezu" su generisane** — nastale su računski, pa tu
+   pitanja nema. **Završnice su gole FEN pozicije** sa oznakom „Mate in N".
+
+   Ostaje jedno pitanje koje treba **odgovoriti pre objave, ne posle**: odakle
+   tačno dolaze te partije i pozicije. Sami potezi partije se u većini pravnih
+   sistema ne smatraju autorskim delom nego činjenicom, i **u ovom PGN-u nema
+   nijednog komentara, znaka ocene ni analize** — proverено, samo osnovne oznake
+   i potezi. To uklanja najveći deo brige.
+
+   Ono što ostaje je poreklo **zbirke**: ako je izvod iz komercijalne baze,
+   u EU postoji posebno pravo na bazu podataka, nezavisno od autorskog. Šezdeset
+   partija je mali deo bilo koje takve baze, što ide u prilog, ali odgovor treba
+   da zna autor a ne da se pretpostavlja. Ako su iz javnog izvora — TWIC,
+   Lichess, bilteni turnira — pitanja nema.
+
+   Ovo nije pravni savet nego **spisak šta treba proveriti**; odluku donosi autor,
+   po potrebi sa nekim ko se time bavi.
+
 0. **Pedagoško-psihološki tekst uz objavu** — *dva poglavlja su napisana, vidi
    „Uputstvo je dobilo dva poglavlja"; ostaje da se iz istog teksta složi verzija
    za sajt.* Prvobitni zapis stoji ispod, kao merilo šta je trebalo pokriti. Korisniku mora biti jasno
