@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MicNone
@@ -68,6 +69,7 @@ fun MainMenuScreen(
     onStart: (TrainingModule, ModuleArgs) -> Unit,
     onOpenSettings: () -> Unit,
     onOpenProgress: () -> Unit,
+    onOpenPersistence: () -> Unit,
     /** Uputstvo — čemu sve ovo i kako se čita ono što piše po ekranima. */
     onOpenGuide: () -> Unit,
     /** Provera koja se nudi, ili `null` ako je nema. */
@@ -92,6 +94,20 @@ fun MainMenuScreen(
                     )
                 },
                 actions = {
+                    // **Napredak ide u traku, a ne na karticu ranga.**
+                    //
+                    // Kartica ranga je nekad vodila ovde, pa je kad je počela da
+                    // vodi na Istrajnost — što joj je i pravo mesto — Napredak
+                    // ostao **bez ijednog ulaza**. To je i najvažniji ekran u
+                    // aplikaciji, pa mu mesto nije zakačeno za tuđu karticu nego
+                    // uz uputstvo, profil i podešavanja.
+                    IconButton(onClick = onOpenProgress) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ShowChart,
+                            contentDescription = stringResource(R.string.progress_title)
+                        )
+                    }
+
                     IconButton(onClick = onOpenGuide) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.HelpOutline,
@@ -141,7 +157,7 @@ fun MainMenuScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item(key = "progress") {
-                RankCard(progress = progress, onOpenProgress = onOpenProgress)
+                RankCard(progress = progress, onOpenPersistence = onOpenPersistence)
             }
 
             // Predlozi, ne obaveze: stoje iznad spiska, a spisak ostaje netaknut.
@@ -297,13 +313,13 @@ private fun CheckupCard(checkup: Checkup, onStart: () -> Unit) {
  * inače bi ostao zalepljen dok se spisak modula pomera.
  */
 @Composable
-private fun RankCard(progress: ProgressSnapshot, onOpenProgress: () -> Unit) {
+private fun RankCard(progress: ProgressSnapshot, onOpenPersistence: () -> Unit) {
     val rankProgress = progress.rankProgress
 
     Card(
         // Cela kartica je ulaz u profil: rang i poeni kažu koliko si radio, a
         // profil šta se od toga razvilo — i to drugo je ono zbog čega se vežba.
-        onClick = onOpenProgress,
+        onClick = onOpenPersistence,
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer

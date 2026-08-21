@@ -165,9 +165,10 @@ fun AppNavigation(registry: ModuleRegistry) {
                     )
                 },
                 onOpenSettings = { navController.navigate(ROUTE_SETTINGS) },
+                onOpenProgress = { navController.navigate(ROUTE_PROGRESS) },
                 // Rang vodi na **istrajnost**, ne na Napredak: dotle je vodio
                 // tamo i time tvrdio da su poeni i nivo ista stvar.
-                onOpenProgress = { navController.navigate(ROUTE_PERSISTENCE) },
+                onOpenPersistence = { navController.navigate(ROUTE_PERSISTENCE) },
                 onOpenGuide = { navController.navigate(ROUTE_GUIDE) },
                 recommendation = recommendation,
                 onStartRecommended = { suggestion ->

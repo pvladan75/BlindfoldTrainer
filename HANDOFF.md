@@ -185,6 +185,21 @@ istrajnost, podešavanja, uputstvo).
 TTS i Vosk se ne podižu pri pokretanju nego pred ulazak u modul. Splash bi sakrio
 čekanje kojeg nema.
 
+### Napredak je ostao bez ulaza, pa je dobio svoj
+
+Prijavljeno sa uređaja usred vežbanja: **Napredak se nigde ne vidi.**
+
+Regresija iz izmene ranga. Kartica ranga je nekad vodila u Napredak; kad je počela
+da vodi na Istrajnost — što joj i jeste pravo mesto — Napredak je ostao **bez
+ijednog ulaza**, a to je najvažniji ekran u aplikaciji.
+
+Sad ima svoju ikonu u traci, uz uputstvo, profil i podešavanja. Mesto mu i nije
+smelo da bude zakačeno za tuđu karticu.
+
+Uz to je razdvojeno i ime parametra: `onOpenProgress` vodi u Napredak,
+`onOpenPersistence` u Istrajnost. Dok su delili jedno ime, ovakva zamena se nije
+imala gde ni primetiti.
+
 ### Rang je prestao da se pretvara da je nivo
 
 Sa uređaja: *„rang ništa ne znači, a kad se u njega uđe otvara se Napredak."*
