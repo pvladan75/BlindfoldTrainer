@@ -80,7 +80,11 @@ internal val SQUARE_COLOR = TaskSpec(
     benchmarks = mapOf(
         Support.FULL to Benchmark(millisPerAttempt = 3_000, minAccuracy = 0.9f),
         Support.NONE to Benchmark(millisPerAttempt = 4_500, minAccuracy = 0.9f)
-    )
+    ),
+    // Ovo nisu dve težine nego dva **položaja tela**: gledaš u ekran ili ne
+    // gledaš. Boja polja se zna napamet ili se ne zna — slike nema ni na jednom
+    // kraju, pa nema ni čega da se drži umesto tebe. Vidi [TaskSpec.supportIsLadder].
+    supportIsLadder = false
 )
 
 /**

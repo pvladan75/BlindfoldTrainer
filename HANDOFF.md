@@ -37,6 +37,32 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### „Boja polja" više ne nudi oslonac kao izbor
+
+Iz zaključka koji je stigao sa uređaja: *„mi ovde nemamo oslonac, ovo se igra samo
+na jedan način."* Tačno, i u kodu je već stajao dokaz — orijentiri su **3,0 s uz
+tablu i 4,5 s bez table**. To nisu dve težine nego dva načina rada: pitanje se
+jednom čita a jednom sluša, a odgovor se jednom kucne dugmetom a jednom pogodi
+zonom. Sama aplikacija je time priznala da razlika nije u veštini.
+
+`TaskSpec` je zato dobio **`supportIsLadder`**. `false` znači: ne nudi ovo kao
+izbor težine. Postavljeno je samo na `SQUARE_COLOR`.
+
+Šta se time menja i šta ne:
+
+- **Red „Koliko oslonca" se za taj zadatak više ne prikazuje.** Način rada bira
+  podešavanje „Kako obično vežbaš" — jedna odluka o tome kako vežbaš, a ne osam
+  po karticama.
+- **Vidi se i dalje šta će se pokrenuti.** Sažetak iznad birača i dalje piše
+  oslonac; samo se ne bira tu. Uz njega stoji i rečenica šta on u tom zadatku
+  znači, koja je dotle izlazila samo uz čipove.
+- **Merenje ostaje odvojeno po prečkama**, jer se vremena zaista razlikuju.
+  Istorija se ne dira: 74/80 uz tablu i 126/153 bez table ostaju dva reda.
+- **Oba načina rada ostaju.** Zone su jedini način da se ovo radi ležeći.
+
+Kad se oslonac ne bira, kartica šalje `null` i modul odlučuje po podešavanju —
+kao i pre nego što je kartica uopšte dobila birač.
+
 ### Tabla u Geometriji izlazi samo posle promašaja
 
 Izlazila je posle **svakog** odgovora, uz obrazloženje da se veza gradi i kad se

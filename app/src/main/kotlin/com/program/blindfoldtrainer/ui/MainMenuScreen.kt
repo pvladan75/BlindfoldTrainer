@@ -493,7 +493,15 @@ private fun ModuleCard(
             }
 
             val pickableTask = module.tasks.size > 1
-            val pickableRung = rungs.size > 1
+
+            // Prečke se **nude** samo kad su lestvica. Gde su samo dva načina
+            // rada — gledaš ili ne gledaš — izbor pripada podešavanjima, jer je
+            // to jedna odluka o tome kako vežbaš a ne osam po karticama.
+            val isLadder = module.tasks.find { it.id == shownTask }?.supportIsLadder != false
+            val pickableRung = rungs.size > 1 && isLadder
+
+            // I dalje se **vidi** šta će se pokrenuti, i kad se ne bira.
+            val tellsRung = rungs.size > 1
 
             // Prečka izabrana za prošli zadatak ne mora da postoji u novom.
             //
@@ -502,7 +510,7 @@ private fun ModuleCard(
             val shownRung = chosenRung?.takeIf { it in rungs }
                 ?: if (eyesFree) rungs.lastOrNull() else rungs.firstOrNull()
 
-            if (pickableTask || pickableRung) {
+            if (pickableTask || tellsRung) {
                 // **Sklopljeno po zatečenom.** Osam kartica sa po dva reda dugmića
                 // je meni koji se skroluje minut, a većina ljudi izbor nikad neće
                 // dodirnuti. Zato se ovde ne krije mogućnost nego samo kontrole:
@@ -510,7 +518,7 @@ private fun ModuleCard(
                 // je podatak koji ranije nije stajao nigde.
                 val summary = listOfNotNull(
                     shownTask.takeIf { pickableTask }?.let { stringResource(taskLabelRes(it)) },
-                    shownRung.takeIf { pickableRung }?.let { stringResource(it.labelRes()) }
+                    shownRung.takeIf { tellsRung }?.let { stringResource(it.labelRes()) }
                 ).joinToString(" · ")
 
                 Spacer(Modifier.height(10.dp))
@@ -582,13 +590,18 @@ private fun ModuleCard(
                     }
                 }
 
-                // **Šta izabrani oslonac ovde znači.** Imena su zajednička, ali
-                // posao nije: „uz tablu" u Završnici znači da tabla stoji dok
-                // igraš, a u Geometriji da se pokaže tek posle odgovora. Ko
-                // pročita samo ime razumno očekuje ono prvo.
+            }
+
+            // **Šta oslonac ovde znači.** Imena su zajednička, ali posao nije:
+            // najviši oslonac u Završnici znači da tabla stoji dok igraš, a u
+            // Geometriji da se pokaže tek posle promašaja.
+            //
+            // Stoji i kad se oslonac **ne bira** — tada je to jedino mesto na kom
+            // se vidi kako će vežba izgledati.
+            if (open) {
                 shownRung?.let { rung ->
                     module.supportDetail(rung, shownTask)?.let { detail ->
-                        Spacer(Modifier.height(6.dp))
+                        Spacer(Modifier.height(8.dp))
                         Text(
                             text = detail,
                             style = MaterialTheme.typography.bodySmall,
@@ -631,7 +644,10 @@ private fun ModuleCard(
                                 ModuleArgs(
                                     difficulty = difficulty,
                                     taskId = shownTask,
-                                    support = shownRung
+                                    // Gde se oslonac ne bira, ne šalje se ni
+                                    // porudžbina: odlučuje podešavanje, kao i pre
+                                    // nego što je kartica dobila izbor.
+                                    support = shownRung.takeIf { pickableRung }
                                 )
                             )
                         },

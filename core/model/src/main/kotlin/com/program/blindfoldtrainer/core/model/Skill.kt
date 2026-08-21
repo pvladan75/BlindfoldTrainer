@@ -182,8 +182,11 @@ fun skillFloors(): List<List<Skill>> {
  *
  * Šta koja prečka **znači** zavisi od zadatka, i zadatak to i kaže; zajednički
  * je samo redosled. U „Prati partiju" je [PARTIAL] „vidi se figura koja se
- * pomera", a [TRACE] „vide se samo polja"; u Geometriji [FULL] znači da se
- * posle odgovora pokaže tabla sa poljem, a [NONE] da se istina samo izgovori.
+ * pomera", a [TRACE] „vide se samo polja"; u Geometriji [FULL] znači da se posle
+ * **promašaja** pokaže tabla sa poljem, a [NONE] da se ista istina izgovori.
+ *
+ * A ima i zadatak u kom ovo **nije lestvica** nego dva položaja tela — vidi
+ * [TaskSpec.supportIsLadder].
  */
 enum class Support(val key: String) {
     FULL("full"),
@@ -249,7 +252,26 @@ data class TaskSpec(
     /**
      * Kome se teži, po prečki. Prečka bez orijentira ga naprosto ne prikazuje.
      */
-    val benchmarks: Map<Support, Benchmark> = emptyMap()
+    val benchmarks: Map<Support, Benchmark> = emptyMap(),
+
+    /**
+     * Da li su prečke ovog zadatka **lestvica**, ili samo dva načina rada.
+     *
+     * Podrška je definisana kao „koliko slike aplikacija drži umesto tebe". Kod
+     * većine zadataka to je prava lestvica: uz tablu se pozicija čita, bez table
+     * se nosi. Ali postoji zadatak u kom **slike i nema** — „koje je boje polje"
+     * je jedno polje i jedna reč, pa aplikacija ni na jednom kraju ne drži ništa.
+     *
+     * Tamo prečke ne mere različitu težinu nego različit **položaj tela**: gledaš
+     * u ekran ili ne gledaš. Orijentiri to i priznaju — 3,0 s uz tablu i 4,5 s bez
+     * nje nisu dve težine nego dva načina rada, jer se pitanje jednom čita a
+     * jednom sluša.
+     *
+     * `false` znači: **ne nudi ovo kao izbor težine**. Merenje ostaje odvojeno po
+     * prečkama, jer se vremena zaista razlikuju; bira se u podešavanjima, jednom
+     * za sve module, jer je to jedna odluka o tome kako vežbaš a ne osam.
+     */
+    val supportIsLadder: Boolean = true
 ) {
     init {
         require(id.isNotBlank()) { "zadatak mora imati ključ" }
