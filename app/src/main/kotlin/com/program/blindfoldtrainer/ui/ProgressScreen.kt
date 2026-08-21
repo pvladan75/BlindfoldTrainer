@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Card
@@ -91,6 +92,9 @@ fun ProgressScreen(
     difficultiesFor: (String) -> List<Difficulty>,
     /** Otvara vežbu odmah, sa izabranim zadatkom, osloncem i težinom. */
     onPractice: (String, Support, Difficulty?) -> Unit,
+    /** Koliko provera ova verzija uopšte nudi — presek se meri prema tome. */
+    checkupCount: Int,
+    onOpenSnapshot: () -> Unit,
     onBack: () -> Unit
 ) {
     // Dok je merena samo jedna veština, „najslabija" nema sa čim da se poredi
@@ -127,6 +131,43 @@ fun ProgressScreen(
                         text = stringResource(R.string.progress_empty),
                         style = MaterialTheme.typography.bodyMedium
                     )
+                }
+            }
+
+            // Presek stoji **iznad svega**: pre nego što se gleda šta je vežba
+            // usput proizvela, vredi znati šta je izmereno na isti način za sve.
+            item(key = "snapshot") {
+                Card(
+                    onClick = onOpenSnapshot,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.snapshot_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = stringResource(
+                                    R.string.snapshot_summary,
+                                    progress.checkedSkills.size,
+                                    checkupCount
+                                ),
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null
+                        )
+                    }
                 }
             }
 
@@ -316,20 +357,6 @@ private fun SkillCard(
                     )
                 }
 
-                // Predlog ostaje jedan; ostali se samo **imenuju**, bez dugmeta.
-                // Ko traži drugu vežbu za istu veštinu sad zna da postoji.
-                if (practice.others.isNotEmpty()) {
-                    val names = practice.others.map { stringResource(taskLabelRes(it.id)) }
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = stringResource(
-                            R.string.progress_practice_others,
-                            names.joinToString(", ")
-                        ),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
             }
 
             // **Provera je potvrda, ne nivo.** Nivo je prečka iznad; provera kaže
@@ -452,7 +479,7 @@ private fun SkillCard(
  * još sveža, a „6. avgust" traži računanje.
  */
 @Composable
-private fun daysAgoLabel(atMillis: Long): String {
+internal fun daysAgoLabel(atMillis: Long): String {
     val days = ((System.currentTimeMillis() - atMillis) / DAY_MILLIS).toInt().coerceAtLeast(0)
     return when (days) {
         0 -> stringResource(R.string.ago_today)
@@ -470,7 +497,7 @@ private const val DAY_MILLIS = 24L * 60 * 60 * 1000
  * nejednakih zadataka i pada od jedne loše večeri. Prečka je grublja i istinita.
  */
 @Composable
-private fun SkillLevel.headline(): String = when (stage) {
+internal fun SkillLevel.headline(): String = when (stage) {
     SkillStage.NOT_MEASURED -> stringResource(R.string.progress_not_measured)
     SkillStage.UNTRIED -> stringResource(R.string.stage_untried)
     SkillStage.STARTED -> stringResource(R.string.stage_started)

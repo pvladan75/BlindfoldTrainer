@@ -135,6 +135,17 @@
     <string name="progress_not_measured">nije mereno</string>
     <string name="progress_not_measured_hint">Veština o kojoj još nema podatka. To nije slabost — samo se još ne zna.</string>
     <string name="progress_details">Krive, orijentiri i oslonci</string>
+    <string name="snapshot_title">Presek</string>
+    <string name="snapshot_summary">provereno %1$d od %2$d veština</string>
+    <string name="snapshot_intro">Gde stojiš po svakoj veštini, izmereno na isti način. Napredak pokazuje šta je vežba usput donela; ovde stoji samo ono što se sme uporediti sa istim merenjem za mesec dana.</string>
+    <string name="snapshot_pending_title">Još nije izmereno: %1$d</string>
+    <string name="snapshot_pending_hint">Merenja se skupljaju, ne rade odjednom — jedno traje oko minut. Presek sa rupom je i dalje presek, ali rupu vredi znati pre nego što se ostatak čita.</string>
+    <string name="snapshot_measure">Izmeri: %1$s</string>
+    <string name="snapshot_measure_short">Izmeri</string>
+    <string name="snapshot_remeasure">Izmeri ponovo</string>
+    <string name="snapshot_never">nije provereno</string>
+    <string name="snapshot_no_task">Nijedan zadatak ovo još ne meri — tu ne fali provera nego vežba.</string>
+    <string name="snapshot_note">Provera ne nosi poene. Čim bi ih nosila, prestala bi da meri i počela da se juri.</string>
     <string name="progress_graph_title">Šta na čemu stoji</string>
     <string name="stage_untried">još nije probano</string>
     <string name="stage_started">u izgradnji</string>
@@ -143,7 +154,6 @@
     <string name="stage_mastered">savladano</string>
     <string name="progress_practice">Gradi se ovim: %1$s · %2$s</string>
     <string name="progress_practice_module">Vežbaj: %1$s → %2$s · %3$s</string>
-    <string name="progress_practice_others">istu veštinu gradi i: %1$s</string>
     <string name="progress_weakest">Trenutno najslabije</string>
     <string name="progress_holds">drži: %1$s</string>
     <string name="progress_no_rung_held">još nije utvrđeno</string>

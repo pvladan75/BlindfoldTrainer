@@ -37,39 +37,42 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
-### Šta bi bio „presek"
+### Presek postoji
 
-Zapisano da se ne izgubi, jer je do sada postojalo samo u razgovoru.
+**Presek nije novi ekran preko Napretka nego drugo pitanje.** Napredak pokazuje
+ono što je vežba **usput** proizvela — koliko si radio, kojim zadacima, na kom
+osloncu. Presek je **namerno i ujednačeno merenje u jednoj tački u vremenu**, koje
+se sme uporediti sa istim takvim merenjem mesec dana kasnije.
 
-**Presek nije novi ekran nego jedno sedenje.** Napredak pokazuje ono što je vežba
-usput proizvela; presek je **namerno, ujednačeno merenje u jednoj tački u
-vremenu**, uporedivo sa istim takvim merenjem mesec dana kasnije. Vežba daje
-napredak, provera daje nivo — presek je provera svih veština za redom.
+Zato na njemu **nema krivih ni broja sesija**. Stoji samo ono što je uporedivo:
+nivo veštine i kad je poslednji put potvrđen.
 
-Delovi koji već postoje:
+#### Skuplja se, ne radi odjednom
 
-- `Checkups.ALL` — po jedna provera za **šest od osam** veština; nema ih oporavak
-  slike i računanje naslepo, jer ih nijedan zadatak ne meri.
-- `ModuleArgs.rounds` — provera sama kaže koliko traje, pa je kratka.
-- `SkillLevel` — nivo po veštini, uporediv.
+Osam merenja ne stane u tri minuta, a jedno stane u jedan — to je zapisano uz
+`Checkup` od ranije i presek to ne menja. Ekran zato uvek pokazuje **ono što ima**,
+a ono što fali stoji na vrhu, sa dugmetom po veštini.
 
-Šta fali:
+Posle merenja se vraća **u presek, ne u meni**: ko ga je otvorio da izmeri četiri
+veštine ne želi da posle svake bude vraćen na početak. Otud `fromSnapshot` na
+ruti modula.
 
-1. **Redanje u jedno sedenje.** Sad se provera nudi jedna po jedna, na kartici u
-   meniju. Presek bi ih pustio jednu za drugom, sa mogućnošću da se prekine i
-   nastavi.
-2. **Jedan ekran sa ishodom**, sa datumom, koji se čuva i može da se uporedi sa
-   prethodnim presekom.
-3. **Čitanje razmaka.** Najvredniji deo i jedini koji ne postoji nigde: temelj
-   koji je **automatski sam**, a sprat iznad njega **pada rano**, potpis je stanja
-   „znam, ali ne pod opterećenjem". Broj za to već postoji — `heldUntil`, dokle je
-   slika izdržala pre prve greške — samo se nigde ne poredi sa nivoom temelja.
-4. **Dve veštine bez provere** ostaju rupa dok im se ne napravi zadatak koji ih
-   meri; presek to mora da kaže, a ne da ih preskoči u tišini.
+#### Dve rupe koje se ne smeju reći istom rečenicom
 
-Redosled po kom bi se radilo: prvo (1) i (2), jer daju upotrebljiv presek odmah;
-(3) posle, jer traži da se prvo skupi nekoliko preseka da se vidi šta razmak
-uopšte pokazuje.
+- **„nije provereno"** — provera postoji, samo je nisi radio;
+- **„nijedan zadatak ovo još ne meri"** — tu ne fali provera nego **vežba**, i to
+  je posao za nov modul. Tako stoje oporavak slike i računanje naslepo.
+
+Ekran ih razlikuje, jer bi zajednička rečenica prebacila krivicu sa aplikacije na
+korisnika.
+
+#### Šta još nije napravljeno
+
+**Čitanje razmaka** — najvredniji deo. Temelj koji je **automatski sam**, a sprat
+iznad njega **pada rano**, potpis je stanja „znam, ali ne pod opterećenjem". Broj
+za to postoji (`heldUntil`), samo se nigde ne poredi sa nivoom temelja. Odloženo
+namerno: traži da se prvo skupi nekoliko preseka da se vidi šta razmak uopšte
+pokazuje.
 
 ### Kretanje figura je upisivalo veštine koje ne meri
 
