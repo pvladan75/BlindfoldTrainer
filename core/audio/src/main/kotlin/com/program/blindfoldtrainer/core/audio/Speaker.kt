@@ -5,12 +5,33 @@ import com.program.blindfoldtrainer.core.chess.Color
 import com.program.blindfoldtrainer.core.chess.Move
 import com.program.blindfoldtrainer.core.chess.PieceType
 import com.program.blindfoldtrainer.core.chess.Square
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Izgovaranje teksta. Iza interfejsa je da bi se u testovima mogao zameniti
  * lažnjakom, i da moduli ne zavise od `android.speech.tts` direktno.
  */
 interface Speaker {
+
+    /**
+     * Da li se **upravo sada** nešto govori.
+     *
+     * Postoji zato što se govor ne sme redati tajmerom. Modul koji posle
+     * izgovorene rečenice čeka „otprilike sekundu i po" pogađa koliko rečenica
+     * traje — a ona zavisi od jezika, brzine govora koju je korisnik podesio, i
+     * od toga koliko polja se nabraja. Kad se promaši, sledeća rečenica preseče
+     * prethodnu na pola reči.
+     *
+     * Isto obrazloženje po kom se slušanje više ne gasi pa pali između dva
+     * polja: **pogađati dužinu tuđeg posla je uzaludno.**
+     *
+     * Zatečeno je **ćutanje**. Govornik koji ne ume da javi dokle je stigao time
+     * kaže „ne znam", a modul se onda ponaša kao i pre — nastavi odmah, umesto
+     * da čeka signal koji nikad neće doći.
+     */
+    val isSpeaking: StateFlow<Boolean> get() = NEVER_SPEAKING
 
     /**
      * Izgovara [text].
@@ -56,18 +77,41 @@ interface Speaker {
     fun say(interrupt: Boolean = true, phrase: SpeechVoice.() -> String)
 
     /**
-     * Ponavlja poslednje izgovoreno, doslovno.
+     * Ponavlja **poslednju najavu**, uz fonetska imena kolona.
+     *
+     * Najava je sve što je izgovoreno u jednom dahu, ma iz koliko poziva došlo:
+     * „skakač sa", „e četiri", „cilj", „g sedam" je **jedna** stvar koja se
+     * ponavlja, a ne četiri. Dotad se pamtio samo poslednji poziv, pa je „ponovi"
+     * vraćao „g sedam" i ništa pre toga — baš ono što je čovek već čuo.
+     *
+     * Ponavlja se fonetski — vidi [Square.spokenPhonetic].
      *
      * Stoji ovde jer mu treba samo ono što je rečeno — pa radi u **svakom**
      * modulu, a nijedan ne mora ništa da zna o tome.
      */
     fun repeat()
 
+    /**
+     * Sve izgovoreno unutar [block] **ne ulazi u „ponovi"**.
+     *
+     * Za ono što već ima svoje dugme: čitanje pozicije i čitanje stanja. Bez
+     * ovoga jedan dodir na „pozicija" pojede „ponovi" — a onda se do rečenice
+     * koja je zaista promakla više ne može, dok se pozicija ionako dobija
+     * ponovnim dodirom na njeno sopstveno dugme.
+     *
+     * Zatečeno ne radi ništa: govornik koji ne pamti šta je rekao nema šta ni
+     * da izuzme.
+     */
+    fun aside(block: () -> Unit) = block()
+
     fun stop()
 
     /** 0.1 (vrlo sporo) do 2.0 (vrlo brzo). Normalno je 1.0. */
     fun setRate(rate: Float)
 }
+
+/** Govornik koji ne prati svoj govor prijavljuje tišinu — vidi [Speaker.isSpeaking]. */
+private val NEVER_SPEAKING: StateFlow<Boolean> = MutableStateFlow(false).asStateFlow()
 
 /**
  * Sklanja tačku koja stoji **odmah iza cifre**.
@@ -100,6 +144,28 @@ private val DIGIT_AT_END = Regex("""(\d)\.$""")
  */
 fun Square.spoken(words: SpeechWords): String =
     "${words.files.getValue(file)} ${words.ranks.getValue(rank.digitToChar())}"
+
+/**
+ * Polje sa **imenom kolone umesto slova**: „bravo pet" umesto „b pet".
+ *
+ * Za ponavljanje, ne za prvo izgovaranje. „B" i „D" se preko zvučnika razlikuju
+ * tek toliko koliko dozvoli soba u kojoj sediš, a čovek koji je pritisnuo
+ * „ponovi" je već jednom pogrešno čuo — ponoviti mu isto istim rečima znači
+ * ponuditi istu nedoumicu drugi put.
+ *
+ * Ista tablica po kojoj se polje **prima** glasom, samo okrenuta. Reči su
+ * engleske i ne prevode se: standard je međunarodni, a poenta je što se dva
+ * sloga ne mešaju ni sa čim.
+ */
+fun Square.spokenPhonetic(words: SpeechWords): String =
+    "${PHONETIC_FILE_NAMES.getValue(file)} ${words.ranks.getValue(rank.digitToChar())}"
+
+/** [PHONETIC_FILES] okrenuta: kolona → reč kojom se izgovara. */
+private val PHONETIC_FILE_NAMES: Map<Char, String> =
+    PHONETIC_FILES.entries.associate { (word, file) -> file to word }
+
+fun Move.spokenPhonetic(words: SpeechWords): String =
+    "${from.spokenPhonetic(words)}, ${to.spokenPhonetic(words)}"
 
 /**
  * Potez kao dva polja. Umesto veznika stoji zarez: „to", „nach", „на" se razlikuju

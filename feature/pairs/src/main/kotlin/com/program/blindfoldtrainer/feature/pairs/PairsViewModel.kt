@@ -118,7 +118,7 @@ class PairsViewModel @Inject constructor(
      * Čita **trenutnu** poziciju — onu koja je nastala odigranim potezima, ne
      * početnu. Za kad se slika u glavi raspala; namerno neograničeno.
      */
-    fun onReadPosition() = speaker.say(_uiState.value.board)
+    fun onReadPosition() = speaker.aside { speaker.say(_uiState.value.board) }
 
     /** Prvi dodir na zonu za odustajanje — traži potvrdu, jer je nepovratno. */
     fun onGiveUpArmed() = speaker.say { confirmGiveUp }

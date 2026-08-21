@@ -192,7 +192,10 @@ class EndgameViewModel @Inject constructor(
      */
     fun onReadPosition() {
         positionReads++
-        speaker.say(_uiState.value.position.board)
+        // Pozicija ima svoje dugme, pa ne sme da pojede „ponovi": posle nje se
+        // do rečenice koja je zaista promakla više ne bi moglo, a pozicija se
+        // ionako dobija ponovnim dodirom na nju samu.
+        speaker.aside { speaker.say(_uiState.value.position.board) }
     }
 
     private var settings: Settings = Settings.DEFAULT

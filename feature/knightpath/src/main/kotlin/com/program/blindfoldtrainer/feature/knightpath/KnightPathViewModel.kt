@@ -140,11 +140,14 @@ class KnightPathViewModel @Inject constructor(
         val state = _uiState.value
         val current = state.current ?: return
         val target = state.target ?: return
-        speaker.say { knightIsOn }
-        speaker.say(current, interrupt = false)
-        speaker.say(interrupt = false) { goal }
-        speaker.say(target, interrupt = false)
-        speaker.say(interrupt = false) { movesLeft(state.movesLeft) }
+        // Stanje ima svoje dugme, pa ne otima „ponovi" — vidi [Speaker.aside].
+        speaker.aside {
+            speaker.say { knightIsOn }
+            speaker.say(current, interrupt = false)
+            speaker.say(interrupt = false) { goal }
+            speaker.say(target, interrupt = false)
+            speaker.say(interrupt = false) { movesLeft(state.movesLeft) }
+        }
     }
 
     /** Prvi dodir na zonu za odustajanje — traži potvrdu, jer je nepovratno. */
