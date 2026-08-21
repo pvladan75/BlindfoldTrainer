@@ -66,6 +66,22 @@ tri sekunde merena je dok ne radiš ništa drugo.
 zaista znači: ne teži ekran nego nikakav. Ovo je izvorna zamisao projekta, koja je
 sve vreme živela u kodu a nigde nije bila napisana.
 
+#### Registar teksta, da se ne izgubi u prevodu
+
+Potvrđeno pošto je pročitano, i vredi zapisati jer je **prva stvar koja se gubi
+pri prevodu**:
+
+> Ne kažemo korisniku da će biti lako. Uz njegovo angažovanje nudimo mu alat na
+> tom putu.
+
+Odatle sledi sve ostalo u tonu: tvrdnje umesto obećanja, konkretan primer umesto
+pridava, i **priznata cena** — „vežbaš sve, a ne popravljaš ništa", „to je mesto
+gde ćeš zbog njih padati". Tekst sme da bude motivišući samo utoliko što je
+tačan.
+
+Prevodilac koji ovo ne zna napraviće uobičajenu marketinšku verziju, i ona će
+zvučati bolje a vredeti manje.
+
 #### I test za rečenice
 
 Pri pisanju ovog teksta **ista greška se ponovila u istom danu**: zatvoreni
