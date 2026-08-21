@@ -47,6 +47,40 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### Pejzaž je odložen, a rotacija je usput otkrila grešku
+
+Na pitanje „da li sad da podešavamo pejzaž": **ne sad.** Dva razloga.
+
+Podela ekrana još nije odlučena — čeka podatke iz upotrebe — pa bi se rasporedi
+za pejzaž pravili dvaput. A i sama korist je manja nego što zvuči: **na telefonu
+je tabla u pejzažu manja**, jer je ograničava visina. Pejzaž se isplati na
+tabletu, a tableta zasad nema.
+
+Aplikacija je zato **zaključana na portret** u manifestu. To je i sadašnje stanje
+u glavnom režimu: ekrani sa velikim zonama su i dosad zaključavali portret preko
+`LockPortrait`, koji uredno pamti i vraća prethodnu orijentaciju.
+
+#### Ali rotacija nije bila bezopasna
+
+`AndroidManifest` nije imao ni `screenOrientation` ni `configChanges`, pa je
+rotacija **ponovo pravila `Activity`**. `ViewModel` to preživi sa
+`isFinished = true`, ali sastav ne — pa se `LaunchedEffect(isFinished)` u ekranu
+modula pokretao **ponovo** i ista sesija bi se upisala **dvaput**. Poeni, broj
+sesija i profil bi se time tiho udvostručili.
+
+Školjka sad pamti da je ishod upisan, u `rememberSaveable` — jedina stvar koja i
+postoji zato da preživi ponovo pravljenje `Activity`-ja.
+
+**Zaštita ostaje i pored zaključanog portreta**, namerno: zaključavanje je odluka
+o izgledu, a ovo je greška u računu. Kad se pejzaž jednom dopusti, ne sme da se
+osloni na to da se neko setio i ovoga.
+
+#### Šta treba proveriti pre nego što se pejzaž dopusti
+
+Ista vrsta greške verovatno postoji i drugde: sve što u ekranima modula stoji u
+običnom `remember` nestaje pri rotaciji. Sesija bi preživela, jer je u
+`ViewModel`-u, ali sažetak na kraju ne bi — `result` u školjci je `remember`.
+
 ### „Mate in 7" je bio jedini engleski na ekranu
 
 U „Dokrajči protivnika" je pod „Cilj" stajala oznaka iz sadržaja partija —

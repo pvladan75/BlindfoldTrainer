@@ -11,6 +11,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
@@ -317,6 +318,24 @@ fun AppNavigation(registry: ModuleRegistry) {
 
             var result by remember { mutableStateOf<SessionResult?>(null) }
 
+            /**
+             * Da li je ishod ove sesije **već upisan**.
+             *
+             * `rememberSaveable`, jer jedini razlog zbog kog postoji jeste da
+             * preživi ponovo pravljenje `Activity`-ja.
+             *
+             * Ekran modula javlja kraj iz `LaunchedEffect(isFinished)`. `ViewModel`
+             * preživi rotaciju sa `isFinished = true`, ali sastav ne — pa se posle
+             * rotacije efekat pokreće **ponovo** i ista sesija bi se upisala dvaput.
+             * Poeni, sesije i profil bi se time tiho udvostručili.
+             *
+             * Danas je aplikacija zaključana na portret pa se ne može ni okrenuti;
+             * ova zaštita stoji zato što je zaključavanje **odluka o izgledu**, a
+             * ovo je greška u računu. Kad se pejzaž jednom dopusti, ne sme da se
+             * osloni na to da se neko setio i ovoga.
+             */
+            var recorded by rememberSaveable(moduleKey, taskId) { mutableStateOf(false) }
+
             // **Sistemske trake se poštuju ovde, jednom za sve module.**
             //
             // `enableEdgeToEdge()` pušta sadržaj ispod sata i ispod navigacione
@@ -339,6 +358,9 @@ fun AppNavigation(registry: ModuleRegistry) {
                     rounds = rounds
                 ),
                 onFinish = { sessionResult ->
+                    if (recorded) return@Screen
+                    recorded = true
+
                     // Da je ovo bila provera zna **školjka**, ne modul: modul ne
                     // zna ni za poene ni za napredak, pa ne treba da zna ni za
                     // merenje. Ona je poručila, ona i obeležava.
