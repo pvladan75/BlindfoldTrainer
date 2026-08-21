@@ -170,6 +170,9 @@ fun MainMenuScreen(
  * da se ne složi. Zato ispod naslova stoji i **koliko pomoći** korisnik dobija,
  * jer je prečka pola predloga.
  *
+ * Uz nju stoji i **težina**, iz istog razloga: dok se prećutkivala, predlog je
+ * ćutke slao na najlakšu i to se nije imalo gde videti.
+ *
  * Ništa se ne zaključava i odbijanje nema posledice: spisak modula stoji odmah
  * ispod, netaknut.
  */
@@ -188,12 +191,17 @@ private fun PathCard(recommendation: Recommendation, onStart: () -> Unit) {
                 fontWeight = FontWeight.Bold
             )
             Spacer(Modifier.height(4.dp))
+            val task = stringResource(taskLabelRes(recommendation.taskId))
+            val rung = stringResource(recommendation.support.labelRes())
             Text(
-                text = stringResource(
-                    R.string.path_offer,
-                    stringResource(taskLabelRes(recommendation.taskId)),
-                    stringResource(recommendation.support.labelRes())
-                ),
+                text = recommendation.difficulty?.let { difficulty ->
+                    stringResource(
+                        R.string.path_offer_graded,
+                        task,
+                        rung,
+                        stringResource(difficulty.labelRes())
+                    )
+                } ?: stringResource(R.string.path_offer, task, rung),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )

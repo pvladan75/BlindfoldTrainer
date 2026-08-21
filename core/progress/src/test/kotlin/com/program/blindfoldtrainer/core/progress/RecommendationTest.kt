@@ -51,10 +51,11 @@ class RecommendationTest {
         attempted: Int,
         solved: Int,
         support: Support = Support.FULL,
-        millis: Long = 10_000
+        millis: Long = 10_000,
+        difficulty: Difficulty = Difficulty.EASY
     ) = SessionResult(
         moduleId = ModuleId.GEOMETRY,
-        difficulty = Difficulty.EASY,
+        difficulty = difficulty,
         attempted = attempted,
         solved = solved,
         mistakes = attempted - solved,
@@ -218,5 +219,110 @@ class RecommendationTest {
         val recommendation = history.toProgressSnapshot().recommend(tasks)!!
 
         assertEquals(Reason.STRENGTH, recommendation.reason)
+    }
+
+    /**
+     * Do sada je predlog nosio prečku a težinu prećutkivao, pa je školjka
+     * upisivala najlakšu. Ko je slušao predlog, dobijao je najlakšu trećinu
+     * svakog modula i nikad ne bi izašao iz nje.
+     */
+    @Test
+    fun `nov zadatak krece od najlakse tezine`() {
+        val recommendation = ProgressSnapshot.EMPTY.recommend(listOf(hold))!!
+
+        assertEquals(Difficulty.EASY, recommendation.difficulty)
+    }
+
+    /**
+     * Kad prečka nema kuda dalje, težina preuzima posao — inače bi zadatak sa
+     * jednom prečkom zauvek ostao na najlakšoj.
+     */
+    @Test
+    fun `dva uspeha na najtezoj precki dizu tezinu`() {
+        val history = listOf(
+            session(Skill.POSITION_HOLD, "reconstruct", 10, 10),
+            session(Skill.POSITION_HOLD, "reconstruct", 10, 10)
+        )
+
+        val recommendation = history.toProgressSnapshot().recommend(listOf(hold))!!
+
+        assertEquals(Support.FULL, recommendation.support)
+        assertEquals(Difficulty.MEDIUM, recommendation.difficulty)
+    }
+
+    /** Jedan uspeh nije dovoljan, isto kao ni za prečku. */
+    @Test
+    fun `jedan uspeh ne dize tezinu`() {
+        val history = listOf(session(Skill.POSITION_HOLD, "reconstruct", 10, 10))
+        val recommendation = history.toProgressSnapshot().recommend(listOf(hold))!!
+
+        assertEquals(Difficulty.EASY, recommendation.difficulty)
+    }
+
+    /** Promašaj vraća težinu nazad, po istom pravilu kao prečku. */
+    @Test
+    fun `promasaj vraca tezinu nazad`() {
+        val history = listOf(
+            session(Skill.POSITION_HOLD, "reconstruct", 10, 10, difficulty = Difficulty.MEDIUM),
+            session(Skill.POSITION_HOLD, "reconstruct", 10, 3, difficulty = Difficulty.MEDIUM)
+        )
+
+        val recommendation = history.toProgressSnapshot().recommend(listOf(hold))!!
+
+        assertEquals(Difficulty.EASY, recommendation.difficulty)
+    }
+
+    /** Ispod najlakše težine se ne pada, isto kao ni ispod najniže prečke. */
+    @Test
+    fun `promasaj na najlaksoj tezini ostaje tu`() {
+        val history = listOf(session(Skill.POSITION_HOLD, "reconstruct", 10, 2))
+        val recommendation = history.toProgressSnapshot().recommend(listOf(hold))!!
+
+        assertEquals(Difficulty.EASY, recommendation.difficulty)
+    }
+
+    /**
+     * **Dve lestvice se ne penju uporedo.** Dva uspeha na punoj podršci spuštaju
+     * prečku, a težina tada zatiče praznu istoriju na novoj prečki i vraća se na
+     * najlakšu. Da se pomere obe, skok bi bio dvostruk.
+     */
+    @Test
+    fun `precka i tezina se ne penju istovremeno`() {
+        val history = listOf(
+            session(Skill.COORDINATES, "square_color", 10, 10),
+            session(Skill.COORDINATES, "square_color", 10, 10)
+        )
+
+        val recommendation = history.toProgressSnapshot().recommend(listOf(coordinates))!!
+
+        assertEquals(Support.NONE, recommendation.support)
+        assertEquals(Difficulty.EASY, recommendation.difficulty)
+    }
+
+    /**
+     * Težina se **broji po prečki**: uspeh uz tablu ne dokazuje ništa o tome
+     * kako ista težina ide bez nje.
+     */
+    @Test
+    fun `tezina se racuna na precki na koju se ide`() {
+        val history = listOf(
+            // Dva uspeha bez table dižu težinu tamo, a ne na punoj podršci.
+            session(Skill.COORDINATES, "square_color", 10, 10, support = Support.NONE),
+            session(Skill.COORDINATES, "square_color", 10, 10, support = Support.NONE)
+        )
+
+        val recommendation = history.toProgressSnapshot().recommend(listOf(coordinates))!!
+
+        assertEquals(Support.NONE, recommendation.support)
+        assertEquals(Difficulty.MEDIUM, recommendation.difficulty)
+    }
+
+    /** Modul koji težine ne nudi ih ne dobija ni na predlogu — izmišljati je značilo bi lagati. */
+    @Test
+    fun `modul bez tezina ne dobija tezinu`() {
+        val recommendation = ProgressSnapshot.EMPTY
+            .recommend(listOf(hold), difficultiesFor = { emptyList() })!!
+
+        assertNull(recommendation.difficulty)
     }
 }

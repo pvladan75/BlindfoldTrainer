@@ -1,5 +1,6 @@
 package com.program.blindfoldtrainer.core.progress
 
+import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.requires
 import com.program.blindfoldtrainer.core.model.Support
@@ -43,6 +44,15 @@ data class Recommendation(
     val skill: Skill,
     val taskId: String,
     val support: Support,
+    /**
+     * Težina, ili `null` kad je modul **ne nudi**.
+     *
+     * Do sada je predlog nosio prečku a težinu prećutkivao, pa je školjka
+     * upisivala najlakšu — ko je slušao predlog, dobijao je najlakšu trećinu
+     * svakog modula i to nigde nije pisalo. Prećutana odluka je i dalje odluka;
+     * ovde se bar vidi.
+     */
+    val difficulty: Difficulty?,
     val reason: Reason
 )
 
@@ -67,10 +77,16 @@ data class Recommendation(
  *
  * [lastTaskId] je zadatak poslednje **vežbe** (ne provere); `null` ako je vežbe
  * još nema.
+ *
+ * [difficultiesFor] kaže koje težine modul tog zadatka uopšte nudi. Stiže kao
+ * funkcija a ne kao polje na [TaskSpec] jer težine deklariše **modul**, a ovaj
+ * sloj module ne poznaje — i ne treba da ih poznaje. Zatečeno je „sve tri", što
+ * je i ono što ugovor modula podrazumeva.
  */
 fun ProgressSnapshot.recommend(
     tasks: List<TaskSpec>,
-    lastTaskId: String? = null
+    lastTaskId: String? = null,
+    difficultiesFor: (String) -> List<Difficulty> = { Difficulty.entries }
 ): Recommendation? {
     if (tasks.isEmpty()) return null
 
@@ -87,10 +103,16 @@ fun ProgressSnapshot.recommend(
         candidates.minByOrNull { priorityOf(it, benchmarks) } ?: return null
     }
 
+    // Prečka se bira prva, pa se težina bira **za nju**. Obrnuto se ne može:
+    // orijentir po kom se meri uspeh visi o prečki, pa dok se ne zna prečka, ne
+    // zna se ni šta je na njoj bio uspeh.
+    val support = nextRung(chosen)
+
     return Recommendation(
         skill = chosen.measures,
         taskId = chosen.id,
-        support = nextRung(chosen),
+        support = support,
+        difficulty = nextStep(chosen, support, difficultiesFor(chosen.id)),
         // Redosled razloga nije proizvoljan: prvo ono što je **osnovnija
         // činjenica**. Da nisi ni probao je jače od svega ostalog što bi se o
         // tome moglo reći, pa ide ispred toga što je veština i temelj.
@@ -152,28 +174,76 @@ private fun ProgressSnapshot.nextRung(task: TaskSpec): Support {
     if (history.isEmpty()) return task.supports.minByOrNull { it.ordinal } ?: Support.FULL
 
     val last = history.last()
-    val threshold = task.benchmarkFor(last.support)?.minAccuracy ?: DEFAULT_SUCCESS
-    val accuracy = if (last.tally.attempted == 0) {
-        0f
-    } else {
-        last.tally.solved.toFloat() / last.tally.attempted
-    }
 
-    if (accuracy < threshold) {
-        return task.easierThan(last.support) ?: last.support
-    }
+    if (!last.meets(task)) return task.easierThan(last.support) ?: last.support
 
     val twiceOnSame = history.size == 2 &&
         history.all { it.support == last.support } &&
-        history.all { entry ->
-            val limit = task.benchmarkFor(entry.support)?.minAccuracy ?: DEFAULT_SUCCESS
-            entry.tally.attempted > 0 &&
-                entry.tally.solved.toFloat() / entry.tally.attempted >= limit
-        }
+        history.all { it.meets(task) }
 
     if (!twiceOnSame) return last.support
 
     return task.harderThan(last.support) ?: last.support
+}
+
+/**
+ * Težina za sledeći put, po istom pravilu kao prečka — ali **na toj prečki**.
+ *
+ * Dve lestvice se time ne penju uporedo, nego jedna po jedna. Kad prečka ima
+ * kuda da se pomeri, težina zatekne praznu istoriju na novoj prečki i vrati se
+ * na najlakšu; kad je prečka na kraju svoje lestvice, težina preuzima posao.
+ * Zato „dvaput dobro" ne pomera obe stvari odjednom, što bi bio dvostruki skok.
+ *
+ * Nema izmišljene treće lestvice: prečka je i dalje prava mera težine za rad
+ * naslepo, a ovo je samo ono što se unutar nje moglo skalirati a nije se.
+ *
+ * Prazna ponuda znači da modul težine **ne nudi** — tada nema šta da se bira i
+ * vraća se `null`, umesto da se izmisli najlakša.
+ */
+private fun ProgressSnapshot.nextStep(
+    task: TaskSpec,
+    support: Support,
+    offered: List<Difficulty>
+): Difficulty? {
+    val ladder = offered.sortedBy { it.ordinal }
+    val easiest = ladder.firstOrNull() ?: return null
+
+    val history = skillHistory
+        .filter { !it.isCheckup && it.taskId == task.id && it.support == support }
+        .takeLast(2)
+
+    val last = history.lastOrNull() ?: return easiest
+
+    // Težina koju modul više ne nudi se ne nasleđuje — pada na najlakšu, isto
+    // kao što se prečka koju zadatak nema svodi na najbližu koju ume.
+    val current = last.difficulty.takeIf { it in ladder } ?: easiest
+    val step = ladder.indexOf(current)
+
+    if (!last.meets(task)) return ladder.getOrNull(step - 1) ?: current
+
+    val twiceOnSame = history.size == 2 &&
+        history.all { it.difficulty == current } &&
+        history.all { it.meets(task) }
+
+    if (!twiceOnSame) return current
+
+    return ladder.getOrNull(step + 1) ?: current
+}
+
+/**
+ * Da li je ova sesija ispunila orijentir **svoje** prečke.
+ *
+ * Sesija bez ijednog pokušaja se ne računa kao uspeh: nula pokušaja nije dokaz
+ * ni za ni protiv, a jedina druga mogućnost bi bila da prazna sesija gura
+ * naviše.
+ *
+ * Gde zadatak nema orijentir za tu prečku, meri se praznom rukom —
+ * [DEFAULT_SUCCESS] tačnosti.
+ */
+private fun SkillEntry.meets(task: TaskSpec): Boolean {
+    if (tally.attempted == 0) return false
+    val threshold = task.benchmarkFor(support)?.minAccuracy ?: DEFAULT_SUCCESS
+    return tally.solved.toFloat() / tally.attempted >= threshold
 }
 
 /** Neprobano ide ispred svega merenog, ali iza ničega. */

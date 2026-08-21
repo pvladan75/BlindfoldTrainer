@@ -165,6 +165,7 @@
 
     <string name="path_title">Predlog</string>
     <string name="path_offer">%1$s · %2$s</string>
+    <string name="path_offer_graded">%1$s · %2$s · %3$s</string>
     <string name="path_start">Kreni</string>
     <string name="reason_never_tried">Ovo još nisi probao — o njemu se ne zna ništa.</string>
     <string name="reason_weakest">Trenutno ti ide najteže.</string>

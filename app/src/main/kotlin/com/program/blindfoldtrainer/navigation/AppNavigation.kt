@@ -96,10 +96,21 @@ fun AppNavigation(registry: ModuleRegistry) {
     // Predlog puta: cilj iz onoga što se zna, korak iz poslednje vežbe. Računa
     // se ovde, uz ostali napredak, jer mu treba i registar zadataka.
     val allTasks = remember(registry) { registry.all.flatMap { it.tasks } }
-    val recommendation = remember(progress, allTasks) {
+
+    // Težine deklariše modul, a put poznaje samo zadatke — pa se veza pravi
+    // ovde, gde se registar ionako drži. Bez nje bi predlog nudio težinu koju
+    // modul ne ume, što je isti tihi raskorak zbog kog se i provere prosejavaju.
+    val difficultiesByTask = remember(registry) {
+        registry.all
+            .flatMap { module -> module.tasks.map { task -> task.id to module.difficulties } }
+            .toMap()
+    }
+
+    val recommendation = remember(progress, allTasks, difficultiesByTask) {
         progress.recommend(
             tasks = allTasks,
-            lastTaskId = progress.skillHistory.lastOrNull { !it.isCheckup }?.taskId
+            lastTaskId = progress.skillHistory.lastOrNull { !it.isCheckup }?.taskId,
+            difficultiesFor = { taskId -> difficultiesByTask[taskId] ?: Difficulty.entries }
         )
     }
 
@@ -141,7 +152,9 @@ fun AppNavigation(registry: ModuleRegistry) {
                     navController.navigate(
                         moduleRoute(
                             moduleKey = module.id.key,
-                            difficulty = Difficulty.EASY,
+                            // Modul koji težine ne nudi ih ionako ne gleda; ruta
+                            // mora nešto da nosi, pa nosi najlakšu.
+                            difficulty = suggestion.difficulty ?: Difficulty.EASY,
                             taskId = suggestion.taskId,
                             support = suggestion.support
                         )

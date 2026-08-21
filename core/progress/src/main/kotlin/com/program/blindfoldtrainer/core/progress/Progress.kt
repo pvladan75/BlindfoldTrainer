@@ -306,6 +306,15 @@ data class SkillEntry(
     val skill: Skill,
     val taskId: String,
     val support: Support,
+    /**
+     * Na kojoj je **težini** sesija odrađena.
+     *
+     * Stoji uz prečku iz istog razloga iz kog i ona: bez zapisane težine put
+     * nema po čemu da bira sledeću, pa je predlog godinama nudio istu.
+     * Prečka i težina zajedno kažu koliko je zadatak zaista tražio — jedna
+     * bez druge kaže pola.
+     */
+    val difficulty: Difficulty,
     val tally: SkillTally,
     /** Provera daje **nivo**, vežba daje **napredak** — ne mešaju se. */
     val isCheckup: Boolean = false,
@@ -341,7 +350,7 @@ private fun SessionResult.toSkillEntries(): List<SkillEntry> {
     val task = taskId ?: return emptyList()
 
     return bySkill.map { (skill, tally) ->
-        SkillEntry(at, skill, task, support, tally, isCheckup, heldUntil)
+        SkillEntry(at, skill, task, support, difficulty, tally, isCheckup, heldUntil)
     }
 }
 
