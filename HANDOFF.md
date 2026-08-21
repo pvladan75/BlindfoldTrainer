@@ -47,6 +47,24 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### Moduli su crtali ispod sata i ispod navigacione trake
+
+Sa uređaja, sa pet slika: u „Postavi po diktatu", „Putanji skakača" i „Prati
+partiju" brojači su ulazili u sat i ikonice mreže, a dugmad na dnu u navigacionu
+traku.
+
+`MainActivity` zove `enableEdgeToEdge()`, i to je ispravno — pozadina treba da ide
+do ivice. Ali ekran koji nema `Scaffold` mora **sam** da se skloni ispod traka, a
+ekrani modula ga nemaju. „Zapamti poziciju" i „Dokrajči protivnika" su izgledali
+uredno samo zato što im zaglavlje slučajno počinje niže.
+
+Razmak se sad daje **jednom, u školjci**, oko celog ekrana modula. Da svaki modul
+dodaje svoj, sledeći napisani bi ga opet zaboravio — a to se i vidi po tome što ga
+je od devet modula imao samo jedan, i to posredno preko zona.
+
+`EyesFreeControls` je zato prestao da ga dodaje sam: razmak bi se udvostručio tamo
+gde ga školjka već daje.
+
 ### Početni ekran je sklopljen
 
 Devet kartica sa po pet blokova — opis, veštine, birač zadatka, birač oslonca i

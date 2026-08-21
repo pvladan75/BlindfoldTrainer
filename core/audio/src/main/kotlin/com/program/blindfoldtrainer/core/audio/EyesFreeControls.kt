@@ -18,9 +18,6 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -179,11 +176,9 @@ fun EyesFreeControls(
         if (isListening) buzz(Buzz.LONG)
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.safeDrawing)
-    ) {
+    // Sistemske trake **više ne obrađuje ova komponenta** nego školjka, oko celog
+    // ekrana modula — inače bi se razmak udvostručio tamo gde ga školjka već daje.
+    Column(modifier = modifier.fillMaxSize()) {
         if (microphone != null) {
             val unavailable = microphone.voiceState as? VoiceState.Unavailable
             Zone(

@@ -1,5 +1,11 @@
 package com.program.blindfoldtrainer.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -311,6 +317,20 @@ fun AppNavigation(registry: ModuleRegistry) {
 
             var result by remember { mutableStateOf<SessionResult?>(null) }
 
+            // **Sistemske trake se poštuju ovde, jednom za sve module.**
+            //
+            // `enableEdgeToEdge()` pušta sadržaj ispod sata i ispod navigacione
+            // trake, a to je dobro — pozadina ide do ivice. Ali ekran koji nema
+            // `Scaffold` mora sam da se skloni, a ekrani modula ga nemaju: brojači
+            // su ulazili u sat i ikonice, a dugmad u navigacionu traku.
+            //
+            // Stoji na jednom mestu jer je i propust bio jedan: da svaki modul
+            // dodaje svoje, sledeći napisani bi ga opet zaboravio.
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+            ) {
             module.Screen(
                 args = ModuleArgs(
                     difficulty = difficulty,
@@ -368,6 +388,7 @@ fun AppNavigation(registry: ModuleRegistry) {
                         onBackToMenu = backToMenu
                     )
                 }
+            }
             }
         }
     }
