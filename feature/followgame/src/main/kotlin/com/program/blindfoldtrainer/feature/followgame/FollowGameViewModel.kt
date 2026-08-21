@@ -90,11 +90,14 @@ internal data class Setup(val questionCount: Int, val plyGap: Int)
 /**
  * Šta težina znači: **na koliko poteza stiže pitanje**.
  *
+ * Reč „pitanje" se ne ponavlja na sva tri dugmeta — ono što se menja je broj, a
+ * ono što se ponavlja samo lomi red.
+ *
  * Razmak se u kodu meri polupotezima, a čoveku se kaže u potezima — u partiji se
  * broje potezi, ne polupotezi.
  */
 internal fun difficultyDetailOf(difficulty: Difficulty): String =
-    "pitanje na ${quantity(setupFor(difficulty).plyGap / 2, "potez", "poteza")}"
+    "na ${quantity(setupFor(difficulty).plyGap / 2, "potez", "poteza")}"
 
 internal fun setupFor(difficulty: Difficulty) = when (difficulty) {
     Difficulty.EASY -> Setup(questionCount = 5, plyGap = 4)

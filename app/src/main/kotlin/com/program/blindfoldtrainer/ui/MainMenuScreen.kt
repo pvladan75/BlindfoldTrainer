@@ -602,8 +602,12 @@ private fun ModuleCard(
                         contentPadding = PaddingValues(vertical = 10.dp, horizontal = 8.dp),
                         modifier = Modifier.weight(1f)
                     ) {
+                        // Manji slog nego kod običnog dugmeta: ovde ne stoji ime
+                        // nego **podatak**, a „20 polja · 3,5 s" se u trećini
+                        // ekrana inače lomi tako da „s" ostane samo u drugom redu.
                         Text(
                             text = detail ?: stringResource(difficulty.labelRes()),
+                            style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.SemiBold,
                             textAlign = TextAlign.Center
                         )

@@ -281,8 +281,9 @@ internal fun difficultyDetailOf(difficulty: Difficulty, taskId: String?): String
     // Gde figura ulazi u težinu, ona je i vest — broj poteza uz nju kaže manje.
     return when (task) {
         MovementTask.REACH -> when {
-            PieceType.KNIGHT in pieces -> "i skakač"
-            PieceType.QUEEN in pieces -> "i dama"
+            // Plus, a ne „i": dugme stoji samo za sebe, pa veznik nema uz šta.
+            PieceType.KNIGHT in pieces -> "+ skakač"
+            PieceType.QUEEN in pieces -> "+ dama"
             else -> "top i lovac"
         }
 
