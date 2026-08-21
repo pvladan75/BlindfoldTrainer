@@ -37,6 +37,28 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### Zapisano: vežba se i ležeći
+
+Osnovna zamisao od koje je sve krenulo, a koja je usput ispala iz rečnika iako
+**nije ispala iz koda**:
+
+> Dva načina rada. Prvi — gledaš u ekran. Drugi — **ne gledaš**, a dugmad su
+> dovoljno velika da ih pogodiš i dok ležiš.
+
+Zbog toga zone i izgledaju kako izgledaju: pola visine ekrana glavnoj zoni, svaka
+sa svojom vibracijom, portret zaključan, prst se **ne cilja nego spusti**. Sve to
+već piše uz `EyesFreeControls`, samo nigde ne piše **zašto** — pa se čita kao
+pristupačnost, a zamisao je bila položaj tela.
+
+**Koncept i dalje radi u sedam od devet modula.** Ne rade samo dva, i oba s
+razlogom: „Zapamti poziciju" i „Postavi po diktatu" traže tablu jer se figure
+vraćaju na polja. Uz to je „Prepričaj putanju" prvi zadatak koji svesno traži
+oči — tamo je tabla pitanje.
+
+Ovo mora u **pedagoško-psihološki tekst uz objavu** (stavka 0 niže): mogućnost da
+se vežba zatvorenih očiju, ležeći, bez ičega u rukama, nije sporedna zgodnost nego
+pola razloga zašto ova aplikacija postoji.
+
 ### Kartica je pisala jedno a pokretala drugo
 
 Sa uređaja: Geometrija sa izabranim „uz tablu" pokrenula se **bez table**.
