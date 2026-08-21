@@ -231,7 +231,7 @@
     <string name="support_none">bez table</string>
     <!-- Uputstvo: duži opis po veštini. Rečenica iz `_hint` kaže šta je; ovo kaže
          kako izgleda kad otkaže, jer se po tome i prepoznaje. -->
-    <string name="skill_coordinates_guide">Ako moraš da izbrojiš da bi znao da je e4 tamno polje, znaš tačan odgovor a i dalje ti nedostaje veština. Ovde se ne meri da li znaš, nego koliko te košta. Otkazuje tiho: sve je tačno, samo se sve ostalo raspada, jer pažnja koja broji polja ne drži poziciju.</string>
+    <string name="skill_coordinates_guide">Ako moraš da izbrojiš da bi znao da je e4 svetlo polje, znaš tačan odgovor a i dalje ti nedostaje veština. Ovde se ne meri da li znaš, nego koliko te košta. Otkazuje tiho: sve je tačno, samo se sve ostalo raspada, jer pažnja koja broji polja ne drži poziciju.</string>
     <string name="skill_piece_geometry_guide">Sa datog polja odmah vidiš dokle figura seže — bez nabrajanja polje po polje. Skakač je granica: kod njega se najbolje vidi da li domet zaista vidiš ili ga svaki put iznova računaš. Otkazuje tako što ti se za svaki potez traži trenutak previše.</string>
     <string name="skill_position_hold_guide">Veze figura–polje stoje stabilno dok ništa ne pomeraš. Otkazuje curenjem, ne padom: figura tiho nestane iz slike, a ti to ne primetiš — jer da si primetio, vratio bi je. Zato se meri koliko ih izdrži, a ne da li ih znaš.</string>
     <string name="skill_position_update_guide">Ovo je usko grlo, ne držanje. Statična pozicija se pamti relativno lako; slika se kvari pri promeni, jer svaki potez nosi novu priliku da nešto ispadne, a greške se ne poništavaju nego slažu. Otkazuje tako što prvih deset poteza ide savršeno, a onda odjednom ništa ne stoji.</string>
