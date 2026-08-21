@@ -37,6 +37,36 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### Napredak je sklopljen, i tri sitnice sa ekrana
+
+Sa uređaja je stiglo da je Napredak **presložen za snalaženje**, i to dok podataka
+ima malo.
+
+**Veština je sklopljena po zatečenom.** Rasklopljena, jedna ume da zauzme ceo
+ekran: po zadatku trend, dubina, pa za svaku prečku traka, orijentir i kriva. Ko
+otvori Napredak pita „gde stojim", a to je jedan red po zadatku — ime i prečka
+koju drži. Ostalo stoji iza jednog dodira. Isti postupak kao na kartici modula.
+
+**Dugmad težine više ne pišu „Lako, srednje, teško".** Redosled se ionako vidi iz
+toga što stoje s leva na desno, pa je ime bilo jedini red koji ne govori ništa.
+Ostaje samo šta težina znači; modul koji se nije izjasnio i dalje dobija opšte ime.
+
+#### Navodnici su nestajali sa ekrana
+
+„Prevod zapisa u sliku" je pisao **`Čuješ „g1 f3 i vidiš`** — bez zatvorenog
+navodnika. U resursu je stajao ispravno, ali Android **briše neescape-ovan ASCII
+navodnik** iz stringa; otvoreni `„` je preživeo jer je drugi znak. Pogođeno je
+bilo **20 mesta**, po celom uputstvu i podešavanjima.
+
+Ispravljeno tako što zatvoreni navodnik postaje `"` (U+201C) — i preživljava i
+tipografski je tačan za srpski.
+
+#### Provera jeste podatak
+
+Kartica veštine je uz **nivo 5/5** ispisivala „veština o kojoj još nema podatka".
+Rečenica se birala samo po tome ima li vežbi, a nivo dolazi iz provere. Sad se
+gleda oboje.
+
 ### „Interaktivni parovi" su postali „Raskini vezu"
 
 Ime je štrčalo među ostalima — sva druga imenuju radnju ili cilj, a

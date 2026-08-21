@@ -578,11 +578,13 @@ private fun ModuleCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 module.difficulties.forEach { difficulty ->
-                    // **Šta težina znači** stoji na samom dugmetu, ispod imena.
-                    // „Lako, srednje, teško" kaže samo redosled, a ne i cenu: u
-                    // Putanji skakača je to razlika između dva i četiri skoka.
-                    // Ime ostaje iznad, jer se po njemu i dalje zna šta je teže —
-                    // sam broj to ne kaže onome ko modul otvara prvi put.
+                    // Na dugmetu piše **šta težina znači**, a ne kako se zove.
+                    // „Lako, srednje, teško" kaže samo redosled — a redosled se
+                    // ionako vidi iz toga što dugmad stoje s leva na desno, od
+                    // najlakšeg. Ime je tako bilo jedini red koji ne govori ništa.
+                    //
+                    // Modul koji se nije izjasnio i dalje dobija opšte ime: bolje
+                    // slaba oznaka nego prazno dugme.
                     val detail = module.difficultyDetail(difficulty, shownTask)
 
                     FilledTonalButton(
@@ -600,20 +602,11 @@ private fun ModuleCard(
                         contentPadding = PaddingValues(vertical = 10.dp, horizontal = 8.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = stringResource(difficulty.labelRes()),
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            if (detail != null) {
-                                Text(
-                                    text = detail,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    textAlign = TextAlign.Center,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
+                        Text(
+                            text = detail ?: stringResource(difficulty.labelRes()),
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             }

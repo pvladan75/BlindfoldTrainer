@@ -1,5 +1,6 @@
 package com.program.blindfoldtrainer.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -8,11 +9,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -24,7 +28,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -143,6 +150,8 @@ private fun SkillCard(
     specFor: (String) -> TaskSpec?,
     sessionsFor: (String, Support) -> List<SkillEntry>
 ) {
+    var expanded by remember(skill) { mutableStateOf(false) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -197,9 +206,17 @@ private fun SkillCard(
 
             Spacer(Modifier.height(6.dp))
 
+            // „Još nema podatka" važi samo kad ga zaista nema. Uz nivo iz provere
+            // je kartica govorila oba: **nivo 5/5** i ispod njega „veština o kojoj
+            // se još ne zna". Provera jeste podatak, i to jedini koji je svima
+            // jednak — vežba daje napredak, provera daje nivo.
             Text(
                 text = stringResource(
-                    if (profile == null) R.string.progress_not_measured_hint else skill.hintRes()
+                    if (profile == null && checkup == null) {
+                        R.string.progress_not_measured_hint
+                    } else {
+                        skill.hintRes()
+                    }
                 ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -230,16 +247,59 @@ private fun SkillCard(
             // Po jedan odeljak za svaki zadatak. Zbir preko zadataka namerno ne
             // postoji: pitanje u Geometriji i pozicija u Završnici su oba „jedan
             // pokušaj", a nemaju ni istu cenu ni istu težinu.
-            profile?.tasks?.forEach { (taskId, task) ->
-                Spacer(Modifier.height(14.dp))
-                TaskRows(
-                    taskId = taskId,
-                    task = task,
-                    trend = trendFor(taskId),
-                    depth = depthFor(taskId),
-                    spec = specFor(taskId),
-                    sessionsFor = { rung -> sessionsFor(taskId, rung) }
-                )
+            //
+            // **Sklopljeno po zatečenom.** Rasklopljeno, jedna veština ume da
+            // zauzme ceo ekran — po zadatku ide trend, dubina, pa za svaku prečku
+            // traka, orijentir i kriva. Ko otvori Napredak pita „gde stojim", a to
+            // je jedan red po zadatku; ostalo je za onoga ko je već stao i gleda.
+            // Isti postupak kao na kartici modula.
+            val tasks = profile?.tasks.orEmpty()
+
+            if (tasks.isNotEmpty()) {
+                Spacer(Modifier.height(12.dp))
+
+                tasks.forEach { (taskId, task) ->
+                    if (expanded) {
+                        Spacer(Modifier.height(14.dp))
+                        TaskRows(
+                            taskId = taskId,
+                            task = task,
+                            trend = trendFor(taskId),
+                            depth = depthFor(taskId),
+                            spec = specFor(taskId),
+                            sessionsFor = { rung -> sessionsFor(taskId, rung) }
+                        )
+                    } else {
+                        Spacer(Modifier.height(6.dp))
+                        TaskHeader(taskId = taskId, task = task)
+                    }
+                }
+
+                Spacer(Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { expanded = !expanded }
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.progress_details),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Icon(
+                        imageVector = if (expanded) {
+                            Icons.Default.KeyboardArrowUp
+                        } else {
+                            Icons.Default.KeyboardArrowDown
+                        },
+                        contentDescription = stringResource(R.string.progress_details),
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
 
             if (isWeakest) {
@@ -259,15 +319,15 @@ private fun SkillCard(
     }
 }
 
+/**
+ * Ime zadatka i **prečka koju drži** — jedini red koji se vidi dok je veština
+ * sklopljena.
+ *
+ * To je i odgovor na pitanje zbog kog se Napredak otvara: ne koliko si pokušaja
+ * imao, nego dokle si stigao.
+ */
 @Composable
-private fun TaskRows(
-    taskId: String,
-    task: TaskProfile,
-    trend: SkillTrend?,
-    depth: Depth?,
-    spec: TaskSpec?,
-    sessionsFor: (Support) -> List<SkillEntry>
-) {
+private fun TaskHeader(taskId: String, task: TaskProfile) {
     val held = task.heldRung()
 
     Row(
@@ -291,6 +351,18 @@ private fun TaskRows(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
+}
+
+@Composable
+private fun TaskRows(
+    taskId: String,
+    task: TaskProfile,
+    trend: SkillTrend?,
+    depth: Depth?,
+    spec: TaskSpec?,
+    sessionsFor: (Support) -> List<SkillEntry>
+) {
+    TaskHeader(taskId = taskId, task = task)
 
     TaskTrend(trend)
 
