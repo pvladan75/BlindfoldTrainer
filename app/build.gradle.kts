@@ -65,6 +65,7 @@ dependencies {
     implementation(project(":feature:recall"))
     implementation(project(":feature:followgame"))
     implementation(project(":feature:dictation"))
+    implementation(project(":feature:movement"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

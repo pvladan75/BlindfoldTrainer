@@ -116,6 +116,56 @@ interface SpeechPhrases {
 
     fun inMoves(moves: Int): String
 
+    // — Kretanje figura —
+
+    /** „Šetnja lovcem sa" — najava, iza koje ide polazno polje. */
+    fun walkWith(piece: String): String
+
+    /** Figura tako ne ide. Ovo i [walkVisited] su **dva različita** promašaja. */
+    fun walkIllegal(piece: String): String
+
+    /** Potez je legalan, ali je polje već potrošeno. */
+    val walkVisited: String
+
+    /** Nema više nepotrošenih polja. Kraj šetnje, ne pad. */
+    val walkStuck: String
+
+    /** „Sad kao top" — dama se smenjuje, pa se red mora znati. */
+    val walkAsRook: String
+    val walkAsBishop: String
+
+    /** Čitanje stanja: čime se ide, gde stojiš, koliko je ostalo. */
+    fun walkStandsOn(piece: String): String
+
+    fun walkHeld(moves: Int): String
+
+    /** „Lovac na e5" — pitanje o dometu, iza njega ide polje. */
+    fun reachPieceOn(piece: String): String
+
+    /** „Koja polja na b-liniji?" */
+    fun reachWhichOnFile(file: String): String
+
+    /** „Koja polja u 7. redu?" */
+    fun reachWhichOnRank(rank: Int): String
+
+    /** Odgovor je primljen; iza njega ide spisak polja, ili [reachNone]. */
+    val reachYouSaid: String
+
+    /** Nijedno polje — i kao odgovor korisnika i kao istina. */
+    val reachNone: String
+
+    /** Istina posle promašaja; iza nje ide spisak polja ili [reachNone]. */
+    val reachTruthIs: String
+
+    /**
+     * Kako se uopšte odgovara. Kaže se **jednom, na početku sesije**.
+     *
+     * Bez ovoga se pravilo „govori kad aplikacija ućuti" nema odakle saznati, a
+     * to je jedino pravilo koje ceo modul ima.
+     */
+    val walkHowTo: String
+    val reachHowTo: String
+
     // — Prati partiju —
 
     val gameReady: String
@@ -281,6 +331,38 @@ internal object EnglishPhrases : SpeechPhrases {
     override val toSquare = "to"
 
     override fun inMoves(moves: Int) = if (moves == 1) "in 1 move" else "in $moves moves"
+
+    override fun walkWith(piece: String) = "Walk with the $piece from"
+
+    override fun walkIllegal(piece: String) = "A $piece does not go there."
+
+    override val walkVisited = "You have been there already."
+
+    override val walkStuck = "No square left. The walk ends here."
+
+    override val walkAsRook = "Now as a rook."
+    override val walkAsBishop = "Now as a bishop."
+
+    override fun walkStandsOn(piece: String) = "The $piece stands on"
+
+    override fun walkHeld(moves: Int) =
+        if (moves == 1) "One move so far." else "$moves moves so far."
+
+    override fun reachPieceOn(piece: String) = "The $piece is on"
+
+    override fun reachWhichOnFile(file: String) = "Which squares on the $file file?"
+
+    override fun reachWhichOnRank(rank: Int) = "Which squares on rank $rank?"
+
+    override val reachYouSaid = "You said"
+
+    override val reachNone = "none"
+
+    override val reachTruthIs = "It reaches"
+
+    override val walkHowTo = "Touch the microphone, then say one square."
+
+    override val reachHowTo = "Touch the microphone for each square, then touch done."
 
     override val gameReady = "The game is ready. Touch for the first move."
 

@@ -45,5 +45,6 @@ include(":feature:check")
 include(":feature:recall")
 include(":feature:followgame")
 include(":feature:dictation")
+include(":feature:movement")
 
 include(":app")

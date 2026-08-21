@@ -37,7 +37,16 @@ enum class ModuleId(val key: String) {
      * Pozicija se izgovara, a slaže se na tabli. Jedini modul koji ide **od
      * zapisa ka slici u glavi**; ostali idu obrnuto.
      */
-    DICTATION("dictation");
+    DICTATION("dictation"),
+
+    /**
+     * Jedna figura po **praznoj tabli**: dokle dohvata, i kuda može da prošeta
+     * bez vraćanja na polje.
+     *
+     * Jedini modul bez pozicije. Zato je i jedini koji nema nijednu prečku sa
+     * tablom — uz tablu bi se odgovor pročitao umesto izračunao.
+     */
+    MOVEMENT("movement");
 
     companion object {
         fun fromKey(key: String): ModuleId? = entries.find { it.key == key }

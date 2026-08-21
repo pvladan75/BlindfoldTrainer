@@ -116,5 +116,8 @@ internal fun taskLabelRes(taskId: String): Int = when (taskId) {
     "play_out" -> R.string.task_play_out
     "reconstruct" -> R.string.task_reconstruct
     "place_position" -> R.string.task_place_position
+    "reach_on_line" -> R.string.task_reach_on_line
+    "walk_piece" -> R.string.task_walk_piece
+    "walk_knight" -> R.string.task_walk_knight
     else -> R.string.task_unknown
 }
