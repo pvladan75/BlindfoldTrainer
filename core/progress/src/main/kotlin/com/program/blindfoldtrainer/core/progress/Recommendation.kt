@@ -30,7 +30,16 @@ enum class Reason {
     FOUNDATION,
 
     /** Ono što ide dobro — da predlog ne bude uvek najgore mesto. */
-    STRENGTH
+    STRENGTH,
+
+    /**
+     * **Savladano a zapušteno** — ide se da se potvrdi da još stoji.
+     *
+     * Savladano nije završeno: naslepo vene brže nego što se stiče. Bez ovog
+     * razloga bi put uvek išao ka najslabijem i tiho puštao da najjače propada, a
+     * to bi se otkrilo tek na pravoj partiji.
+     */
+    UPKEEP
 }
 
 /**
@@ -78,6 +87,9 @@ data class Recommendation(
  * [lastTaskId] je zadatak poslednje **vežbe** (ne provere); `null` ako je vežbe
  * još nema.
  *
+ * [nowMillis] služi samo za **održavanje**: jedino ono broji dane, jer pita
+ * koliko dugo veština nije dodirnuta, a za to pokušaji ne kažu ništa.
+ *
  * [difficultiesFor] kaže koje težine modul tog zadatka uopšte nudi. Stiže kao
  * funkcija a ne kao polje na [TaskSpec] jer težine deklariše **modul**, a ovaj
  * sloj module ne poznaje — i ne treba da ih poznaje. Zatečeno je „sve tri", što
@@ -86,11 +98,18 @@ data class Recommendation(
 fun ProgressSnapshot.recommend(
     tasks: List<TaskSpec>,
     lastTaskId: String? = null,
+    nowMillis: Long = System.currentTimeMillis(),
     difficultiesFor: (String) -> List<Difficulty> = { Difficulty.entries }
 ): Recommendation? {
     if (tasks.isEmpty()) return null
 
     val candidates = tasks.filterNot { it.id == lastTaskId }.ifEmpty { tasks }
+
+    // **Održavanje ide pre svega ostalog.** Ne zato što je preče od najslabijeg,
+    // nego zato što je jedino sa rokom: slabo mesto će sačekati sledeći put, a
+    // zapušteno u međuvremenu propada dalje. Kad ničega zapuštenog nema — a to je
+    // najveći deo vremena — pravilo se i ne oseti.
+    upkeepFor(candidates, nowMillis)?.let { return it }
 
     // Orijentiri stižu iz istog spiska zadataka koji se i predlaže — bez njih se
     // ne zna šta je „brzo", pa ni šta je temelj koji drži.
@@ -122,6 +141,35 @@ fun ProgressSnapshot.recommend(
             isUnautomaticFoundation(chosen.measures, benchmarks) -> Reason.FOUNDATION
             else -> Reason.WEAKEST
         }
+    )
+}
+
+/**
+ * Predlog da se potvrdi **savladano a zapušteno**, ili `null` ako takvog nema.
+ *
+ * Ide se na **najtežu prečku** koju veština drži: potvrda na lakšoj ne dokazuje
+ * ništa o onome što je tvrdnja. Ako padne, nivo sam spada na nižu prečku —
+ * `levelOf` gleda skorašnje pokušaje, pa se ništa ne mora posebno „vraćati u
+ * cilj"; veština se prosto opet nađe među slabima.
+ */
+private fun ProgressSnapshot.upkeepFor(
+    candidates: List<TaskSpec>,
+    nowMillis: Long
+): Recommendation? {
+    val skill = staleMastery(candidates, nowMillis).firstOrNull() ?: return null
+    val ceiling = levelOf(skill, candidates).ceiling ?: return null
+
+    val task = candidates.filter { it.measures == skill }
+        .maxByOrNull { it.hardest.ordinal } ?: return null
+
+    return Recommendation(
+        skill = skill,
+        taskId = task.id,
+        support = task.nearestSupport(ceiling),
+        // Težinu bira školjka po zatečenom pravilu: održavanje ne menja koliko
+        // je vežba duga, nego samo šta se vežba.
+        difficulty = null,
+        reason = Reason.UPKEEP
     )
 }
 

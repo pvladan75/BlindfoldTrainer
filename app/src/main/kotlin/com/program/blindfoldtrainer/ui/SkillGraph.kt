@@ -308,20 +308,23 @@ private fun orderedFloors(): List<List<Skill>> {
  * Oko osam odsto muškaraca slabije razlikuje boje, i to se ne popravlja biranjem
  * „boljih" nijansi.
  *
- * Zato se hue više ne koristi kao podatak. Nosi ga **svetlina**, koja se vidi bez
- * obzira na vrstu daltonizma, a uz nju idu još dva kanala: **debljina ivice** i
- * **kvačica** na savladanom. Ko boje razaznaje, vidi isto što i pre; ko ne, i
- * dalje čita sliku.
+ * Zato hue više nije **jedini** nosilac. Svetlina raste kroz sva četiri stanja i
+ * vidi se bez obzira na vrstu daltonizma; boja se razlikuje uz nju, za onoga ko
+ * je razaznaje; a uz to idu još dva kanala — **debljina ivice** i **kvačica** na
+ * savladanom. Nijedan podatak ne visi ni o jednom kanalu sam.
  */
 @Composable
 private fun stageFills(): Map<SkillStage, Color> {
     val accent = MaterialTheme.colorScheme.primary
+    val other = MaterialTheme.colorScheme.tertiary
     val idle = MaterialTheme.colorScheme.surfaceVariant
     return mapOf(
         SkillStage.NOT_MEASURED to idle,
         SkillStage.UNTRIED to idle,
-        SkillStage.STARTED to accent.copy(alpha = 0.30f),
-        SkillStage.HOLDING to accent.copy(alpha = 0.65f),
+        // Druga boja, ali i dalje najsvetlije od tri — ko boje razaznaje dobija
+        // jasnu razliku, ko ne, i dalje ima svetlinu koja raste.
+        SkillStage.STARTED to other.copy(alpha = 0.40f),
+        SkillStage.HOLDING to accent.copy(alpha = 0.70f),
         SkillStage.MASTERED to accent
     )
 }

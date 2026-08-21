@@ -87,11 +87,8 @@ fun ProgressSnapshot.levelOf(skill: Skill, tasks: List<TaskSpec>): SkillLevel {
     // se na toj prečki pokaže u jednom, jer bi traženje svih kažnjavalo modul sa
     // više zadataka.
     val held = measuring.flatMap { spec ->
-        val task = profile.byTask[spec.id] ?: return@flatMap emptyList()
-        spec.supports.filter { rung ->
-            val benchmark = spec.benchmarkFor(rung) ?: return@filter false
-            task.hasReached(rung, benchmark)
-        }
+        if (profile.byTask[spec.id] == null) return@flatMap emptyList()
+        spec.supports.filter { rung -> holdsAt(skill, spec, rung) }
     }.maxByOrNull { it.ordinal }
 
     return when {
@@ -100,6 +97,89 @@ fun ProgressSnapshot.levelOf(skill: Skill, tasks: List<TaskSpec>): SkillLevel {
         else -> SkillLevel(SkillStage.HOLDING, holds = held, ceiling = ceiling)
     }
 }
+
+/**
+ * Da li se orijentir drži **sada**, po skorašnjim pokušajima.
+ *
+ * `TaskProfile.hasReached` gleda **sve od pamtiveka**, i to je za trajni zbir
+ * ispravno — ali kao nivo bi značilo da se savladano jednom osvoji zauvek.
+ * Naslepo vene brže nego što se stiče: ko je pre dva meseca držao bez table, a
+ * otad ne, i dalje bi na ekranu stajao kao savladan.
+ *
+ * Prozor je **po broju pokušaja, ne po danima** — isto pravilo po kom se računa i
+ * trend. „Poslednjih deset dana" je prazno kod onoga ko vežba dvaput nedeljno, a
+ * baš njemu mera najviše treba. Uzima se onoliko poslednjih sesija koliko treba
+ * da se skupi [WINDOW_ATTEMPTS] pokušaja; ispod [MIN_ATTEMPTS] se ne tvrdi ništa.
+ */
+fun ProgressSnapshot.holdsAt(skill: Skill, task: TaskSpec, rung: Support): Boolean {
+    val benchmark = task.benchmarkFor(rung) ?: return false
+
+    var attempted = 0
+    var solved = 0
+    var millis = 0L
+
+    for (entry in sessionsFor(skill, task.id, rung).asReversed()) {
+        attempted += entry.tally.attempted
+        solved += entry.tally.solved
+        millis += entry.tally.millis
+        if (attempted >= WINDOW_ATTEMPTS) break
+    }
+
+    if (attempted < MIN_ATTEMPTS) return false
+
+    val perAttempt = millis / attempted
+    val accuracy = solved.toFloat() / attempted
+
+    return perAttempt <= benchmark.millisPerAttempt && accuracy >= benchmark.minAccuracy
+}
+
+/**
+ * Veštine koje su **savladane a zapuštene** — vreme im je da se potvrde.
+ *
+ * Savladano nije završeno. Bez ovoga bi put uvek išao ka najslabijem i tiho
+ * puštao da najjače propada, a to bi se otkrilo tek na pravoj partiji.
+ *
+ * Ovde se **dani ipak broje**, i to je jedino mesto gde smeju: pitanje nije
+ * koliko si dobro radio nego koliko dugo nisi. Za to pokušaji ne kažu ništa — ko
+ * mesec dana nije dodirnuo veštinu nema ni jedan pokušaj da se izbroji.
+ *
+ * Vraća zapuštene veštine, od **najduže zapuštene** naniže.
+ */
+fun ProgressSnapshot.staleMastery(
+    tasks: List<TaskSpec>,
+    nowMillis: Long,
+    afterDays: Int = UPKEEP_DAYS
+): List<Skill> = Skill.entries
+    .mapNotNull { skill ->
+        val level = levelOf(skill, tasks)
+        if (level.stage != SkillStage.MASTERED) return@mapNotNull null
+
+        val ceiling = level.ceiling ?: return@mapNotNull null
+        val last = tasks.filter { it.measures == skill }
+            .flatMap { sessionsFor(skill, it.id, ceiling) }
+            .maxOfOrNull { it.atMillis } ?: return@mapNotNull null
+
+        val idleDays = (nowMillis - last) / DAY_MILLIS
+        if (idleDays < afterDays) null else skill to idleDays
+    }
+    .sortedByDescending { (_, idleDays) -> idleDays }
+    .map { (skill, _) -> skill }
+
+/** Koliko se pokušaja gleda unazad kad se pita drži li se orijentir sada. */
+private const val WINDOW_ATTEMPTS = 16
+
+/** Ispod ovoliko pokušaja se ne tvrdi ni da drži ni da ne drži. */
+private const val MIN_ATTEMPTS = 8
+
+/**
+ * Posle koliko dana savladana veština traži potvrdu.
+ *
+ * Prvi predlog, kao i orijentiri. Dovoljno dugo da se ne upada u proveru posle
+ * svake druge sesije, dovoljno kratko da se propadanje uhvati pre partije.
+ */
+const val UPKEEP_DAYS = 10
+
+private const val DAY_MILLIS = 24L * 60 * 60 * 1000
 
 /**
  * Kojim zadatkom i na kojoj prečki se ova veština **sad gradi**.

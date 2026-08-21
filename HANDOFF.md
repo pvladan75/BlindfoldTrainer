@@ -37,6 +37,63 @@ Reč **„prečka" je izašla iz teksta koji korisnik vidi**; zove se **oslonac*
 fajl je zadržava, jer se u kodu i komentarima još tako zove — vidi „Šta je ostalo
 otvoreno".
 
+### Održavanje: savladano više ne stoji zauvek
+
+Poslednji deo puta koji je godinama stajao samo kao rečenica u ovom fajlu —
+*„Savladano nije završeno"* — sad postoji u kodu.
+
+#### Prvo je moralo da postane gubivo
+
+`TaskProfile.hasReached` gleda **sve od pamtiveka**, i to je za trajni zbir
+ispravno. Ali kao nivo je značilo da se savladano jednom osvoji **zauvek**: ko je
+pre dva meseca držao bez table a otad ne, i dalje bi na ekranu stajao kao
+savladan. Održavanje bi tada bilo besmisleno, jer nema šta da padne.
+
+`ProgressSnapshot.holdsAt` zato gleda **skorašnje pokušaje**: uzima onoliko
+poslednjih sesija koliko treba da se skupi 16 pokušaja. Prozor je po broju
+pokušaja a ne po danima, isto pravilo po kom se računa i trend — „poslednjih
+deset dana" je prazno kod onoga ko vežba dvaput nedeljno.
+
+Isti račun sad koristi i red **„orijentir dostignut"** na kartici. Dok je gore
+stajao skorašnji prozor a dole trajni zbir, kartica je umela da kaže „u
+izgradnji" i „orijentir dostignut" jedno ispod drugog.
+
+#### Dani se broje samo ovde
+
+`staleMastery` je **jedino mesto u aplikaciji gde se broje dani**, i to sa
+razlogom: pitanje nije koliko si dobro radio nego koliko dugo **nisi**. Za to
+pokušaji ne kažu ništa — ko mesec dana nije dodirnuo veštinu nema nijedan
+pokušaj da se izbroji.
+
+Prag je **10 dana**, prvi predlog kao i orijentiri.
+
+#### `Reason.UPKEEP` ide pre svega ostalog
+
+Ne zato što je preče od najslabijeg, nego zato što je **jedino sa rokom**: slabo
+mesto će sačekati sledeći put, a zapušteno u međuvremenu propada dalje. Kad
+ničega zapuštenog nema — a to je najveći deo vremena — pravilo se i ne oseti.
+
+Potvrda ide na **najtežu prečku** koju veština drži; na lakšoj ne bi dokazala
+ništa o onome što je tvrdnja. Ako padne, **ništa se ne mora posebno vraćati u
+cilj**: `levelOf` gleda skorašnje pokušaje, pa se veština prosto opet nađe među
+slabima i redovan izbor je pokupi.
+
+#### Testovi su morali da dobiju sat
+
+Postojeći testovi preporuke koriste lažni sat koji kreće od miliona milisekundi,
+dakle od 1970. Čim je održavanje uvedeno, svaka savladana veština u njima je bila
+„zapuštena tri decenije" i pravilo je progutalo svaki drugi predlog — jedan test
+je odmah pao i tako to i prijavio. Sad idu kroz pomoćnik koji kaže da je „sad"
+odmah posle poslednje sesije; vreme je predmet testa samo tamo gde piše da jeste.
+
+#### Boje: i hue i svetlina
+
+Po povratnoj informaciji, hue je vraćen **uz** svetlinu umesto umesto nje. Stanja
+se sad razlikuju po četiri kanala odjednom — boji, svetlini, debljini ivice i
+kvačici na savladanom — pa nijedan podatak ne visi ni o jednom od njih sam.
+
+**405 testova, nijedan ne pada. Nije viđeno na uređaju.**
+
 ### Nivo veštine je konačno jedan pojam
 
 Do sada su o istoj stvari govorila **tri različita broja**: nivo iz provere

@@ -178,6 +178,7 @@
     <string name="reason_never_tried">Ovo još nisi probao — o njemu se ne zna ništa.</string>
     <string name="reason_weakest">Trenutno ti ide najteže.</string>
     <string name="reason_foundation">Temelj za ostale veštine; dok on ne postane automatski, iznad njega ide sporo.</string>
+    <string name="reason_upkeep">Ovo si savladao, ali odavno nisi radio — da vidimo drži li još.</string>
     <string name="reason_strength">Ovo ti ide dobro — neka i tako bude ponekad.</string>
 
     <string name="checkup_title">Provera</string>

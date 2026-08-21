@@ -48,6 +48,7 @@ import com.program.blindfoldtrainer.core.progress.SkillEntry
 import com.program.blindfoldtrainer.core.progress.SkillLevel
 import com.program.blindfoldtrainer.core.progress.SkillProfile
 import com.program.blindfoldtrainer.core.progress.SkillStage
+import com.program.blindfoldtrainer.core.progress.holdsAt
 import com.program.blindfoldtrainer.core.progress.levelOf
 import com.program.blindfoldtrainer.core.progress.practiceFor
 import com.program.blindfoldtrainer.core.progress.TaskProfile
@@ -153,6 +154,7 @@ fun ProgressScreen(
                     trendFor = { taskId -> progress.trendFor(skill, taskId) },
                     depthFor = { taskId -> progress.depthFor(taskId) },
                     specFor = { taskId -> tasks[taskId] },
+                    holdsAt = { spec, rung -> progress.holdsAt(skill, spec, rung) },
                     sessionsFor = { taskId, rung -> progress.sessionsFor(skill, taskId, rung) }
                 )
             }
@@ -182,6 +184,8 @@ private fun SkillCard(
     trendFor: (String) -> SkillTrend?,
     depthFor: (String) -> Depth?,
     specFor: (String) -> TaskSpec?,
+    /** Drži li se orijentir **sada** — isto merilo po kom se računa i naslov. */
+    holdsAt: (TaskSpec, Support) -> Boolean,
     sessionsFor: (String, Support) -> List<SkillEntry>
 ) {
     var expanded by remember(skill) { mutableStateOf(false) }
@@ -325,6 +329,7 @@ private fun SkillCard(
                             trend = trendFor(taskId),
                             depth = depthFor(taskId),
                             spec = specFor(taskId),
+                            holdsAt = holdsAt,
                             sessionsFor = { rung -> sessionsFor(taskId, rung) }
                         )
                     } else {
@@ -454,6 +459,7 @@ private fun TaskRows(
     trend: SkillTrend?,
     depth: Depth?,
     spec: TaskSpec?,
+    holdsAt: (TaskSpec, Support) -> Boolean,
     sessionsFor: (Support) -> List<SkillEntry>
 ) {
     TaskHeader(taskId = taskId, task = task)
@@ -498,7 +504,10 @@ private fun TaskRows(
         if (benchmark != null) {
             Spacer(Modifier.height(4.dp))
             Text(
-                text = if (task.hasReached(rung, benchmark)) {
+                // **Isto merilo kao naslov kartice.** Dok je ovde stajao trajni
+                // zbir a gore skorašnji prozor, kartica je umela da kaže „u
+                // izgradnji" i „orijentir dostignut" jedno ispod drugog.
+                text = if (holdsAt(spec, rung)) {
                     stringResource(R.string.progress_target_reached)
                 } else {
                     // Orijentir se kaže i pre nego što je dostignut — cilj koji

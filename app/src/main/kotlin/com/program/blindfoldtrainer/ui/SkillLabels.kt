@@ -96,6 +96,7 @@ internal fun Reason.labelRes(): Int = when (this) {
     Reason.WEAKEST -> R.string.reason_weakest
     Reason.FOUNDATION -> R.string.reason_foundation
     Reason.STRENGTH -> R.string.reason_strength
+    Reason.UPKEEP -> R.string.reason_upkeep
 }
 
 /**
