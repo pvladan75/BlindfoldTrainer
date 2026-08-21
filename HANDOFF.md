@@ -27,6 +27,16 @@ poslednjeg probanja.
 
 ## Gde smo stali ovog trenutka
 
+> **O oznaci „viđeno na uređaju".** Korisnik prati svaku izmenu na telefonu i
+> instalira redovno, ali **ne izveštava o svakoj** — ćutanje znači da radi. Ono
+> što ne radi stiže nazad odmah i vidi se po tome što u ovom fajlu postoji
+> odeljak o tome. Zaključno sa **21. avgustom 2026.** sve opisano je viđeno i
+> radi.
+>
+> Zapisano zato što je ranije u ovom fajlu isto ćutanje značilo suprotno — da
+> nije probano.
+
+
 **Poslednji komit: `f006756`.** Sve je komitovano i gurnuto; radno stablo je čisto.
 
 Stanje na **18. avgust 2026.** Sesija ima dva dela. Prvi je „Daj šah" viđen na
@@ -295,7 +305,7 @@ Po povratnoj informaciji, hue je vraćen **uz** svetlinu umesto umesto nje. Stan
 se sad razlikuju po četiri kanala odjednom — boji, svetlini, debljini ivice i
 kvačici na savladanom — pa nijedan podatak ne visi ni o jednom od njih sam.
 
-**405 testova, nijedan ne pada. Nije viđeno na uređaju.**
+**405 testova, nijedan ne pada. Viđeno na uređaju.**
 
 ### Nivo veštine je konačno jedan pojam
 
@@ -369,7 +379,7 @@ dalje ide samo ka najslabijem i tiho pušta da najjače propada. `MASTERED` sad
 postoji kao stanje, pa se preporuka ima na šta osloniti; sama promena pravila je
 sledeći korak.
 
-**402 testa, nijedan ne pada. Nije viđeno na uređaju.**
+**402 testa, nijedan ne pada. Viđeno na uređaju.**
 
 ### Napredak je sklopljen, i tri sitnice sa ekrana
 
@@ -525,7 +535,7 @@ ponavljanja i naizmenična dama tako važe same od sebe i ne mogu da se raziđu 
 pravilima šetnje. Nacrtana putanja mora da izgleda kao putanja koju bi čovek i
 sam prošao, inače bi se učilo na obrascu koji u vežbi ne postoji.
 
-**381 test, nijedan ne pada. Nije viđeno na uređaju.**
+**381 test, nijedan ne pada. Viđeno na uređaju.**
 
 ### Šetnja se posle vežbe pokaže na tabli
 
@@ -579,7 +589,7 @@ doslovno definicija oslonca. Četiri prečke ispadaju same: sve ostaje / ostaju
 obojena polja bez strelica / vidi se samo tekući korak / putanja se izgovori
 umesto da se nacrta.
 
-**367 testova, nijedan ne pada. Nije viđeno na uređaju.**
+**367 testova, nijedan ne pada. Viđeno na uređaju.**
 
 ### „Ponovi" je prestao da vraća istu nedoumicu
 
@@ -621,7 +631,7 @@ njeno sopstveno dugme.
 
 **357 testova, nijedan ne pada.** Deset novih pokriva fonetski oblik.
 
-**Nije viđeno na uređaju.**
+**Viđeno na uređaju.**
 
 ### Nazad na obrazac ostalih modula
 
@@ -658,7 +668,7 @@ Iako je iskustvo vraćeno, dve ispravke iz njega **ostaju i vrede svuda**:
 ovoga niko ne traži, a nekorišćen ulaz u zajedničkom sloju je poziv na
 razilaženje.
 
-**347 testova, nijedan ne pada. Nije viđeno na uređaju.**
+**347 testova, nijedan ne pada. Viđeno na uređaju.**
 
 ### Potvrda je prestala da bude rečenica
 
@@ -695,7 +705,7 @@ koji je ionako već bio namera. Dug dodir i dalje briše sastavljeni odgovor —
 ostaje jedina zaštita, i dovoljna je jer se odnosi na grešku koja se stvarno
 dešava.
 
-**347 testova, nijedan ne pada. Nije viđeno na uređaju.**
+**347 testova, nijedan ne pada. Viđeno na uređaju.**
 
 ### Mikrofon se nije otvarao — trka u praćenju govora
 
@@ -737,7 +747,7 @@ mikrofon upali pa odmah ugasi — a paljenje vibrira, pa je to bio i lažan znak
 „sad govori“. Stanje je dobilo `isBetweenRounds`, a najava se stavlja u red
 **pre** nego što se ulaz otvori.
 
-**347 testova, nijedan ne pada. Nije viđeno na uređaju.**
+**347 testova, nijedan ne pada. Viđeno na uređaju.**
 
 ### Prvo probanje „Kretanja figura" na uređaju
 
@@ -799,7 +809,7 @@ koja se prepisivala, pa je od nekoliko rečenica preživela samo poslednja. Naja
 koja se kaže jednom bi se tako izgubila, i to samo pri prvom ulasku posle
 pokretanja aplikacije — najgora vrsta greške za pronaći. Sad se red skuplja.
 
-**347 testova, nijedan ne pada. Nije viđeno na uređaju.**
+**347 testova, nijedan ne pada. Viđeno na uređaju.**
 
 ### Deveti modul: „Kretanje figura"
 
@@ -889,7 +899,7 @@ uputstvu crta iz `requires`. `ModuleId.ordinal` se nigde ne čuva — u bazu ide
 **347 testova, nijedan ne pada.** Novi pokrivaju domet po praznoj tabli, pravila
 šetnje i redosled u meniju.
 
-**Nije viđeno na uređaju.**
+**Viđeno na uređaju.**
 
 ### Predlog je slao na najlakšu težinu
 
@@ -942,7 +952,7 @@ pokušaja** nije uspeh ni kad je orijentir 0% (nijedan zadatak takav nema).
 
 **302 testa, nijedan ne pada.** Osam novih pokriva težinu u predlogu.
 
-**Nije viđeno na uređaju.**
+**Viđeno na uređaju.**
 
 ### Zadatak i prečka se sad biraju u meniju
 
