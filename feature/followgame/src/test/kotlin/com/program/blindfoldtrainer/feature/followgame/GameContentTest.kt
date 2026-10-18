@@ -3,6 +3,7 @@ package com.program.blindfoldtrainer.feature.followgame
 import com.program.blindfoldtrainer.core.chess.Pgn
 import com.program.blindfoldtrainer.core.chess.PieceType
 import com.program.blindfoldtrainer.core.chess.Position
+import com.program.blindfoldtrainer.core.model.Difficulty
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -35,14 +36,32 @@ class GameContentTest {
 
     @Test
     fun `partije imaju igrace, ishod i dovoljno poteza`() {
+        // Partija kraća od onoga što traži najlakša težina ne može da posluži
+        // nijednoj, pa je mrtav teret u fajlu.
+        val shortest = pliesNeededFor(Difficulty.EASY)
         games.forEach { game ->
             assertTrue("partija bez belog", game.white.isNotBlank())
             assertTrue("partija bez crnog", game.black.isNotBlank())
             assertTrue("čudan ishod: ${game.result}", game.result in setOf("1-0", "0-1"))
-            // Najteža težina traži osam pitanja na svakih osam poluhodova.
-            assertTrue("prekratka partija: ${game.plyCount}", game.plyCount >= 50)
+            assertTrue("prekratka partija: ${game.plyCount}", game.plyCount >= shortest)
         }
     }
+
+    @Test
+    fun `svaka tezina ima dovoljno partija`() {
+        // Modul bira partiju koja ima bar questionCount × plyGap poluhodova, pa
+        // sadržaj mora da ima izbor na svakoj težini — minijature služe lakšim,
+        // a najteža traži duže partije. Granica od deset je da izbor ne bude
+        // ista partija svaki put.
+        Difficulty.entries.forEach { difficulty ->
+            val needed = pliesNeededFor(difficulty)
+            val usable = games.count { it.plyCount >= needed }
+            assertTrue("$difficulty: samo $usable partija sa bar $needed poluhodova", usable >= 10)
+        }
+    }
+
+    private fun pliesNeededFor(difficulty: Difficulty): Int =
+        setupFor(difficulty).let { it.questionCount * it.plyGap }
 
     @Test
     fun `svaka pozicija u svakoj partiji ume da ponudi pitanje`() {

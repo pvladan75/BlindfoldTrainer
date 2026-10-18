@@ -1476,7 +1476,15 @@ strukturi**: ništa se ne premešta, ne preimenuje, ne grupiše.
 
 ### Šta je ostalo otvoreno
 
-0a. **Poreklo uvezenog sadržaja — pre objave.** Sve što je danas u aplikaciji je
+0a. **Poreklo uvezenog sadržaja — zatvoreno 18. oktobra 2026.** Partije su
+   zamenjene (vidi „Odakle sadržaj"): umesto 60 bundesligaških stoje 60 čuvenih
+   partija iz istorije šaha, dve trećine minijature, sve iz javnog domena ili
+   kao pojedinačne činjenice. Završnice su elementarni materijal (dama ili top
+   protiv golog kralja, dama protiv lake figure, dva lovca, lovac i skakač) —
+   generičke pozicije koje se mogu iznova izračunati, pa pitanja porekla nema.
+   Zapis ispod ostaje kao merilo šta je bilo proveravano.
+
+   Sve što je danas u aplikaciji je bilo
    **primer**, uzet sa autorovog računara da modul uopšte ima na čemu da radi;
    nije odlučeno da to i ostane.
 
@@ -1580,7 +1588,9 @@ blindfold animacija i raspakivanje ViewModel-a. Stari projekat se odatle napušt
 ## Šta radi
 
 Aplikacija se gradi, pokreće, i ima **osam** modula za trening. Poslednji build
-je prošao čisto, bez upozorenja. **224 testa, nijedan ne pada.**
+je prošao čisto, bez upozorenja. **308 testova, nijedan ne pada** (izmereno
+18. oktobra 2026, `testDebugUnitTest test --rerun-tasks`, debug varijanta i čisti
+JVM moduli, bez dupliranja release varijante; ranije je ovde pisalo 224).
 
 **Svih sedam modula je prošlo na uređaju**, zajedno sa napretkom, poenima i
 rangovima. Dva su proradila tek pošto su ispravljena baga opisana niže — oba iz
@@ -3491,12 +3501,22 @@ generisati:
 - `:feature:endgame` → `{easy,medium,hard}_puzzles.json`
 - `:core:designsystem` → vektorske sličice figura
 
-`:feature:followgame` → `games.pgn`, **60 partija, 38 KB**. Izvučene su iz
-`C:\Users\Admin\Documents\chessdata\bundesliga2000.pgn` (12.247 partija, 9,1 MB)
-uslovima: oba igrača preko 2450, odlučen ishod, između 50 i 90 poluhodova, bez
-komentara i varijanti. Uzeta je svaka k-ta koja odgovara, da izbor ne bude samo
-prvo kolo. Skript stoji u istoriji ove sesije; ako zatreba drugi izbor, lakše ga
-je napisati ponovo nego čuvati.
+`:feature:followgame` → `games.pgn`, **60 čuvenih partija** (zamenjeno
+18. oktobra 2026; do tada 60 bundesligaških iz 2000, izvučenih sa autorovog
+računara kao probni sadržaj). Sad su to Morphy u Operi, Besmrtna, Večnozelena,
+Partija veka, Kasparov–Topalov i slične: 24 minijature do 25 poteza, ostatak
+kraće i duže klasike do 53 poteza, sve sa odlučenim ishodom i bez komentara.
+Igrači i događaj stoje u zaglavlju i modul ih prikazuje. Pre pakovanja je svaka
+partija prošla i nezavisnu proveru (python-chess): legalnost svih poteza,
+svaki „#" je zaista mat, pobednik mata je i pobednik u rezultatu.
+
+**Modul bira partiju po dužini**: lako traži bar 20 poluhodova, srednje 36,
+teško 64 (`questionCount × plyGap` u `setupFor`). Minijature zato služe lakšim
+težinama, a teška ima 19 dovoljno dugih partija. `GameContentTest` više ne traži
+50 poluhodova od svake partije — to je bilo strože od samog modula i isključivalo
+minijature — nego: nijedna partija kraća od najlakše težine, i **bar deset
+upotrebljivih partija po težini**. Guard je proveren mutacijom (granica 20 obara
+tešku težinu sa 19 partija).
 
 `GameContentTest` čita **isti fajl koji ide u assets** i pada ako ijedna partija
 ne prođe kroz pravila ili ako ijedna pozicija ne ume da ponudi pitanje. To je ona
@@ -3552,9 +3572,11 @@ Dva različita problema koja se lako pobrkaju:
 | **lokalni profil** | otac i sin na istom telefonu, brzo prebacivanje, bez lozinke |
 | **nalog** | čuvanje napretka, dnevni zadatak, takmičenje |
 
-Dete od deset godina najčešće nema Google nalog, a prebacivanje naloga na
-telefonu je težak postupak — nikako nešto pred svaku vežbu. Nalozi **umesto**
-profila razbili bi baš onaj slučaj zbog kog profili i postoje.
+**Aplikacija je za sve uzraste** (potvrđeno 18. oktobra 2026). Dete je jedan
+od korisnika, ne jedini; primeri sa ocem i sinom niže su povod za profile, a ne
+opis publike. Dete od deset godina najčešće nema Google nalog, a prebacivanje
+naloga na telefonu je težak postupak — nikako nešto pred svaku vežbu. Nalozi
+**umesto** profila razbili bi baš onaj slučaj zbog kog profili i postoje.
 
 Zato: lokalni profili ostaju, a nalog se **po želji kači** na profil.
 
@@ -3580,6 +3602,18 @@ nas** — server. To se i objasni u jednoj rečenici.
 postoji zbog druge aplikacije, pa marginalni trošak po korisniku ne traži mesečnu
 naplatu. Pretplata za šahovsku vežbalicu odbija više nego što donosi.
 
+**Plaćen nalog u Mislishi otključava plaćeni deo ovde** (odlučeno 18. oktobra
+2026). Nalog je zajednički za obe aplikacije, na istom serveru (`chess_backend`,
+repozitorijum `chess_master`), pa je pravo jedna linija u `entitlementService`.
+Važi **dok traje pretplata**, bez roka čekanja i bez trajnog poklona posle N
+meseci — razmatrano i odbačeno, jer štiti od zamene koja se ne isplati čim
+jednokratna kupovina ovde košta manje od jednog meseca Mislishe. Kad pretplata
+istekne: lokalno sve radi i dalje, istorija na serveru ostaje, nove sesije se ne
+sinhronizuju, dnevni zadatak i lestvica se zatvore — dok se pretplata ne vrati
+ili se ne kupi jednokratno otključavanje, koje ostaje trajno. **Otvoreno:** pravo
+je po nalogu, a u Mislishi plaća trener dok učenici ulaze na njegov račun — da
+li trenerov plan pokriva i učenike ovde, nije odlučeno.
+
 ### Redosled
 
 1. **Profili — sad.** Jedina stvar koja poskupljuje ako se odloži.
@@ -3593,6 +3627,22 @@ naplatu. Pretplata za šahovsku vežbalicu odbija više nego što donosi.
 Razlog za ovaj redosled nije opreznost: **lestvica i cena postavljene pre nego
 što se aplikacija pokaže rešavaju pogrešan problem.** Nedostatak korisnika se ne
 leči takmičenjem među korisnicima kojih nema.
+
+### Platforme
+
+Zapisano 18. oktobra 2026. Android je bio prvi jer ležeći, sa telefonom i
+mikrofonom, vežba ide najbolje. Ali ima korisnika bez Androida — **iPhone je u
+planu** — i onih koji bi radije sedeli za računarom. **Objavljivanje za Android
+ne čeka nijednu drugu platformu.**
+
+Procena iz iste sesije, da se ne ponavlja: prepisivanje u Flutter je odbijeno
+(sve se piše i proverava iznova, 224 testa i devet modula viđenih na uređaju);
+put ka iOS-u i Windows-u je **Compose Multiplatform**, jer su `:core:model`,
+`:core:chess` i `:core:progress` već čist Kotlin, Compose ekrani se sele, Room i
+DataStore imaju KMP izdanja, a Compose za iOS je stabilan od 1.8 (maj 2025).
+Posao je u `:core:audio` (Vosk i govor po platformi) i u zameni Hilta. Redosled
+kad dođe: posle objave za Android i posle servera; iOS pre Windows-a. Do tada
+jedno pravilo: u jezgro ne ulazi nova zavisnost od Androida.
 
 ---
 
