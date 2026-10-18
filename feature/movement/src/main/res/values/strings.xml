@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="movement_title">Kretanje figura</string>
-    <string name="movement_description">Jedna figura po praznoj tabli. Dokle dohvata, kuda može da prošeta a da se ne vrati na polje na kom je već bila, i kojom je putanjom prošla kad je vidiš pa je ispričaš.</string>
+    <string name="movement_title">Piece Movement</string>
+    <string name="movement_description">One piece on an empty board. How far it reaches, where it can wander without returning to a square it has already visited, and which path it took when you watch it and then retell it.</string>
 </resources>

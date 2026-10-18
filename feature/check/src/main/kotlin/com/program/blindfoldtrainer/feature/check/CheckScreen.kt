@@ -87,7 +87,7 @@ fun CheckScreen(
                 EyesFreeRow(
                     weight = HELPER_ZONE_WEIGHT,
                     zone = EyesFreeZone(
-                        label = "PONOVI",
+                        label = "REPEAT",
                         tone = ZoneTone.SECONDARY,
                         onClick = viewModel::onRepeat
                     )

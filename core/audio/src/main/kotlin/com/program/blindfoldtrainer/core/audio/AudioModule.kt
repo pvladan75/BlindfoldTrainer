@@ -12,7 +12,7 @@ abstract class AudioModule {
 
     @Binds
     @Singleton
-    abstract fun bindSpeaker(speaker: AndroidSpeaker): Speaker
+    abstract fun bindSpeaker(speaker: ClipSpeaker): Speaker
 
     @Binds
     @Singleton

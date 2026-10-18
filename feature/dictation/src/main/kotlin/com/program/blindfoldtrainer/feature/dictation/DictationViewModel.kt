@@ -95,7 +95,7 @@ internal data class Setup(val taskCount: Int, val pieceCount: Int)
 
 /** Šta težina znači: koliko se figura diktira. */
 internal fun difficultyDetailOf(difficulty: Difficulty): String =
-    quantity(setupFor(difficulty).pieceCount, "figura", "figure", "figura")
+    quantity(setupFor(difficulty).pieceCount, "piece", "pieces")
 
 internal fun setupFor(difficulty: Difficulty) = when (difficulty) {
     Difficulty.EASY -> Setup(taskCount = 5, pieceCount = 3)

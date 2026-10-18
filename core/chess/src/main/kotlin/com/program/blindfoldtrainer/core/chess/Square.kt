@@ -9,7 +9,7 @@ package com.program.blindfoldtrainer.core.chess
 value class Square(val index: Int) {
 
     init {
-        require(index in 0..63) { "Indeks polja mora biti 0..63, dobijeno $index" }
+        require(index in 0..63) { "Square index must be 0..63, got $index" }
     }
 
     /** 0..7, gde je 0 = kolona 'a'. */

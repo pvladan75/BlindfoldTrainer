@@ -34,7 +34,7 @@ object ModelArchive {
 
                     // Unos tipa "../../nesto" bi inače pisao van foldera.
                     require(destination.path.startsWith(root.path + File.separator)) {
-                        "Unos vodi van foldera: ${entry.name}"
+                        "Entry leads outside the folder: ${entry.name}"
                     }
 
                     destination.parentFile?.mkdirs()

@@ -1,0 +1,3005 @@
+{
+  "sq_a1": {
+    "kind": "cut",
+    "carrier": "Black plays bishop a1.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_b1": {
+    "kind": "cut",
+    "carrier": "Black plays bishop b1.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_c1": {
+    "kind": "cut",
+    "carrier": "Black plays bishop c1.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_d1": {
+    "kind": "cut",
+    "carrier": "Black plays bishop d1.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_e1": {
+    "kind": "cut",
+    "carrier": "Black plays bishop e1.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_f1": {
+    "kind": "cut",
+    "carrier": "Black plays bishop f1.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_g1": {
+    "kind": "cut",
+    "carrier": "Black plays bishop g1.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_h1": {
+    "kind": "cut",
+    "carrier": "Black plays bishop h1.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_a2": {
+    "kind": "cut",
+    "carrier": "Black plays bishop a2.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_b2": {
+    "kind": "cut",
+    "carrier": "Black plays bishop b2.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_c2": {
+    "kind": "cut",
+    "carrier": "Black plays bishop c2.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_d2": {
+    "kind": "cut",
+    "carrier": "Black plays bishop d2.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_e2": {
+    "kind": "cut",
+    "carrier": "Black plays bishop e2.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_f2": {
+    "kind": "cut",
+    "carrier": "Black plays bishop f2.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_g2": {
+    "kind": "cut",
+    "carrier": "Black plays bishop g2.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_h2": {
+    "kind": "cut",
+    "carrier": "Black plays bishop h2.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_a3": {
+    "kind": "cut",
+    "carrier": "Black plays bishop a3.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_b3": {
+    "kind": "cut",
+    "carrier": "Black plays bishop b3.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_c3": {
+    "kind": "cut",
+    "carrier": "Black plays bishop c3.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_d3": {
+    "kind": "cut",
+    "carrier": "Black plays bishop d3.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_e3": {
+    "kind": "cut",
+    "carrier": "Black plays bishop e3.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_f3": {
+    "kind": "cut",
+    "carrier": "Black plays bishop f3.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_g3": {
+    "kind": "cut",
+    "carrier": "Black plays bishop g3.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_h3": {
+    "kind": "cut",
+    "carrier": "Black plays bishop h3.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_a4": {
+    "kind": "cut",
+    "carrier": "Black plays bishop a4.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_b4": {
+    "kind": "cut",
+    "carrier": "Black plays bishop b4.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_c4": {
+    "kind": "cut",
+    "carrier": "Black plays bishop c4.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_d4": {
+    "kind": "cut",
+    "carrier": "Black plays bishop d4.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_e4": {
+    "kind": "cut",
+    "carrier": "Black plays bishop e4.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_f4": {
+    "kind": "cut",
+    "carrier": "Black plays bishop f4.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_g4": {
+    "kind": "cut",
+    "carrier": "Black plays bishop g4.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_h4": {
+    "kind": "cut",
+    "carrier": "Black plays bishop h4.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_a5": {
+    "kind": "cut",
+    "carrier": "Black plays bishop a5.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_b5": {
+    "kind": "cut",
+    "carrier": "Black plays bishop b5.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_c5": {
+    "kind": "cut",
+    "carrier": "Black plays bishop c5.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_d5": {
+    "kind": "cut",
+    "carrier": "Black plays bishop d5.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_e5": {
+    "kind": "cut",
+    "carrier": "Black plays bishop e5.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_f5": {
+    "kind": "cut",
+    "carrier": "Black plays bishop f5.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_g5": {
+    "kind": "cut",
+    "carrier": "Black plays bishop g5.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_h5": {
+    "kind": "cut",
+    "carrier": "Black plays bishop h5.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_a6": {
+    "kind": "cut",
+    "carrier": "Black plays bishop a6.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_b6": {
+    "kind": "cut",
+    "carrier": "Black plays bishop b6.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_c6": {
+    "kind": "cut",
+    "carrier": "Black plays bishop c6.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_d6": {
+    "kind": "cut",
+    "carrier": "Black plays bishop d6.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_e6": {
+    "kind": "cut",
+    "carrier": "Black plays bishop e6.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_f6": {
+    "kind": "cut",
+    "carrier": "Black plays bishop f6.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_g6": {
+    "kind": "cut",
+    "carrier": "Black plays bishop g6.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_h6": {
+    "kind": "cut",
+    "carrier": "Black plays bishop h6.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_a7": {
+    "kind": "cut",
+    "carrier": "Black plays bishop a7.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_b7": {
+    "kind": "cut",
+    "carrier": "Black plays bishop b7.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_c7": {
+    "kind": "cut",
+    "carrier": "Black plays bishop c7.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_d7": {
+    "kind": "cut",
+    "carrier": "Black plays bishop d7.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_e7": {
+    "kind": "cut",
+    "carrier": "Black plays bishop e7.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_f7": {
+    "kind": "cut",
+    "carrier": "Black plays bishop f7.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_g7": {
+    "kind": "cut",
+    "carrier": "Black plays bishop g7.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_h7": {
+    "kind": "cut",
+    "carrier": "Black plays bishop h7.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_a8": {
+    "kind": "cut",
+    "carrier": "Black plays bishop a8.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_b8": {
+    "kind": "cut",
+    "carrier": "Black plays bishop b8.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_c8": {
+    "kind": "cut",
+    "carrier": "Black plays bishop c8.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_d8": {
+    "kind": "cut",
+    "carrier": "Black plays bishop d8.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_e8": {
+    "kind": "cut",
+    "carrier": "Black plays bishop e8.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_f8": {
+    "kind": "cut",
+    "carrier": "Black plays bishop f8.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_g8": {
+    "kind": "cut",
+    "carrier": "Black plays bishop g8.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "sq_h8": {
+    "kind": "cut",
+    "carrier": "Black plays bishop h8.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_pawn": {
+    "kind": "cut",
+    "carrier": "Black plays pawn e5.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_knight": {
+    "kind": "cut",
+    "carrier": "Black plays knight e5.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_bishop": {
+    "kind": "cut",
+    "carrier": "Black plays bishop e5.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_rook": {
+    "kind": "cut",
+    "carrier": "Black plays rook e5.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_queen": {
+    "kind": "cut",
+    "carrier": "Black plays queen e5.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_king": {
+    "kind": "cut",
+    "carrier": "Black plays king e5.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_end_pawn": {
+    "kind": "cut",
+    "carrier": "On e4 there is no king but a pawn.",
+    "wordFrom": 9,
+    "wordTo": 9,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_end_knight": {
+    "kind": "cut",
+    "carrier": "On e4 there is no king but a knight.",
+    "wordFrom": 9,
+    "wordTo": 9,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_end_bishop": {
+    "kind": "cut",
+    "carrier": "On e4 there is no king but a bishop.",
+    "wordFrom": 9,
+    "wordTo": 9,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_end_rook": {
+    "kind": "cut",
+    "carrier": "On e4 there is no king but a rook.",
+    "wordFrom": 9,
+    "wordTo": 9,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_end_queen": {
+    "kind": "cut",
+    "carrier": "On e4 there is no king but a queen.",
+    "wordFrom": 9,
+    "wordTo": 9,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_end_king": {
+    "kind": "cut",
+    "carrier": "On e4 there is no queen but a king.",
+    "wordFrom": 9,
+    "wordTo": 9,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_q_pawn": {
+    "kind": "cut",
+    "carrier": "Where is the black pawn?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_q_knight": {
+    "kind": "cut",
+    "carrier": "Where is the black knight?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_q_bishop": {
+    "kind": "cut",
+    "carrier": "Where is the black bishop?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_q_rook": {
+    "kind": "cut",
+    "carrier": "Where is the black rook?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_q_queen": {
+    "kind": "cut",
+    "carrier": "Where is the black queen?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_q_king": {
+    "kind": "cut",
+    "carrier": "Where is the black king?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pieces_pawn": {
+    "kind": "cut",
+    "carrier": "Two of your pawns can go to e5.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pieces_knight": {
+    "kind": "cut",
+    "carrier": "Two of your knights can go to e5.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pieces_bishop": {
+    "kind": "cut",
+    "carrier": "Two of your bishops can go to e5.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pieces_rook": {
+    "kind": "cut",
+    "carrier": "Two of your rooks can go to e5.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pieces_queen": {
+    "kind": "cut",
+    "carrier": "Two of your queens can go to e5.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pieces_king": {
+    "kind": "cut",
+    "carrier": "Two of your kings can go to e5.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "color_white": {
+    "kind": "cut",
+    "carrier": "Where is the white queen?",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "color_black": {
+    "kind": "cut",
+    "carrier": "Where is the black queen?",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_0": {
+    "kind": "cut",
+    "carrier": "Found 0 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_1": {
+    "kind": "cut",
+    "carrier": "Found 1 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_2": {
+    "kind": "cut",
+    "carrier": "Found 2 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_3": {
+    "kind": "cut",
+    "carrier": "Found 3 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_4": {
+    "kind": "cut",
+    "carrier": "Found 4 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_5": {
+    "kind": "cut",
+    "carrier": "Found 5 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_6": {
+    "kind": "cut",
+    "carrier": "Found 6 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_7": {
+    "kind": "cut",
+    "carrier": "Found 7 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_8": {
+    "kind": "cut",
+    "carrier": "Found 8 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_9": {
+    "kind": "cut",
+    "carrier": "Found 9 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_10": {
+    "kind": "cut",
+    "carrier": "Found 10 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_11": {
+    "kind": "cut",
+    "carrier": "Found 11 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_12": {
+    "kind": "cut",
+    "carrier": "Found 12 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_13": {
+    "kind": "cut",
+    "carrier": "Found 13 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_14": {
+    "kind": "cut",
+    "carrier": "Found 14 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_15": {
+    "kind": "cut",
+    "carrier": "Found 15 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_16": {
+    "kind": "cut",
+    "carrier": "Found 16 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_17": {
+    "kind": "cut",
+    "carrier": "Found 17 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_18": {
+    "kind": "cut",
+    "carrier": "Found 18 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_19": {
+    "kind": "cut",
+    "carrier": "Found 19 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_20": {
+    "kind": "cut",
+    "carrier": "Found 20 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_21": {
+    "kind": "cut",
+    "carrier": "Found 21 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_22": {
+    "kind": "cut",
+    "carrier": "Found 22 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_23": {
+    "kind": "cut",
+    "carrier": "Found 23 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_24": {
+    "kind": "cut",
+    "carrier": "Found 24 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_25": {
+    "kind": "cut",
+    "carrier": "Found 25 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_26": {
+    "kind": "cut",
+    "carrier": "Found 26 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_27": {
+    "kind": "cut",
+    "carrier": "Found 27 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_28": {
+    "kind": "cut",
+    "carrier": "Found 28 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_29": {
+    "kind": "cut",
+    "carrier": "Found 29 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_30": {
+    "kind": "cut",
+    "carrier": "Found 30 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_31": {
+    "kind": "cut",
+    "carrier": "Found 31 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_32": {
+    "kind": "cut",
+    "carrier": "Found 32 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_33": {
+    "kind": "cut",
+    "carrier": "Found 33 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_34": {
+    "kind": "cut",
+    "carrier": "Found 34 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_35": {
+    "kind": "cut",
+    "carrier": "Found 35 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_36": {
+    "kind": "cut",
+    "carrier": "Found 36 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_37": {
+    "kind": "cut",
+    "carrier": "Found 37 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_38": {
+    "kind": "cut",
+    "carrier": "Found 38 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_39": {
+    "kind": "cut",
+    "carrier": "Found 39 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_40": {
+    "kind": "cut",
+    "carrier": "Found 40 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_41": {
+    "kind": "cut",
+    "carrier": "Found 41 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_42": {
+    "kind": "cut",
+    "carrier": "Found 42 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_43": {
+    "kind": "cut",
+    "carrier": "Found 43 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_44": {
+    "kind": "cut",
+    "carrier": "Found 44 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_45": {
+    "kind": "cut",
+    "carrier": "Found 45 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_46": {
+    "kind": "cut",
+    "carrier": "Found 46 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_47": {
+    "kind": "cut",
+    "carrier": "Found 47 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_48": {
+    "kind": "cut",
+    "carrier": "Found 48 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_49": {
+    "kind": "cut",
+    "carrier": "Found 49 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_50": {
+    "kind": "cut",
+    "carrier": "Found 50 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_51": {
+    "kind": "cut",
+    "carrier": "Found 51 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_52": {
+    "kind": "cut",
+    "carrier": "Found 52 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_53": {
+    "kind": "cut",
+    "carrier": "Found 53 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_54": {
+    "kind": "cut",
+    "carrier": "Found 54 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_55": {
+    "kind": "cut",
+    "carrier": "Found 55 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_56": {
+    "kind": "cut",
+    "carrier": "Found 56 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_57": {
+    "kind": "cut",
+    "carrier": "Found 57 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_58": {
+    "kind": "cut",
+    "carrier": "Found 58 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_59": {
+    "kind": "cut",
+    "carrier": "Found 59 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_60": {
+    "kind": "cut",
+    "carrier": "Found 60 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_61": {
+    "kind": "cut",
+    "carrier": "Found 61 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_62": {
+    "kind": "cut",
+    "carrier": "Found 62 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_63": {
+    "kind": "cut",
+    "carrier": "Found 63 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_64": {
+    "kind": "cut",
+    "carrier": "Found 64 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_65": {
+    "kind": "cut",
+    "carrier": "Found 65 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_66": {
+    "kind": "cut",
+    "carrier": "Found 66 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_67": {
+    "kind": "cut",
+    "carrier": "Found 67 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_68": {
+    "kind": "cut",
+    "carrier": "Found 68 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_69": {
+    "kind": "cut",
+    "carrier": "Found 69 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_70": {
+    "kind": "cut",
+    "carrier": "Found 70 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_71": {
+    "kind": "cut",
+    "carrier": "Found 71 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_72": {
+    "kind": "cut",
+    "carrier": "Found 72 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_73": {
+    "kind": "cut",
+    "carrier": "Found 73 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_74": {
+    "kind": "cut",
+    "carrier": "Found 74 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_75": {
+    "kind": "cut",
+    "carrier": "Found 75 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_76": {
+    "kind": "cut",
+    "carrier": "Found 76 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_77": {
+    "kind": "cut",
+    "carrier": "Found 77 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_78": {
+    "kind": "cut",
+    "carrier": "Found 78 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_79": {
+    "kind": "cut",
+    "carrier": "Found 79 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_80": {
+    "kind": "cut",
+    "carrier": "Found 80 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_81": {
+    "kind": "cut",
+    "carrier": "Found 81 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_82": {
+    "kind": "cut",
+    "carrier": "Found 82 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_83": {
+    "kind": "cut",
+    "carrier": "Found 83 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_84": {
+    "kind": "cut",
+    "carrier": "Found 84 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_85": {
+    "kind": "cut",
+    "carrier": "Found 85 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_86": {
+    "kind": "cut",
+    "carrier": "Found 86 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_87": {
+    "kind": "cut",
+    "carrier": "Found 87 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_88": {
+    "kind": "cut",
+    "carrier": "Found 88 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_89": {
+    "kind": "cut",
+    "carrier": "Found 89 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_90": {
+    "kind": "cut",
+    "carrier": "Found 90 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_91": {
+    "kind": "cut",
+    "carrier": "Found 91 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_92": {
+    "kind": "cut",
+    "carrier": "Found 92 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_93": {
+    "kind": "cut",
+    "carrier": "Found 93 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_94": {
+    "kind": "cut",
+    "carrier": "Found 94 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_95": {
+    "kind": "cut",
+    "carrier": "Found 95 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_96": {
+    "kind": "cut",
+    "carrier": "Found 96 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_97": {
+    "kind": "cut",
+    "carrier": "Found 97 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_98": {
+    "kind": "cut",
+    "carrier": "Found 98 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_99": {
+    "kind": "cut",
+    "carrier": "Found 99 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nmid_100": {
+    "kind": "cut",
+    "carrier": "Found 100 of 5.",
+    "wordFrom": 2,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_0": {
+    "kind": "cut",
+    "carrier": "Mate in 0.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_1": {
+    "kind": "cut",
+    "carrier": "Mate in 1.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_2": {
+    "kind": "cut",
+    "carrier": "Mate in 2.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_3": {
+    "kind": "cut",
+    "carrier": "Mate in 3.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_4": {
+    "kind": "cut",
+    "carrier": "Mate in 4.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_5": {
+    "kind": "cut",
+    "carrier": "Mate in 5.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_6": {
+    "kind": "cut",
+    "carrier": "Mate in 6.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_7": {
+    "kind": "cut",
+    "carrier": "Mate in 7.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_8": {
+    "kind": "cut",
+    "carrier": "Mate in 8.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_9": {
+    "kind": "cut",
+    "carrier": "Mate in 9.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_10": {
+    "kind": "cut",
+    "carrier": "Mate in 10.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_11": {
+    "kind": "cut",
+    "carrier": "Mate in 11.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_12": {
+    "kind": "cut",
+    "carrier": "Mate in 12.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_13": {
+    "kind": "cut",
+    "carrier": "Mate in 13.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_14": {
+    "kind": "cut",
+    "carrier": "Mate in 14.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_15": {
+    "kind": "cut",
+    "carrier": "Mate in 15.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_16": {
+    "kind": "cut",
+    "carrier": "Mate in 16.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_17": {
+    "kind": "cut",
+    "carrier": "Mate in 17.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_18": {
+    "kind": "cut",
+    "carrier": "Mate in 18.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_19": {
+    "kind": "cut",
+    "carrier": "Mate in 19.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_20": {
+    "kind": "cut",
+    "carrier": "Mate in 20.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_21": {
+    "kind": "cut",
+    "carrier": "Mate in 21.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_22": {
+    "kind": "cut",
+    "carrier": "Mate in 22.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_23": {
+    "kind": "cut",
+    "carrier": "Mate in 23.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_24": {
+    "kind": "cut",
+    "carrier": "Mate in 24.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_25": {
+    "kind": "cut",
+    "carrier": "Mate in 25.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_26": {
+    "kind": "cut",
+    "carrier": "Mate in 26.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_27": {
+    "kind": "cut",
+    "carrier": "Mate in 27.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_28": {
+    "kind": "cut",
+    "carrier": "Mate in 28.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_29": {
+    "kind": "cut",
+    "carrier": "Mate in 29.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_30": {
+    "kind": "cut",
+    "carrier": "Mate in 30.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_31": {
+    "kind": "cut",
+    "carrier": "Mate in 31.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_32": {
+    "kind": "cut",
+    "carrier": "Mate in 32.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_33": {
+    "kind": "cut",
+    "carrier": "Mate in 33.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_34": {
+    "kind": "cut",
+    "carrier": "Mate in 34.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_35": {
+    "kind": "cut",
+    "carrier": "Mate in 35.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_36": {
+    "kind": "cut",
+    "carrier": "Mate in 36.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_37": {
+    "kind": "cut",
+    "carrier": "Mate in 37.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_38": {
+    "kind": "cut",
+    "carrier": "Mate in 38.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_39": {
+    "kind": "cut",
+    "carrier": "Mate in 39.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_40": {
+    "kind": "cut",
+    "carrier": "Mate in 40.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_41": {
+    "kind": "cut",
+    "carrier": "Mate in 41.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_42": {
+    "kind": "cut",
+    "carrier": "Mate in 42.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_43": {
+    "kind": "cut",
+    "carrier": "Mate in 43.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_44": {
+    "kind": "cut",
+    "carrier": "Mate in 44.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_45": {
+    "kind": "cut",
+    "carrier": "Mate in 45.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_46": {
+    "kind": "cut",
+    "carrier": "Mate in 46.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_47": {
+    "kind": "cut",
+    "carrier": "Mate in 47.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_48": {
+    "kind": "cut",
+    "carrier": "Mate in 48.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_49": {
+    "kind": "cut",
+    "carrier": "Mate in 49.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_50": {
+    "kind": "cut",
+    "carrier": "Mate in 50.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_51": {
+    "kind": "cut",
+    "carrier": "Mate in 51.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_52": {
+    "kind": "cut",
+    "carrier": "Mate in 52.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_53": {
+    "kind": "cut",
+    "carrier": "Mate in 53.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_54": {
+    "kind": "cut",
+    "carrier": "Mate in 54.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_55": {
+    "kind": "cut",
+    "carrier": "Mate in 55.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_56": {
+    "kind": "cut",
+    "carrier": "Mate in 56.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_57": {
+    "kind": "cut",
+    "carrier": "Mate in 57.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_58": {
+    "kind": "cut",
+    "carrier": "Mate in 58.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_59": {
+    "kind": "cut",
+    "carrier": "Mate in 59.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_60": {
+    "kind": "cut",
+    "carrier": "Mate in 60.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_61": {
+    "kind": "cut",
+    "carrier": "Mate in 61.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_62": {
+    "kind": "cut",
+    "carrier": "Mate in 62.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_63": {
+    "kind": "cut",
+    "carrier": "Mate in 63.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_64": {
+    "kind": "cut",
+    "carrier": "Mate in 64.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_65": {
+    "kind": "cut",
+    "carrier": "Mate in 65.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_66": {
+    "kind": "cut",
+    "carrier": "Mate in 66.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_67": {
+    "kind": "cut",
+    "carrier": "Mate in 67.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_68": {
+    "kind": "cut",
+    "carrier": "Mate in 68.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_69": {
+    "kind": "cut",
+    "carrier": "Mate in 69.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_70": {
+    "kind": "cut",
+    "carrier": "Mate in 70.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_71": {
+    "kind": "cut",
+    "carrier": "Mate in 71.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_72": {
+    "kind": "cut",
+    "carrier": "Mate in 72.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_73": {
+    "kind": "cut",
+    "carrier": "Mate in 73.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_74": {
+    "kind": "cut",
+    "carrier": "Mate in 74.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_75": {
+    "kind": "cut",
+    "carrier": "Mate in 75.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_76": {
+    "kind": "cut",
+    "carrier": "Mate in 76.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_77": {
+    "kind": "cut",
+    "carrier": "Mate in 77.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_78": {
+    "kind": "cut",
+    "carrier": "Mate in 78.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_79": {
+    "kind": "cut",
+    "carrier": "Mate in 79.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_80": {
+    "kind": "cut",
+    "carrier": "Mate in 80.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_81": {
+    "kind": "cut",
+    "carrier": "Mate in 81.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_82": {
+    "kind": "cut",
+    "carrier": "Mate in 82.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_83": {
+    "kind": "cut",
+    "carrier": "Mate in 83.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_84": {
+    "kind": "cut",
+    "carrier": "Mate in 84.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_85": {
+    "kind": "cut",
+    "carrier": "Mate in 85.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_86": {
+    "kind": "cut",
+    "carrier": "Mate in 86.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_87": {
+    "kind": "cut",
+    "carrier": "Mate in 87.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_88": {
+    "kind": "cut",
+    "carrier": "Mate in 88.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_89": {
+    "kind": "cut",
+    "carrier": "Mate in 89.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_90": {
+    "kind": "cut",
+    "carrier": "Mate in 90.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_91": {
+    "kind": "cut",
+    "carrier": "Mate in 91.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_92": {
+    "kind": "cut",
+    "carrier": "Mate in 92.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_93": {
+    "kind": "cut",
+    "carrier": "Mate in 93.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_94": {
+    "kind": "cut",
+    "carrier": "Mate in 94.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_95": {
+    "kind": "cut",
+    "carrier": "Mate in 95.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_96": {
+    "kind": "cut",
+    "carrier": "Mate in 96.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_97": {
+    "kind": "cut",
+    "carrier": "Mate in 97.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_98": {
+    "kind": "cut",
+    "carrier": "Mate in 98.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_99": {
+    "kind": "cut",
+    "carrier": "Mate in 99.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "n_100": {
+    "kind": "cut",
+    "carrier": "Mate in 100.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "hundreds_1": {
+    "kind": "cut",
+    "carrier": "You earned one hundred twenty points.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "hundreds_2": {
+    "kind": "cut",
+    "carrier": "You earned two hundred twenty points.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "hundreds_3": {
+    "kind": "cut",
+    "carrier": "You earned three hundred twenty points.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "hundreds_4": {
+    "kind": "cut",
+    "carrier": "You earned four hundred twenty points.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "hundreds_5": {
+    "kind": "cut",
+    "carrier": "You earned five hundred twenty points.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "hundreds_6": {
+    "kind": "cut",
+    "carrier": "You earned six hundred twenty points.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "hundreds_7": {
+    "kind": "cut",
+    "carrier": "You earned seven hundred twenty points.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "hundreds_8": {
+    "kind": "cut",
+    "carrier": "You earned eight hundred twenty points.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "hundreds_9": {
+    "kind": "cut",
+    "carrier": "You earned nine hundred twenty points.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "thousands_1": {
+    "kind": "cut",
+    "carrier": "You earned one thousand points.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "thousands_2": {
+    "kind": "cut",
+    "carrier": "You earned two thousand points.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "thousands_3": {
+    "kind": "cut",
+    "carrier": "You earned three thousand points.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "thousands_4": {
+    "kind": "cut",
+    "carrier": "You earned four thousand points.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "thousands_5": {
+    "kind": "cut",
+    "carrier": "You earned five thousand points.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "thousands_6": {
+    "kind": "cut",
+    "carrier": "You earned six thousand points.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "thousands_7": {
+    "kind": "cut",
+    "carrier": "You earned seven thousand points.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "thousands_8": {
+    "kind": "cut",
+    "carrier": "You earned eight thousand points.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "thousands_9": {
+    "kind": "cut",
+    "carrier": "You earned nine thousand points.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "rank_q_1": {
+    "kind": "cut",
+    "carrier": "Which squares on rank 1?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "rank_q_2": {
+    "kind": "cut",
+    "carrier": "Which squares on rank 2?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "rank_q_3": {
+    "kind": "cut",
+    "carrier": "Which squares on rank 3?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "rank_q_4": {
+    "kind": "cut",
+    "carrier": "Which squares on rank 4?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "rank_q_5": {
+    "kind": "cut",
+    "carrier": "Which squares on rank 5?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "rank_q_6": {
+    "kind": "cut",
+    "carrier": "Which squares on rank 6?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "rank_q_7": {
+    "kind": "cut",
+    "carrier": "Which squares on rank 7?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "rank_q_8": {
+    "kind": "cut",
+    "carrier": "Which squares on rank 8?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "file_a": {
+    "kind": "cut",
+    "carrier": "Which squares on the a file?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "file_b": {
+    "kind": "cut",
+    "carrier": "Which squares on the b file?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "file_c": {
+    "kind": "cut",
+    "carrier": "Which squares on the c file?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "file_d": {
+    "kind": "cut",
+    "carrier": "Which squares on the d file?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "file_e": {
+    "kind": "cut",
+    "carrier": "Which squares on the e file?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "file_f": {
+    "kind": "cut",
+    "carrier": "Which squares on the f file?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "file_g": {
+    "kind": "cut",
+    "carrier": "Which squares on the g file?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "file_h": {
+    "kind": "cut",
+    "carrier": "Which squares on the h file?",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pf_a": {
+    "kind": "cut",
+    "carrier": "Black plays bishop alpha one.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pf_b": {
+    "kind": "cut",
+    "carrier": "Black plays bishop bravo two.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pf_c": {
+    "kind": "cut",
+    "carrier": "Black plays bishop charlie three.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pf_d": {
+    "kind": "cut",
+    "carrier": "Black plays bishop delta four.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pf_e": {
+    "kind": "cut",
+    "carrier": "Black plays bishop echo five.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pf_f": {
+    "kind": "cut",
+    "carrier": "Black plays bishop foxtrot six.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pf_g": {
+    "kind": "cut",
+    "carrier": "Black plays bishop golf seven.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pf_h": {
+    "kind": "cut",
+    "carrier": "Black plays bishop hotel eight.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pr_1": {
+    "kind": "cut",
+    "carrier": "Black plays bishop alpha one.",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pr_2": {
+    "kind": "cut",
+    "carrier": "Black plays bishop bravo two.",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pr_3": {
+    "kind": "cut",
+    "carrier": "Black plays bishop charlie three.",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pr_4": {
+    "kind": "cut",
+    "carrier": "Black plays bishop delta four.",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pr_5": {
+    "kind": "cut",
+    "carrier": "Black plays bishop echo five.",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pr_6": {
+    "kind": "cut",
+    "carrier": "Black plays bishop foxtrot six.",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pr_7": {
+    "kind": "cut",
+    "carrier": "Black plays bishop golf seven.",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "pr_8": {
+    "kind": "cut",
+    "carrier": "Black plays bishop hotel eight.",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "on_head": {
+    "kind": "cut",
+    "carrier": "On e4 there is no piece.",
+    "wordFrom": 1,
+    "wordTo": 1,
+    "voice": "en-US-AndrewNeural"
+  },
+  "there_is_no_piece": {
+    "kind": "cut",
+    "carrier": "On e4 there is no piece.",
+    "wordFrom": 3,
+    "wordTo": 6,
+    "voice": "en-US-AndrewNeural"
+  },
+  "there_is_no": {
+    "kind": "cut",
+    "carrier": "On e4 there is no queen but a king.",
+    "wordFrom": 3,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "but_a": {
+    "kind": "cut",
+    "carrier": "On e4 there is no queen but a king.",
+    "wordFrom": 7,
+    "wordTo": 8,
+    "voice": "en-US-AndrewNeural"
+  },
+  "no_head": {
+    "kind": "cut",
+    "carrier": "No rook can go to e5.",
+    "wordFrom": 1,
+    "wordTo": 1,
+    "voice": "en-US-AndrewNeural"
+  },
+  "can_go_to": {
+    "kind": "cut",
+    "carrier": "No rook can go to e5.",
+    "wordFrom": 3,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "two_of_your": {
+    "kind": "cut",
+    "carrier": "Two of your rooks can go to e5.",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "on_mid": {
+    "kind": "cut",
+    "carrier": "White king on e1, white queen on d1.",
+    "wordFrom": 3,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "knight_is_on": {
+    "kind": "cut",
+    "carrier": "The knight is on b1.",
+    "wordFrom": 1,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "target": {
+    "kind": "cut",
+    "carrier": "Target g7.",
+    "wordFrom": 1,
+    "wordTo": 1,
+    "voice": "en-US-AndrewNeural"
+  },
+  "moves_left_head": {
+    "kind": "cut",
+    "carrier": "Moves left: 3.",
+    "wordFrom": 1,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "correct_in": {
+    "kind": "cut",
+    "carrier": "Correct, in 4 moves.",
+    "wordFrom": 1,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "moves_tail": {
+    "kind": "cut",
+    "carrier": "Correct, in 4 moves.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "move_tail": {
+    "kind": "cut",
+    "carrier": "Correct, in 1 move.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "knight_from": {
+    "kind": "cut",
+    "carrier": "Knight from a1 to h8 in 3 moves.",
+    "wordFrom": 1,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "to_mid": {
+    "kind": "cut",
+    "carrier": "Knight from a1 to h8 in 3 moves.",
+    "wordFrom": 4,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "in_mid": {
+    "kind": "cut",
+    "carrier": "Knight from a1 to h8 in 3 moves.",
+    "wordFrom": 6,
+    "wordTo": 6,
+    "voice": "en-US-AndrewNeural"
+  },
+  "walk_with_the": {
+    "kind": "cut",
+    "carrier": "Walk with the rook from a1.",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "from": {
+    "kind": "cut",
+    "carrier": "Walk with the rook from a1.",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "a_head": {
+    "kind": "cut",
+    "carrier": "A rook does not go there.",
+    "wordFrom": 1,
+    "wordTo": 1,
+    "voice": "en-US-AndrewNeural"
+  },
+  "does_not_go_there": {
+    "kind": "cut",
+    "carrier": "A rook does not go there.",
+    "wordFrom": 3,
+    "wordTo": 6,
+    "voice": "en-US-AndrewNeural"
+  },
+  "watch_the": {
+    "kind": "cut",
+    "carrier": "Watch the rook.",
+    "wordFrom": 1,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "no_it_was": {
+    "kind": "cut",
+    "carrier": "No. It was a1, b2, c3.",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "squares_to_go_head": {
+    "kind": "cut",
+    "carrier": "Squares to go: 3.",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "the_head": {
+    "kind": "cut",
+    "carrier": "The bishop is on c1.",
+    "wordFrom": 1,
+    "wordTo": 1,
+    "voice": "en-US-AndrewNeural"
+  },
+  "stands_on": {
+    "kind": "cut",
+    "carrier": "The rook stands on a1.",
+    "wordFrom": 3,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "moves_so_far_head": {
+    "kind": "cut",
+    "carrier": "Moves so far: 3.",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "is_on": {
+    "kind": "cut",
+    "carrier": "Not there. The black queen is on d8.",
+    "wordFrom": 6,
+    "wordTo": 7,
+    "voice": "en-US-AndrewNeural"
+  },
+  "which_squares_on_the": {
+    "kind": "cut",
+    "carrier": "Which squares on the e file?",
+    "wordFrom": 1,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "file_tail": {
+    "kind": "cut",
+    "carrier": "Which squares on the e file?",
+    "wordFrom": 6,
+    "wordTo": 6,
+    "voice": "en-US-AndrewNeural"
+  },
+  "which_squares_on_rank": {
+    "kind": "cut",
+    "carrier": "Which squares on rank 4?",
+    "wordFrom": 1,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "you_said": {
+    "kind": "cut",
+    "carrier": "You said a1, b2.",
+    "wordFrom": 1,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "it_reaches": {
+    "kind": "cut",
+    "carrier": "It reaches a1, b2.",
+    "wordFrom": 1,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "no_the": {
+    "kind": "cut",
+    "carrier": "No. The rook is on a1.",
+    "wordFrom": 1,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "where_is_the": {
+    "kind": "cut",
+    "carrier": "Where is the black queen?",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "not_there_the": {
+    "kind": "cut",
+    "carrier": "Not there. The black queen is on d8.",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "who_attacks_the": {
+    "kind": "cut",
+    "carrier": "Who attacks the black knight on e5?",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "find_head": {
+    "kind": "cut",
+    "carrier": "Find 2.",
+    "wordFrom": 1,
+    "wordTo": 1,
+    "voice": "en-US-AndrewNeural"
+  },
+  "attackers_head": {
+    "kind": "cut",
+    "carrier": "Attackers: a1, b2.",
+    "wordFrom": 1,
+    "wordTo": 1,
+    "voice": "en-US-AndrewNeural"
+  },
+  "no_square_is": {
+    "kind": "cut",
+    "carrier": "No, the square is light.",
+    "wordFrom": 1,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "light_tail": {
+    "kind": "cut",
+    "carrier": "No, the square is light.",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "dark_tail": {
+    "kind": "cut",
+    "carrier": "No, the square is dark.",
+    "wordFrom": 5,
+    "wordTo": 5,
+    "voice": "en-US-AndrewNeural"
+  },
+  "time_is_up_square_is": {
+    "kind": "cut",
+    "carrier": "Time is up, the square is light.",
+    "wordFrom": 1,
+    "wordTo": 6,
+    "voice": "en-US-AndrewNeural"
+  },
+  "correct_head": {
+    "kind": "cut",
+    "carrier": "Correct 3 out of 5.",
+    "wordFrom": 1,
+    "wordTo": 1,
+    "voice": "en-US-AndrewNeural"
+  },
+  "end_of_session_solved": {
+    "kind": "cut",
+    "carrier": "End of session. Solved 3 out of 5.",
+    "wordFrom": 1,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "end_of_session_correct": {
+    "kind": "cut",
+    "carrier": "End of session. Correct 3 out of 5.",
+    "wordFrom": 1,
+    "wordTo": 4,
+    "voice": "en-US-AndrewNeural"
+  },
+  "out_of": {
+    "kind": "cut",
+    "carrier": "End of session. Solved 3 out of 5.",
+    "wordFrom": 6,
+    "wordTo": 7,
+    "voice": "en-US-AndrewNeural"
+  },
+  "solved_head": {
+    "kind": "cut",
+    "carrier": "Solved 4 out of 6. Mistakes 2.",
+    "wordFrom": 1,
+    "wordTo": 1,
+    "voice": "en-US-AndrewNeural"
+  },
+  "mistakes_head": {
+    "kind": "cut",
+    "carrier": "Solved 4 out of 6. Mistakes 2.",
+    "wordFrom": 6,
+    "wordTo": 6,
+    "voice": "en-US-AndrewNeural"
+  },
+  "you_earned": {
+    "kind": "cut",
+    "carrier": "You earned four hundred twenty points.",
+    "wordFrom": 1,
+    "wordTo": 2,
+    "voice": "en-US-AndrewNeural"
+  },
+  "points_tail": {
+    "kind": "cut",
+    "carrier": "You earned four hundred twenty points.",
+    "wordFrom": 6,
+    "wordTo": 6,
+    "voice": "en-US-AndrewNeural"
+  },
+  "confirm_give_up": {
+    "kind": "phrase",
+    "carrier": "Touch again to give up.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "confirm_stop": {
+    "kind": "phrase",
+    "carrier": "Touch again to stop.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "correct": {
+    "kind": "phrase",
+    "carrier": "Correct.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "nothing_to_undo": {
+    "kind": "phrase",
+    "carrier": "There is nothing to undo.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "undone": {
+    "kind": "phrase",
+    "carrier": "Move taken back.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "moving_to_next_position": {
+    "kind": "phrase",
+    "carrier": "Moving on to the next position.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "say_origin_too": {
+    "kind": "phrase",
+    "carrier": "Say the starting square as well.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "outcome_mated": {
+    "kind": "phrase",
+    "carrier": "Checkmate! The position is finished off.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "outcome_lost": {
+    "kind": "phrase",
+    "carrier": "You are checkmated, in a winning position.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "outcome_stalemate": {
+    "kind": "phrase",
+    "carrier": "Stalemate, a won position thrown away.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "outcome_fifty_moves": {
+    "kind": "phrase",
+    "carrier": "Fifty moves without progress.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "outcome_gave_up": {
+    "kind": "phrase",
+    "carrier": "The pieces are revealed.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "not_that": {
+    "kind": "phrase",
+    "carrier": "Not that one.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "gave_up_moving_on": {
+    "kind": "phrase",
+    "carrier": "You gave up. Moving on to the next one.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "puzzle_solved": {
+    "kind": "phrase",
+    "carrier": "Puzzle solved.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "not_knight_move": {
+    "kind": "phrase",
+    "carrier": "That is not a knight move.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "piece_in_the_way": {
+    "kind": "phrase",
+    "carrier": "There is a piece there.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "square_is_attacked": {
+    "kind": "phrase",
+    "carrier": "That square is attacked.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "already_there": {
+    "kind": "phrase",
+    "carrier": "The knight is already there.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "shortest_goes_like_this": {
+    "kind": "phrase",
+    "carrier": "That did not work. The shortest way goes like this:",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "walk_visited": {
+    "kind": "phrase",
+    "carrier": "You have been there already.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "walk_stuck": {
+    "kind": "phrase",
+    "carrier": "No square left. The walk ends here.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "walk_replay": {
+    "kind": "phrase",
+    "carrier": "Here is the walk you made.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "retell_now": {
+    "kind": "phrase",
+    "carrier": "Now say the path, from the first square.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "walk_as_rook": {
+    "kind": "phrase",
+    "carrier": "Now as a rook.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "walk_as_bishop": {
+    "kind": "phrase",
+    "carrier": "Now as a bishop.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "reach_none": {
+    "kind": "phrase",
+    "carrier": "None.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "walk_how_to": {
+    "kind": "phrase",
+    "carrier": "Touch the microphone, then say one square.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "reach_how_to": {
+    "kind": "phrase",
+    "carrier": "Touch the microphone for each square, then touch done.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "game_ready": {
+    "kind": "phrase",
+    "carrier": "The game is ready. Touch for the first move.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "light_square": {
+    "kind": "phrase",
+    "carrier": "Light.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "dark_square": {
+    "kind": "phrase",
+    "carrier": "Dark.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "all_correct": {
+    "kind": "phrase",
+    "carrier": "All correct.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "summary_zones": {
+    "kind": "phrase",
+    "carrier": "Again at the top, result in the middle, menu at the bottom.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "summary_rank_up": {
+    "kind": "phrase",
+    "carrier": "New rank.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  },
+  "summary_achievement": {
+    "kind": "phrase",
+    "carrier": "New achievement.",
+    "wordFrom": null,
+    "wordTo": null,
+    "voice": "en-US-AndrewNeural"
+  }
+}

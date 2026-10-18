@@ -1,5 +1,7 @@
 package com.program.blindfoldtrainer.feature.followgame
 
+import com.program.blindfoldtrainer.core.audio.EnglishPhrases
+import com.program.blindfoldtrainer.core.audio.SpokenLine
 import com.program.blindfoldtrainer.core.chess.Color
 import com.program.blindfoldtrainer.core.chess.Piece
 import com.program.blindfoldtrainer.core.chess.PieceType
@@ -25,20 +27,20 @@ sealed interface FollowGameQuestion {
     /** Sva polja koja se traže. Pitanje je rešeno kad su sva nađena. */
     val expected: Set<Square>
 
-    /** Tekst pitanja na ekranu. */
-    val prompt: String
+    /** Pitanje — isti spisak isečaka se čuje i crta na ekranu ([SpokenLine.text]). */
+    val prompt: SpokenLine
 
     /** Istina koja se kaže posle promašaja — vežba pokazuje, test samo ocenjuje. */
-    val correction: String
+    val correction: SpokenLine
 
     /** „Gde stoji crna dama?" */
     data class WhereIs(val piece: Piece, val square: Square) : FollowGameQuestion {
         override val expected: Set<Square> get() = setOf(square)
 
-        override val prompt: String get() = "Gde stoji ${piece.spokenName()}?"
+        override val prompt: SpokenLine get() = EnglishPhrases.whereIsPiece(piece)
 
-        override val correction: String
-            get() = "Nije tu. ${piece.spokenName().replaceFirstChar { it.uppercase() }} je na $square"
+        override val correction: SpokenLine
+            get() = EnglishPhrases.notThereIsOn(piece, square)
     }
 
     /**
@@ -54,12 +56,11 @@ sealed interface FollowGameQuestion {
         override val expected: Set<Square>
     ) : FollowGameQuestion {
 
-        override val prompt: String
-            get() = "Ko napada ${target.spokenName()} na $targetSquare? " +
-                "(${expected.size})"
+        override val prompt: SpokenLine
+            get() = EnglishPhrases.whoAttacks(target, targetSquare, expected.size)
 
-        override val correction: String
-            get() = "Napadaju: " + expected.sortedBy { it.index }.joinToString(", ")
+        override val correction: SpokenLine
+            get() = EnglishPhrases.attackersAre(expected.sortedBy { it.index })
     }
 }
 
@@ -120,21 +121,3 @@ fun attackersQuestionFor(
 
 private fun Color.opposite(): Color = if (this == Color.WHITE) Color.BLACK else Color.WHITE
 
-internal fun Piece.spokenName(): String {
-    val isFeminine = type == PieceType.QUEEN
-    val color = when {
-        this.color == Color.WHITE && isFeminine -> "bela"
-        this.color == Color.WHITE -> "beli"
-        isFeminine -> "crna"
-        else -> "crni"
-    }
-    val name = when (type) {
-        PieceType.PAWN -> "pešak"
-        PieceType.KNIGHT -> "skakač"
-        PieceType.BISHOP -> "lovac"
-        PieceType.ROOK -> "top"
-        PieceType.QUEEN -> "dama"
-        PieceType.KING -> "kralj"
-    }
-    return "$color $name"
-}

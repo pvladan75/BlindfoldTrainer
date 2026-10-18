@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="geometry_title">Geometrija table</string>
-    <string name="geometry_description">Boja polja bez gledanja u tablu. Zagrevanje koje ide brzo i gradi osnovu za sve ostalo.</string>
+    <string name="geometry_title">Board Geometry</string>
+    <string name="geometry_description">The colour of a square without looking at the board. A warm-up that goes fast and builds the base for everything else.</string>
 </resources>

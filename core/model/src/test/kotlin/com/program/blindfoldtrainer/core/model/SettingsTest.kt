@@ -19,31 +19,24 @@ class SettingsTest {
         assertFalse(settings.separateLetterAndNumber)
     }
 
+    /**
+     * Odluka od 18. oktobra 2026: aplikacija je samo na engleskom. Test drži tu
+     * odluku vidljivom — ko doda jezik, mora prvo ovde da kaže da je to namerno,
+     * pa onda da mu da rečenice, reči i paket.
+     */
     @Test
-    fun `fonetska abeceda postoji samo uz engleski`() {
-        assertTrue(Settings.DEFAULT.isPhoneticAlphabetAvailable)
-
-        Language.entries
-            .filterNot { it == Language.ENGLISH }
-            .forEach { language ->
-                assertFalse(
-                    Settings.DEFAULT.copy(language = language).isPhoneticAlphabetAvailable,
-                    language.name
-                )
-            }
+    fun `jezik je jedan, engleski`() {
+        assertEquals(listOf(Language.ENGLISH), Language.entries.toList())
     }
 
+    /** Fonetske reči su engleske; uz jedini jezik su zato uvek dostupne. */
     @Test
-    fun `promena jezika gasi fonetske reci ali ne brise izbor`() {
-        val onEnglish = Settings.DEFAULT.copy(phoneticAlphabet = true)
-        assertTrue(onEnglish.usesPhoneticAlphabet)
+    fun `fonetska abeceda je dostupna uz engleski`() {
+        assertTrue(Settings.DEFAULT.isPhoneticAlphabetAvailable)
 
-        val onGerman = onEnglish.copy(language = Language.GERMAN)
-        assertFalse(onGerman.usesPhoneticAlphabet, "reči se ne smeju slušati")
-        assertTrue(onGerman.phoneticAlphabet, "izbor mora ostati upamćen")
-
-        // Povratak na engleski vraća i izbor, bez ponovnog uključivanja.
-        assertTrue(onGerman.copy(language = Language.ENGLISH).usesPhoneticAlphabet)
+        val on = Settings.DEFAULT.copy(phoneticAlphabet = true)
+        assertTrue(on.usesPhoneticAlphabet)
+        assertFalse(Settings.DEFAULT.usesPhoneticAlphabet)
     }
 
     @Test

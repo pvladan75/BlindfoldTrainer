@@ -106,7 +106,7 @@ private fun ProgressHeader(uiState: RecallUiState) {
                 style = MaterialTheme.typography.labelMedium
             )
             Text(
-                text = "Rešeno: ${uiState.solved}   Greške: ${uiState.mistakes}",
+                text = "Solved: ${uiState.solved}   Mistakes: ${uiState.mistakes}",
                 style = MaterialTheme.typography.labelMedium
             )
         }
@@ -133,12 +133,12 @@ private fun PhasePrompt(uiState: RecallUiState) {
     val grade = uiState.grade
 
     val text = when (uiState.phase) {
-        RecallPhase.MEMORIZE -> "Zapamti poziciju"
-        RecallPhase.PLACING -> "Vrati figure na svoja polja"
+        RecallPhase.MEMORIZE -> "Memorise the position"
+        RecallPhase.PLACING -> "Put the pieces back on their squares"
         RecallPhase.REVIEW -> when {
             grade == null -> ""
-            grade.isPerfect -> "Sve tačno!"
-            else -> "Tačno ${grade.correct.size} od ${grade.correct.size + grade.missed.size}"
+            grade.isPerfect -> "All correct!"
+            else -> "Correct: ${grade.correct.size} of ${grade.correct.size + grade.missed.size}"
         }
     }
 
@@ -207,12 +207,12 @@ private fun PhaseButton(
     when (uiState.phase) {
         RecallPhase.MEMORIZE ->
             Button(onClick = onReady, modifier = modifier) {
-                Text("ZAPAMTIO SAM", fontWeight = FontWeight.Bold)
+                Text("MEMORISED", fontWeight = FontWeight.Bold)
             }
 
         RecallPhase.PLACING ->
             OutlinedButton(onClick = onGiveUp, modifier = modifier) {
-                Text("PROVERI / ODUSTANI")
+                Text("CHECK / GIVE UP")
             }
 
         // Sledeći zadatak stiže sam; dugme bi samo mamilo na dodir.

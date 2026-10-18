@@ -97,9 +97,9 @@ data class SkillTally(
     val millis: Long = 0
 ) {
     init {
-        require(attempted >= 0) { "attempted ne može biti negativan" }
-        require(solved in 0..attempted) { "solved ($solved) mora biti u 0..attempted ($attempted)" }
-        require(millis >= 0) { "millis ne može biti negativan" }
+        require(attempted >= 0) { "attempted cannot be negative" }
+        require(solved in 0..attempted) { "solved ($solved) must be in 0..attempted ($attempted)" }
+        require(millis >= 0) { "millis cannot be negative" }
     }
 
     /** Prosečno vreme po pokušaju, ili `null` dok se nema šta prosečiti. */
@@ -200,10 +200,10 @@ data class SessionResult(
     val heldUntil: Int? = null
 ) {
     init {
-        require(attempted >= 0) { "attempted ne može biti negativan" }
-        require(solved in 0..attempted) { "solved ($solved) mora biti u 0..attempted ($attempted)" }
-        require(mistakes >= 0) { "mistakes ne može biti negativan" }
-        require(elapsedMillis >= 0) { "elapsedMillis ne može biti negativan" }
+        require(attempted >= 0) { "attempted cannot be negative" }
+        require(solved in 0..attempted) { "solved ($solved) must be in 0..attempted ($attempted)" }
+        require(mistakes >= 0) { "mistakes cannot be negative" }
+        require(elapsedMillis >= 0) { "elapsedMillis cannot be negative" }
     }
 
     /** Sve rešeno, bez ijedne greške. */

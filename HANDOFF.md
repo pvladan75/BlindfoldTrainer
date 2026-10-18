@@ -1542,6 +1542,150 @@ strukturi**: ništa se ne premešta, ne preimenuje, ne grupiše.
 1. **Preuređenje ekrana i navigacije** — grupisanje srodnog, sistematizacija gde
    se šta nalazi. **Čeka podatke iz upotrebe**, po dogovoru: prvo videti gde se
    deca zaista izgube, pa onda crtati.
+
+   1a. **Aplikacija je samo na engleskom — zatvoreno 18. oktobra 2026.** Odluka
+   vlasnika od istog dana: govor, slušanje i ekran su engleski. Govor i slušanje
+   su to već bili (Vosk samo engleski, `EnglishPhrases` jedina implementacija);
+   ova sesija je prevela ekran i obrisala jezike koji nikad nisu provereni.
+   Komentari u kodu i ovaj fajl ostaju na srpskom; sajt i Play listing su već
+   bili engleski.
+
+   **Šta je obrisano:** osam jezika iz `Language` (nemački, ruski, francuski,
+   španski, italijanski, poljski, češki, turski) sa svojim tabelama reči u
+   `SpeechLanguages` i `VoiceLanguages`; `TRANSLATED_LANGUAGES`; birač jezika u
+   Podešavanjima (`LanguageSection`, `SpeechLanguagePicker`, `Language.labelRes`)
+   i `onLanguage` sa `speakableLanguages` u `SettingsViewModel`; 17 stringova
+   birača (`language_*`, `settings_speech_language*`, `settings_language_title*`,
+   `settings_speech_no_voice`, `settings_speech_not_translated`,
+   `settings_voice_no_model`). `Language` i polje `Settings.language` ostaju sa
+   jednom vrednošću, jer po njima žive DataStore ključ i folder paketa za
+   slušanje; upisano ime jezika koji više ne postoji ne nalazi član enuma i čita
+   se kao engleski, bez rušenja. Klizač brzine govora je dobio svoju karticu
+   („Speech“), a preuzimanje paketa za slušanje je prešlo na vrh kartice „Voice
+   input“ — bez paketa nijedan prekidač ispod ne radi.
+
+   **Srpska množina je izašla iz `Quantities`:** ostala su dva oblika (jedan /
+   više), a `secondsLabel` daje decimalnu tačku umesto zareza („3.5“). Imena
+   figura u pitanjima „Prati partiju“ su engleska, bez roda; `SpeechWords` je
+   zadržao polja za rod jer ih engleski ne koristi a brisanje nije bilo traženo.
+   Prvi profil se zove „Profile 1“, i u migraciji baze, da nadogradnja ne ostavi
+   srpsko ime.
+
+   **Rečnik** srpski → engleski, da se isti pojam ne prevodi dvaput:
+
+   | srpski | engleski |
+   |---|---|
+   | oslonac | support |
+   | orijentir | benchmark |
+   | provera | check-up |
+   | presek | snapshot |
+   | kartica „Predlog“ | Suggestion |
+   | istrajnost | persistence |
+   | savladano / drži / u izgradnji / još nije probano | mastered / holds / building / not tried yet |
+   | prečke: najviše pomoći, pogledaj pa zapamti, samo tragovi, bez table | most help, look then remember, traces only, no board |
+   | rangovi: Početnik, Đak, Amater, Iskusan, Majstor, Velemajstor | Beginner, Student, Amateur, Experienced, Master, Grandmaster |
+   | veštine: Snalaženje po tabli, Domet figure, Držanje pozicije, Ažuriranje pozicije, Prevod zapisa u sliku, Oporavak slike, Kontrola polja, Računanje naslepo | Board coordinates, Piece reach, Holding the position, Updating the position, Notation to picture, Picture recovery, Square control, Blindfold calculation |
+   | moduli: Geometrija table, Raskini vezu, Dokrajči protivnika, Putanja skakača, Zapamti poziciju, Prati partiju, Postavi po diktatu, Daj šah, Kretanje figura | Board Geometry, Break the Link, Convert the Win, Knight Path, Remember the Position, Follow the Game, Set Up by Dictation, Give Check, Piece Movement |
+   | zadaci: Boja polja, Najkraći put skakača, Polje nove veze, Gde stoji figura, Ko napada figuru, Šah kroz držana polja, Šah bez uzimanja, Privođenje kraju, Rekonstrukcija viđenog, Slaganje po diktatu, Domet na liniji, Prepričaj putanju, Šetnja figurom, Šetnja skakačem | Square colour, Shortest knight path, Square of the new link, Where the piece is, Who attacks the piece, Check through guarded squares, Check without capturing, Playing it out, Rebuilding what you saw, Setting up by dictation, Reach along a line, Retell the path, Piece walk, Knight walk |
+
+   Pravopis je britanski (colour, memorise, defence). Uputstvo je prevedeno po
+   smislu, sa svim tvrdnjama iz srpskog; imena modula i dugmadi koja uputstvo
+   navodi („Follow the Game“, „I HAVE MEMORISED IT“) su ista kao na ekranu.
+
+   **Čuvar teksta** (`StringsTest`) sad čita i `feature/*/strings.xml` i drži
+   englesku tipografiju: nijedan ASCII navodnik ni apostrof, ni escape-ovan —
+   “ ” za navod, ’ za apostrof, i nijedan srpski „. Mutacijom provereno: `\'` u
+   app stringu i `\"` u feature stringu obaraju test imenom unosa. Sirov
+   neescape-ovan apostrof ne stiže ni do testa — AGP ga odbija već pri
+   kompajliranju resursa, sa porukom koja ne kaže o čemu se radi („Invalid
+   unicode escape sequence“).
+
+   **Brojevi:** testova je bilo 308 (18. oktobra, `1594d46`), sada **305**:
+   otišla su četiri koja su merila samo srpsko ili nemačko (dva u
+   `QuantitiesTest`, po jedan u `SpeechPhrasesTest` i `SpokenBoardTest`),
+   `SettingsTest` je nemački test zamenio testom „jezik je jedan“, a `StringsTest`
+   je dobio proveru za srpske navodnike. Stringova: 263 + 31 → 247 + 31.
+   Provere da srpskog nema: grep po dijakriticima i grep po spisku čestih reči
+   (potez, figura, polje, tabla, tačno, greške, odustani, ponovi…) u glavnom
+   Kotlin kodu van komentara vraćaju ništa; treća provera, po parovima srpskih
+   veznika u literalima, takođe.
+
+   **Nije viđeno na uređaju:** ništa od ovoga. Na telefonu treba pogledati celo
+   uputstvo („How this works“), sažetak sesije, ekran Podešavanja bez kartice
+   jezika (brzina u „Speech“, paket u „Voice input“), Napredak i Presek (oznake
+   stepena, orijentira i prečki), i module u režimu bez ekrana — natpisi zona su
+   na engleskom duži („LISTENING — TOUCH TO STOP“, „I KNOW WHERE EVERYTHING IS“)
+   i mogu da se prelome. Posebno: Diktat i Zapamti poziciju (dugmad), Dokrajči
+   protivnika („Mate in 7“, ishodi), Prati partiju (pitanja sa engleskim imenima
+   figura).
+
+   1b. **Govor iz snimljenih isečaka umesto TTS-a — ugrađeno 18. oktobra 2026.**
+   Vlasnikov predlog istog dana: za ono što aplikacija izgovara koristiti Azure
+   glas koji Mislisha već koristi, istim ključem. Odluke, sve po preporuci i
+   potvrđene uhom: **isečci u APK-u, slepljeni na uređaju** (ne Azure sa
+   telefona — ključ bi stajao u APK-u gde ga svako može izvući i trošiti na
+   vlasnikov račun, a aplikacija je bez mreže), **TTS na uređaju obrisan** (jedan
+   glas, kao u Mislishi), **Mislishin alat proširen** umesto kopiran, i **prvo
+   proba od 20 rečenica** pa ceo rečnik. Glas je `en-US-AndrewNeural`, isti koji
+   je vlasnik izabrao u Mislishi 2.10.2026.
+
+   **Kako radi.** Rečenica više nije niz znakova nego `SpokenLine` — spisak
+   isečaka (`SpokenToken.Clip`) i tišina (`Pause`); isti spisak daje tekst za
+   ekran i zvuk za zvučnik. `SpeechVocabulary` (`core/audio`) je jedini rečnik:
+   svaki isečak ima id, tekst i recept — cela rečenica (fraza) ili reč isečena
+   iz **nosive rečenice** istog oblika po vremenima reči koje Azure SDK javi
+   (reč snimljena sama pada kao kraj rečenice; Mislisha to platila na uhu).
+   `SpeechPhrases` vraća `SpokenLine`, a parametri su tipovi (`PieceType`,
+   `Piece`, `Char`), ne reči. `ClipSpeaker` lepi PCM i pušta kroz `AudioTrack`
+   (static mode, jedan track po najavi); `isSpeaking` pada po markeru ili po
+   izračunatom trajanju — dužina se zna do bajta, pa osigurač više ne pogađa.
+   Brzina govora ostaje: `PlaybackParams.setSpeed` rasteže tempo bez promene
+   visine. Polja, figure, brojevi 0–100 i redovi nose **iste id-jeve i nosive
+   rečenice kao Mislisha**, pa ih render uzima iz svog keša; stotine i hiljade
+   („four hundred", „one thousand") postoje jer poeni sesije prelaze sto.
+
+   **Brojevi.** 429 isečaka, 10,8 MB WAV (22050 Hz, 16 bit, mono) u
+   `core/audio/src/main/assets/speech/`, uz `manifest.json` (ispis rečnika) i
+   `rendered.json` (katanac renderera). 399 nosivih rečenica, od kojih 271 iz
+   Mislishinog keša; novih 128 sa 3534 znaka poslato Azure-u — ceo trošak ove
+   izmene. APK raste za tih 10,8 MB; isečci su u gitu jer su reproduktivni iz
+   manifesta i alata. Testova: 302 (bilo 305): otišli
+   `OrdinalPeriodTest` (tačka iza cifre je bio TTS problem) i `SpokenBoardTest`,
+   dva testa u `SpokenSquareTest` koji su poredili govor sa slušanjem;
+   došli `SpokenLineTest` (6) i `SpeechVocabularyTest` (6) — manifest jednak
+   rečniku (razlika upisuje očekivani u `build/speech-manifest/`), svaki
+   isečak ima fajl traženog oblika, katanac se slaže sa receptom, nema fajla
+   bez isečka, i **rečenice i rečnik traže isto** (refleksijom preko svih
+   članova sučelja sa svim vrednostima parametara). Taj poslednji je bio crven
+   na siročićima (`hundreds_3`…) i na fajlovima koji nedostaju pre nego što je
+   sve snimljeno — čuvar je time dokazan.
+
+   **Alat.** Mislishin `tools/speech_clips/render.js` prima `--manifest` i
+   `--out` (podrazumevano i dalje Mislishini asseti); za frazu više ne traži da
+   se broj reči slaže sa SDK-om (Azure je za „That square is attacked." javio
+   tri reči). Nov `listen.js` lepi rečenice iz manifesta u wav za slušanje.
+   Postupak kad se rečenica doda ili izmeni: izmena u `SpeechVocabulary`, pad
+   testa upiše manifest u `build/`, prekopira se u assets, pa iz Mislishinog
+   korena `node tools/speech_clips/render.js --manifest <putanja>`; ključ i
+   region su u `chess_backend/.env`, nikad ovde. Mislishine izmene nisu
+   komitovane u njenom repou.
+
+   **Šta se promenilo za uho.** „Prati partiju": „Who attacks the black knight
+   on e5? Find 2." umesto „(2)"; `retellLeft`/`walkHeld`/`movesLeft` kažu
+   „Squares to go: 3." / „Moves so far: 3." / „Moves left: 3." (broj na kraju,
+   jer se tako seče). Ishodi Završnice bez crte („You are checkmated, in a
+   winning position."). Pozicija: „white king on e2 · white queen on e5 · black
+   king on h6" sa 180 ms između figura i 400 ms između strana — ti brojevi su
+   prvi predlog i menjaju se u `SpeechVocabulary` bez snimanja.
+
+   **Nije viđeno na uređaju:** ništa od ovoga; vlasnik je čuo 20 rečenica iz
+   `listen.js` na računaru i prihvatio ih. Na telefonu treba: svaki modul u
+   režimu bez ekrana (prva rečenica posle ulaska — isečci se učitavaju pri
+   podizanju, ~11 MB), „ponovi" (fonetski: „echo four"), čitanje pozicije u
+   Završnici i Raskini vezu (pauze), brzina govora iz Podešavanja (da
+   `PlaybackParams` radi na tom uređaju), sažetak sesije sa poenima preko sto,
+   i da mikrofon kreće tačno kad glas stane (`isSpeaking`).
+
 2. **Oporavak slike i računanje naslepo** nemaju proveru zato što ih nijedan
    zadatak ne meri. Njima fali **vežba** — nov modul veličine „Daj šah", ne unos
    u spisak provera. Za oporavak bi to bilo nešto kao: prati poziciju, pa se u
@@ -1563,8 +1707,9 @@ strukturi**: ništa se ne premešta, ne preimenuje, ne grupiše.
    dana.
 2. Zatim server: prvo čuvanje napretka, pa dnevni zadatak, pa lestvica po
    istrajnosti. Nikako lestvica po veštinama.
-3. Nedovršeno sa spiska: prevod ekranskog teksta, ekran dostignuća, smislene
-   pozicije za „Zapamti poziciju" i „Diktat", težine u Geometriji, podsetnici.
+3. Nedovršeno sa spiska: ekran dostignuća, smislene pozicije za „Zapamti
+   poziciju" i „Diktat", težine u Geometriji, podsetnici. (Prevod ekranskog
+   teksta je zatvoren 18. oktobra 2026 — vidi 1a gore.)
 
 ---
 

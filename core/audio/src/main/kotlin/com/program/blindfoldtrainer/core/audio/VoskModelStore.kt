@@ -86,14 +86,14 @@ class VoskModelStore @Inject constructor(
                     _state.value = ModelState.Idle
                 } else {
                     directoryFor(language).deleteRecursively()
-                    _state.value = ModelState.Failed(language, "Preuzeti paket je nepotpun")
+                    _state.value = ModelState.Failed(language, "The downloaded package is incomplete")
                 }
             } catch (cancellation: CancellationException) {
                 cleanUp(language)
                 _state.value = ModelState.Idle
                 throw cancellation
             } catch (error: Throwable) {
-                Log.e(TAG, "Preuzimanje paketa za ${language.code} nije uspelo", error)
+                Log.e(TAG, "Downloading the package for ${language.code} failed", error)
                 cleanUp(language)
                 _state.value = ModelState.Failed(
                     language,
@@ -136,7 +136,7 @@ class VoskModelStore @Inject constructor(
 
         try {
             val code = connection.responseCode
-            if (code !in 200..299) error("Server je vratio $code")
+            if (code !in 200..299) error("Server returned $code")
 
             val total = connection.contentLengthLong.takeIf { it > 0 }
             var written = 0L

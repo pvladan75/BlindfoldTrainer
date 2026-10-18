@@ -221,8 +221,8 @@ enum class Support(val key: String) {
  */
 data class Benchmark(val millisPerAttempt: Long, val minAccuracy: Float) {
     init {
-        require(millisPerAttempt > 0) { "orijentir bez vremena ne bi značio ništa" }
-        require(minAccuracy in 0f..1f) { "tačnost je udeo, dobijeno $minAccuracy" }
+        require(millisPerAttempt > 0) { "a benchmark without a time would mean nothing" }
+        require(minAccuracy in 0f..1f) { "accuracy is a fraction, got $minAccuracy" }
     }
 }
 
@@ -274,9 +274,9 @@ data class TaskSpec(
     val supportIsLadder: Boolean = true
 ) {
     init {
-        require(id.isNotBlank()) { "zadatak mora imati ključ" }
-        require(skills.isNotEmpty()) { "zadatak bez veštine ne bi imao svrhu: $id" }
-        require(supports.isNotEmpty()) { "zadatak mora imati bar jednu prečku: $id" }
+        require(id.isNotBlank()) { "a task must have a key" }
+        require(skills.isNotEmpty()) { "a task without a skill would have no purpose: $id" }
+        require(supports.isNotEmpty()) { "a task must have at least one support level: $id" }
     }
 
     /** Veština koju ovaj zadatak **meri** — po njoj ide u profil. */

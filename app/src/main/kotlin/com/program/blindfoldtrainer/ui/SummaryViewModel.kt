@@ -3,6 +3,7 @@ package com.program.blindfoldtrainer.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.program.blindfoldtrainer.core.audio.Speaker
+import com.program.blindfoldtrainer.core.audio.joined
 import com.program.blindfoldtrainer.core.model.SessionResult
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
@@ -66,6 +67,6 @@ class SummaryViewModel @Inject constructor(
                 if (it.isRankUp) add(summaryRankUp)
                 if (it.newAchievements.isNotEmpty()) add(summaryAchievement)
             }
-        }.joinToString(" ")
+        }.joined()
     }
 }

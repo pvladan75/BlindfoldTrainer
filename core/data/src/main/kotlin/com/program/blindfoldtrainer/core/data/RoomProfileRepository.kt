@@ -92,7 +92,7 @@ class RoomProfileRepository @Inject constructor(
 
     private companion object {
         val ACTIVE_PROFILE = longPreferencesKey("active_profile")
-        const val FIRST_PROFILE_NAME = "Profil 1"
+        const val FIRST_PROFILE_NAME = "Profile 1"
     }
 }
 

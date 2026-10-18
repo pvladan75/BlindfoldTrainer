@@ -1,8 +1,11 @@
 package com.program.blindfoldtrainer.core.audio
 
+import com.program.blindfoldtrainer.core.audio.SpeechVocabulary.asLine
 import com.program.blindfoldtrainer.core.chess.Piece
 import com.program.blindfoldtrainer.core.chess.PieceType
+import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.Language
+import com.program.blindfoldtrainer.core.audio.SpokenToken.Pause
 
 /**
  * Rečenice koje aplikacija izgovara.
@@ -24,407 +27,374 @@ import com.program.blindfoldtrainer.core.model.Language
  * na engleskom mora biti „in 1 move", a u množini „in 3 moves". Funkcija to
  * reši u jeziku kom pripada, umesto da se svuda po modulima pravi izuzetak.
  *
+ * ### Od 18. oktobra 2026: rečenica je spisak isečaka
+ *
+ * Govor ne ide kroz TTS nego iz snimljenih isečaka ([SpeechVocabulary]), pa
+ * svaka rečenica vraća [SpokenLine] — šta se čuje i šta piše, iz istog spiska.
+ * Parametri su zato **tipovi**, ne reči: figura je [PieceType], jer rečenica
+ * mora da zna koji isečak da uzme, a ime figure u tekstu je posledica.
+ *
  * ### Šta ovde **ne** ide
  *
- * Samo ono što se **čuje**. Tekst koji se vidi na ekranu prati jezik aplikacije,
- * a to je druga osa: čovek sme da drži aplikaciju na svom jeziku a da polja
- * sluša na engleskom, jer engleski TTS glas ima svaki telefon a njegov možda
- * nema. Gde ista rečenica danas ide i u govor i na ekran — ishod u Završnici i
- * pitanje u Prati partiju — govor uzima odavde, a ekran ostaje na svome.
+ * Samo ono što se **čuje**. Gde ista rečenica ide i u govor i na ekran — ishod u
+ * Završnici, pitanje u Prati partiju — ekran crta [SpokenLine.text].
  */
 interface SpeechPhrases {
 
     // — zajedničko za module —
 
     /** Prvi dodir na zonu za odustajanje; drugi zaista odustaje. */
-    val confirmGiveUp: String
+    val confirmGiveUp: SpokenLine
 
     /** Isto, tamo gde se sesija prekida a ne odustaje od zadatka. */
-    val confirmStop: String
+    val confirmStop: SpokenLine
 
-    val correct: String
+    val correct: SpokenLine
 
     /** „Kraj sesije. Rešeno 3 od 5" — tamo gde se zadaci rešavaju. */
-    fun sessionEndSolved(solved: Int, total: Int): String
+    fun sessionEndSolved(solved: Int, total: Int): SpokenLine
 
     /** Isto, tamo gde se na pitanja odgovara tačno ili netačno. */
-    fun sessionEndCorrect(correct: Int, total: Int): String
+    fun sessionEndCorrect(correct: Int, total: Int): SpokenLine
 
     // — Dokrajči protivnika —
 
-    val nothingToUndo: String
-    val undone: String
-    val movingToNextPosition: String
+    val nothingToUndo: SpokenLine
+    val undone: SpokenLine
+    val movingToNextPosition: SpokenLine
 
     /** Ide ispred izgovorenog polja: „Na" pa „ce tri". */
-    val onSquare: String
+    val onSquare: SpokenLine
 
     /**
-     * „nije top nego dama" — imena figura stižu spolja, iz [SpeechWords], jer
-     * ona jezik već prate.
+     * Ide iza polja: „nije top nego lovac". Figure stižu kao tipovi, da
+     * rečenica sama nađe isečak.
      */
-    fun pieceMismatch(named: String, actual: String): String
+    fun pieceMismatch(named: PieceType, actual: PieceType): SpokenLine
 
-    val noPieceThere: String
+    val noPieceThere: SpokenLine
 
-    fun noneCanReach(piece: String): String
+    fun noneCanReach(piece: PieceType): SpokenLine
 
-    fun twoCanReach(piece: String): String
+    fun twoCanReach(piece: PieceType): SpokenLine
 
-    val sayOriginToo: String
+    val sayOriginToo: SpokenLine
 
-    val outcomeMated: String
-    val outcomeLost: String
-    val outcomeStalemate: String
-    val outcomeFiftyMoves: String
-    val outcomeGaveUp: String
+    val outcomeMated: SpokenLine
+    val outcomeLost: SpokenLine
+    val outcomeStalemate: SpokenLine
+    val outcomeFiftyMoves: SpokenLine
+    val outcomeGaveUp: SpokenLine
 
-    // — Interaktivni parovi —
+    // — Raskini vezu —
 
-    val notThat: String
-    val gaveUpMovingOn: String
-    val puzzleSolved: String
+    val notThat: SpokenLine
+    val gaveUpMovingOn: SpokenLine
+    val puzzleSolved: SpokenLine
 
-    // — Putanja skakača —
+    // — Putanja skakača / Daj šah —
 
-    val knightIsOn: String
+    val knightIsOn: SpokenLine
 
-    /** „cilj" — stoji između trenutnog i ciljnog polja. */
-    val goal: String
+    val goal: SpokenLine
 
-    fun movesLeft(moves: Int): String
+    fun movesLeft(moves: Int): SpokenLine
 
-    val notKnightMove: String
+    val notKnightMove: SpokenLine
 
-    /** Skakač bi tu uzeo figuru, a zadatak traži da prođe neprimećen. */
-    val pieceInTheWay: String
+    val pieceInTheWay: SpokenLine
 
-    /** Polje je prazno, ali ga protivnik drži. */
-    val squareIsAttacked: String
+    val squareIsAttacked: SpokenLine
 
-    /** Dodir po polju na kom figura već stoji — nije potez, nego omaška. */
-    val alreadyThere: String
+    val alreadyThere: SpokenLine
 
-    fun correctInMoves(moves: Int): String
+    fun correctInMoves(moves: Int): SpokenLine
 
-    val shortestGoesLikeThis: String
+    val shortestGoesLikeThis: SpokenLine
 
-    val knightFrom: String
+    val knightFrom: SpokenLine
 
-    /** „na" — predlog između dva polja u prikazu rešenja. */
-    val toSquare: String
+    val toSquare: SpokenLine
 
-    fun inMoves(moves: Int): String
+    fun inMoves(moves: Int): SpokenLine
 
     // — Kretanje figura —
 
-    /** „Šetnja lovcem sa" — najava, iza koje ide polazno polje. */
-    fun walkWith(piece: String): String
+    fun walkWith(piece: PieceType): SpokenLine
 
-    /** Figura tako ne ide. Ovo i [walkVisited] su **dva različita** promašaja. */
-    fun walkIllegal(piece: String): String
+    fun walkIllegal(piece: PieceType): SpokenLine
 
-    /** Potez je legalan, ali je polje već potrošeno. */
-    val walkVisited: String
+    val walkVisited: SpokenLine
 
-    /** Nema više nepotrošenih polja. Kraj šetnje, ne pad. */
-    val walkStuck: String
+    val walkStuck: SpokenLine
 
-    /** Najava ponovnog prikaza odrađene šetnje, polje po polje. */
-    val walkReplay: String
+    val walkReplay: SpokenLine
 
-    /** „Prati lovca" — pre nego što tabla počne da crta putanju. */
-    fun retellWatch(piece: String): String
+    fun retellWatch(piece: PieceType): SpokenLine
 
-    /** Tabla je nestala; sad se putanja prepričava. */
-    val retellNow: String
+    val retellNow: SpokenLine
 
-    /** Promašeno polje; iza ove reči ide ono koje je zaista bilo na redu. */
-    val retellWrong: String
+    val retellWrong: SpokenLine
 
-    /** Koliko polja još treba izgovoriti. */
-    fun retellLeft(squares: Int): String
+    fun retellLeft(squares: Int): SpokenLine
 
-    /** „Sad kao top" — dama se smenjuje, pa se red mora znati. */
-    val walkAsRook: String
-    val walkAsBishop: String
+    val walkAsRook: SpokenLine
+    val walkAsBishop: SpokenLine
 
-    /** Čitanje stanja: čime se ide, gde stojiš, koliko je ostalo. */
-    fun walkStandsOn(piece: String): String
+    fun walkStandsOn(piece: PieceType): SpokenLine
 
-    fun walkHeld(moves: Int): String
+    fun walkHeld(moves: Int): SpokenLine
 
-    /** „Lovac na e5" — pitanje o dometu, iza njega ide polje. */
-    fun reachPieceOn(piece: String): String
+    fun reachPieceOn(piece: PieceType): SpokenLine
 
-    /** „Koja polja na b-liniji?" */
-    fun reachWhichOnFile(file: String): String
+    fun reachWhichOnFile(file: Char): SpokenLine
 
-    /** „Koja polja u 7. redu?" */
-    fun reachWhichOnRank(rank: Int): String
+    fun reachWhichOnRank(rank: Int): SpokenLine
 
-    /** Odgovor je primljen; iza njega ide spisak polja, ili [reachNone]. */
-    val reachYouSaid: String
+    val reachYouSaid: SpokenLine
 
-    /** Nijedno polje — i kao odgovor korisnika i kao istina. */
-    val reachNone: String
+    val reachNone: SpokenLine
 
-    /** Istina posle promašaja; iza nje ide spisak polja ili [reachNone]. */
-    val reachTruthIs: String
+    val reachTruthIs: SpokenLine
 
-    /**
-     * Kako se uopšte odgovara. Kaže se **jednom, na početku sesije**.
-     *
-     * Bez ovoga se pravilo „govori kad aplikacija ućuti" nema odakle saznati, a
-     * to je jedino pravilo koje ceo modul ima.
-     */
-    val walkHowTo: String
-    val reachHowTo: String
+    val walkHowTo: SpokenLine
+    val reachHowTo: SpokenLine
 
     // — Prati partiju —
 
-    val gameReady: String
+    val gameReady: SpokenLine
 
-    fun wrongPieceIsOn(piece: String): String
+    fun wrongPieceIsOn(piece: PieceType): SpokenLine
 
-    fun whereIsPiece(piece: String): String
+    /** „Where is the black queen?" — sa bojom, jer u partiji ima obe. */
+    fun whereIsPiece(piece: Piece): SpokenLine
 
-    // — Geometrija table —
-
-    val lightSquare: String
-    val darkSquare: String
-
-    fun wrongSquareIs(color: String): String
-
-    fun timeoutSquareIs(color: String): String
-
-    // — Postavi po diktatu —
-
-    val allCorrect: String
-
-    fun correctOutOf(correct: Int, total: Int): String
-
-    // — sažetak sesije —
-
-    /** Šta se sad može, kad se sažetak pojavi bez ekrana. */
-    val summaryZones: String
-
-    fun summaryResult(solved: Int, attempted: Int, mistakes: Int): String
-
-    fun summaryXp(xp: Int): String
+    /** „Not there. The black queen is on d8" */
+    fun notThereIsOn(piece: Piece, square: Square): SpokenLine
 
     /**
-     * Bez imena ranga i dostignuća — ona su danas resursi ekrana, pa bi drugi
-     * spisak ovde značio dva izvora istine za isto ime. Da se čuje **da** se
-     * nešto osvojilo je ono što bez ekrana nedostaje; šta tačno, piše na ekranu.
+     * „Who attacks the black knight on e5? Find 2." — broj napadača se kaže
+     * unapred, da se zna kad je odgovor gotov.
      */
-    val summaryRankUp: String
-    val summaryAchievement: String
+    fun whoAttacks(piece: Piece, square: Square, count: Int): SpokenLine
+
+    /** „Attackers: a1, b2" */
+    fun attackersAre(squares: List<Square>): SpokenLine
+
+    // — Geometrija —
+
+    val lightSquare: SpokenLine
+    val darkSquare: SpokenLine
+
+    fun wrongSquareIs(isLight: Boolean): SpokenLine
+
+    fun timeoutSquareIs(isLight: Boolean): SpokenLine
+
+    // — Diktat / Zapamti poziciju —
+
+    val allCorrect: SpokenLine
+
+    fun correctOutOf(correct: Int, total: Int): SpokenLine
+
+    // — sažetak sesije bez ekrana —
+
+    val summaryZones: SpokenLine
+
+    fun summaryResult(solved: Int, attempted: Int, mistakes: Int): SpokenLine
+
+    fun summaryXp(xp: Int): SpokenLine
+
+    val summaryRankUp: SpokenLine
+    val summaryAchievement: SpokenLine
 }
 
 /**
  * Ono što modul dobije u ruke kad govori: rečenice **i** imena figura.
  *
- * Imena su ovde zato što idu unutar rečenica („Nijedan top ne može na"), a dva
- * modula su ih do sada držala kao svoje spiskove — oba na srpskom, iako ih
- * [SpeechWords] nosi po jeziku. Sad se ime traži odavde i prati jezik samo od
- * sebe.
+ * Imena su ovde zato što idu unutar rečenica („Nijedan top ne može na"); modul
+ * ih ne sastavlja sam nego traži rečenicu po tipu figure.
  */
 interface SpeechVoice : SpeechPhrases {
 
-    /** „top" — bez boje, kad je iz rečenice jasno čija je. */
-    fun nameOf(type: PieceType): String
+    /** „rook" — bez boje, kad je iz rečenice jasno čija je. */
+    fun nameOf(type: PieceType): SpokenLine
 
-    /** „bela dama" — sa bojom i slaganjem roda. */
-    fun nameOf(piece: Piece): String
+    /** „black queen" — sa bojom. */
+    fun nameOf(piece: Piece): SpokenLine
 }
 
-private class Voice(
-    phrases: SpeechPhrases,
-    private val words: SpeechWords
-) : SpeechVoice, SpeechPhrases by phrases {
+private class Voice(phrases: SpeechPhrases) : SpeechVoice, SpeechPhrases by phrases {
 
-    override fun nameOf(type: PieceType): String = words.pieces.getValue(type)
+    override fun nameOf(type: PieceType): SpokenLine = SpokenLine(SpeechVocabulary.piece(type))
 
-    override fun nameOf(piece: Piece): String = words.name(piece)
-}
-
-/**
- * Jezici koji se **smeju izabrati** — oni koji imaju rečenice.
- *
- * Reči za polja i imena figura postoje za svih devet jezika, ali jezik bez
- * rečenica nije pola-jezik nego mešavina. Sa uređaja, uz nemački: „pola na
- * engleskom, pola na nemačkom" — engleska rečenica sa nemačkim imenom figure u
- * sredini.
- *
- * Zato je prevod **uslov**, a ne dodatak: jezik se pojavljuje u Podešavanjima
- * tek kad dobije rečenice. Osam jezika ih čeka; niko od nas ne može da proveri
- * prevod koji ne govori, pa se ne izmišljaju — isto pravilo po kom reči za polja
- * nose `isVerified`.
- */
-val TRANSLATED_LANGUAGES: Set<Language> = setOf(Language.ENGLISH)
-
-/**
- * Glas za jezik — rečenice **i** imena, uvek iz istog jezika.
- *
- * Jezik bez rečenica se ovde ceo prebacuje na engleski. Prvo je bilo obrnuto:
- * imena su pratila izabrani jezik, a rečenice zamenu. Na papiru je delovalo kao
- * da se čuva ono što jezik ima; u ušima je to bila mešavina dva jezika u istoj
- * rečenici, i sa uređaja je odmah prijavljeno kao zbunjujuće.
- *
- * > Korisnik je izabrao **jedan** jezik i to je ono što mora da čuje.
- */
-internal fun voiceFor(language: Language): SpeechVoice {
-    val spoken = if (language in TRANSLATED_LANGUAGES) language else Language.ENGLISH
-    return Voice(phrasesFor(spoken), SpeechLanguages.wordsFor(spoken))
+    override fun nameOf(piece: Piece): SpokenLine =
+        SpokenLine(SpeechVocabulary.color(piece.color), SpeechVocabulary.piece(piece.type))
 }
 
 /**
- * Engleski — i sam po sebi, i kao zamena za jezike koji rečenice još nemaju.
- *
- * Engleski TTS glas ima praktično svaki telefon, pa je zamena uvek čujna. To je
- * ista ona odluka po kojoj se čita engleski kad izabrani jezik nema glas.
+ * Glas za jezik. Jezik je od 18. oktobra 2026. jedan, pa ovde nema šta da se
+ * bira — mesto ostaje da se drugi jezik, kad se vrati, odlučuje ovde a ne po
+ * modulima.
  */
-internal object EnglishPhrases : SpeechPhrases {
+internal fun voiceFor(language: Language): SpeechVoice = Voice(phrasesFor(language))
 
-    override val confirmGiveUp = "Touch again to give up."
-    override val confirmStop = "Touch again to stop."
-    override val correct = "Correct."
+/**
+ * Engleski — jedini jezik koji aplikacija govori, iz isečaka jednog glasa.
+ *
+ * Javan zato što „Prati partiju" sastavlja svoja pitanja iz istih rečenica a
+ * crta njihov tekst na ekranu; drugi spisak rečenica bi bio drugi izvor istine.
+ */
+object EnglishPhrases : SpeechPhrases {
+
+    private val v = SpeechVocabulary
+
+    override val confirmGiveUp = v.confirmGiveUp.asLine()
+    override val confirmStop = v.confirmStop.asLine()
+    override val correct = v.correct.asLine()
 
     override fun sessionEndSolved(solved: Int, total: Int) =
-        "End of session. Solved $solved out of $total"
+        SpokenLine(listOf(v.endOfSessionSolved.clip()) + v.numberMid(solved) + v.outOf.clip() + v.numberEnd(total))
 
     override fun sessionEndCorrect(correct: Int, total: Int) =
-        "End of session. Correct $correct out of $total"
+        SpokenLine(listOf(v.endOfSessionCorrect.clip()) + v.numberMid(correct) + v.outOf.clip() + v.numberEnd(total))
 
-    override val nothingToUndo = "There is nothing to undo."
-    override val undone = "Move taken back."
-    override val movingToNextPosition = "Moving on to the next position."
-    override val onSquare = "On"
+    override val nothingToUndo = v.nothingToUndo.asLine()
+    override val undone = v.undone.asLine()
+    override val movingToNextPosition = v.movingToNextPosition.asLine()
+    override val onSquare = v.onHead.asLine()
 
-    override fun pieceMismatch(named: String, actual: String) =
-        "there is no $named but a $actual"
+    override fun pieceMismatch(named: PieceType, actual: PieceType) =
+        SpokenLine(v.thereIsNo.clip(), v.piece(named), v.butA.clip(), v.pieceAtEnd(actual))
 
-    override val noPieceThere = "there is no piece"
+    override val noPieceThere = v.thereIsNoPiece.asLine()
 
-    override fun noneCanReach(piece: String) = "No $piece can go to"
+    override fun noneCanReach(piece: PieceType) = SpokenLine(v.noHead.clip(), v.piece(piece), v.canGoTo.clip())
 
-    override fun twoCanReach(piece: String) = "Two of your ${piece}s can go to"
+    override fun twoCanReach(piece: PieceType) =
+        SpokenLine(v.twoOfYour.clip(), v.piecesPlural(piece), v.canGoTo.clip())
 
-    override val sayOriginToo = "say the starting square as well"
+    override val sayOriginToo = v.sayOriginToo.asLine()
 
-    override val outcomeMated = "Checkmate! The position is finished off."
-    override val outcomeLost = "You are checkmated — in a winning position."
-    override val outcomeStalemate = "Stalemate — a won position thrown away."
-    override val outcomeFiftyMoves = "Fifty moves without progress."
-    override val outcomeGaveUp = "The pieces are revealed."
+    override val outcomeMated = v.outcomeMated.asLine()
+    override val outcomeLost = v.outcomeLost.asLine()
+    override val outcomeStalemate = v.outcomeStalemate.asLine()
+    override val outcomeFiftyMoves = v.outcomeFiftyMoves.asLine()
+    override val outcomeGaveUp = v.outcomeGaveUp.asLine()
 
-    override val notThat = "Not that one."
-    override val gaveUpMovingOn = "You gave up. Moving on to the next one."
-    override val puzzleSolved = "Puzzle solved."
+    override val notThat = v.notThat.asLine()
+    override val gaveUpMovingOn = v.gaveUpMovingOn.asLine()
+    override val puzzleSolved = v.puzzleSolved.asLine()
 
-    override val knightIsOn = "The knight is on"
-    override val goal = "target"
+    override val knightIsOn = v.knightIsOn.asLine()
+    override val goal = v.target.asLine()
 
-    // Jednina i množina: „1 move left" naspram „3 moves left".
-    override fun movesLeft(moves: Int) =
-        if (moves == 1) "1 move left" else "$moves moves left"
+    override fun movesLeft(moves: Int) = SpokenLine(listOf(v.movesLeftHead.clip()) + v.numberEnd(moves))
 
-    override val notKnightMove = "That is not a knight move."
+    override val notKnightMove = v.notKnightMove.asLine()
+    override val pieceInTheWay = v.pieceInTheWay.asLine()
+    override val squareIsAttacked = v.squareIsAttacked.asLine()
+    override val alreadyThere = v.alreadyThere.asLine()
 
-    override val pieceInTheWay = "There is a piece there."
-
-    override val squareIsAttacked = "That square is attacked."
-
-    override val alreadyThere = "The knight is already there."
-
+    // Jednina i množina: „in 1 move" naspram „in 3 moves".
     override fun correctInMoves(moves: Int) =
-        if (moves == 1) "Correct, in 1 move." else "Correct, in $moves moves."
+        SpokenLine(listOf(v.correctIn.clip()) + v.numberMid(moves) + movesWord(moves))
 
-    override val shortestGoesLikeThis = "That did not work. The shortest way goes like this:"
-    override val knightFrom = "Knight from"
-    override val toSquare = "to"
+    override val shortestGoesLikeThis = v.shortestGoesLikeThis.asLine()
+    override val knightFrom = v.knightFrom.asLine()
+    override val toSquare = v.toMid.asLine()
 
-    override fun inMoves(moves: Int) = if (moves == 1) "in 1 move" else "in $moves moves"
+    override fun inMoves(moves: Int) = SpokenLine(listOf(v.inMid.clip()) + v.numberMid(moves) + movesWord(moves))
 
-    override fun walkWith(piece: String) = "Walk with the $piece from"
+    private fun movesWord(moves: Int) = if (moves == 1) v.moveTail.clip() else v.movesTail.clip()
 
-    override fun walkIllegal(piece: String) = "A $piece does not go there."
+    override fun walkWith(piece: PieceType) = SpokenLine(v.walkWithThe.clip(), v.piece(piece), v.from.clip())
 
-    override val walkVisited = "You have been there already."
+    override fun walkIllegal(piece: PieceType) = SpokenLine(v.aHead.clip(), v.piece(piece), v.doesNotGoThere.clip())
 
-    override val walkStuck = "No square left. The walk ends here."
+    override val walkVisited = v.walkVisited.asLine()
+    override val walkStuck = v.walkStuck.asLine()
+    override val walkReplay = v.walkReplay.asLine()
 
-    override val walkReplay = "Here is the walk you made."
+    override fun retellWatch(piece: PieceType) = SpokenLine(v.watchThe.clip(), v.pieceAtEnd(piece))
 
-    override fun retellWatch(piece: String) = "Watch the $piece."
+    override val retellNow = v.retellNow.asLine()
+    override val retellWrong = v.noItWas.asLine()
 
-    override val retellNow = "Now say the path, from the first square."
+    override fun retellLeft(squares: Int) = SpokenLine(listOf(v.squaresToGoHead.clip()) + v.numberEnd(squares))
 
-    override val retellWrong = "No. It was"
+    override val walkAsRook = v.walkAsRook.asLine()
+    override val walkAsBishop = v.walkAsBishop.asLine()
 
-    override fun retellLeft(squares: Int) =
-        if (squares == 1) "One square to go." else "$squares squares to go."
+    override fun walkStandsOn(piece: PieceType) = SpokenLine(v.theHead.clip(), v.piece(piece), v.standsOn.clip())
 
-    override val walkAsRook = "Now as a rook."
-    override val walkAsBishop = "Now as a bishop."
+    override fun walkHeld(moves: Int) = SpokenLine(listOf(v.movesSoFarHead.clip()) + v.numberEnd(moves))
 
-    override fun walkStandsOn(piece: String) = "The $piece stands on"
+    override fun reachPieceOn(piece: PieceType) = SpokenLine(v.theHead.clip(), v.piece(piece), v.isOn.clip())
 
-    override fun walkHeld(moves: Int) =
-        if (moves == 1) "One move so far." else "$moves moves so far."
+    override fun reachWhichOnFile(file: Char) =
+        SpokenLine(v.whichSquaresOnThe.clip(), v.file(file), v.fileTail.clip())
 
-    override fun reachPieceOn(piece: String) = "The $piece is on"
+    override fun reachWhichOnRank(rank: Int) = SpokenLine(v.whichSquaresOnRank.clip(), v.rankInQuestion(rank))
 
-    override fun reachWhichOnFile(file: String) = "Which squares on the $file file?"
+    override val reachYouSaid = v.youSaid.asLine()
+    override val reachNone = v.reachNone.asLine()
+    override val reachTruthIs = v.itReaches.asLine()
 
-    override fun reachWhichOnRank(rank: Int) = "Which squares on rank $rank?"
+    override val walkHowTo = v.walkHowTo.asLine()
+    override val reachHowTo = v.reachHowTo.asLine()
 
-    override val reachYouSaid = "You said"
+    override val gameReady = v.gameReady.asLine()
 
-    override val reachNone = "none"
+    override fun wrongPieceIsOn(piece: PieceType) = SpokenLine(v.noThe.clip(), v.piece(piece), v.isOn.clip())
 
-    override val reachTruthIs = "It reaches"
+    override fun whereIsPiece(piece: Piece) =
+        SpokenLine(v.whereIsThe.clip(), v.color(piece.color), v.pieceInQuestion(piece.type))
 
-    override val walkHowTo = "Touch the microphone, then say one square."
+    override fun notThereIsOn(piece: Piece, square: Square) =
+        SpokenLine(v.notThereThe.clip(), v.color(piece.color), v.piece(piece.type), v.isOn.clip(), v.square(square))
 
-    override val reachHowTo = "Touch the microphone for each square, then touch done."
+    override fun whoAttacks(piece: Piece, square: Square, count: Int) = SpokenLine(
+        listOf(v.whoAttacksThe.clip(), v.color(piece.color), v.piece(piece.type), v.onMid.clip(), v.square(square)) +
+            Pause(SpeechVocabulary.PAUSE_BETWEEN_SQUARES_MILLIS) + v.findHead.clip() + v.numberEnd(count)
+    )
 
-    override val gameReady = "The game is ready. Touch for the first move."
+    override fun attackersAre(squares: List<Square>) = SpokenLine(listOf(v.attackersHead.clip()) + v.squares(squares))
 
-    override fun wrongPieceIsOn(piece: String) = "No. The $piece is on"
+    override val lightSquare = v.lightSquare.asLine()
+    override val darkSquare = v.darkSquare.asLine()
 
-    override fun whereIsPiece(piece: String) = "Where is the $piece?"
+    override fun wrongSquareIs(isLight: Boolean) = SpokenLine(v.noSquareIs.clip(), colorTail(isLight))
 
-    override val lightSquare = "light"
-    override val darkSquare = "dark"
+    override fun timeoutSquareIs(isLight: Boolean) = SpokenLine(v.timeIsUpSquareIs.clip(), colorTail(isLight))
 
-    override fun wrongSquareIs(color: String) = "No, the square is $color."
+    private fun colorTail(isLight: Boolean) = if (isLight) v.lightTail.clip() else v.darkTail.clip()
 
-    override fun timeoutSquareIs(color: String) = "Time is up, the square is $color."
+    override val allCorrect = v.allCorrect.asLine()
 
-    override val allCorrect = "All correct."
+    override fun correctOutOf(correct: Int, total: Int) =
+        SpokenLine(listOf(v.correctHead.clip()) + v.numberMid(correct) + v.outOf.clip() + v.numberEnd(total))
 
-    override fun correctOutOf(correct: Int, total: Int) = "Correct $correct out of $total"
+    override val summaryZones = v.summaryZones.asLine()
 
-    override val summaryZones = "Again at the top, result in the middle, menu at the bottom."
+    override fun summaryResult(solved: Int, attempted: Int, mistakes: Int) = SpokenLine(
+        listOf(v.solvedHead.clip()) + v.numberMid(solved) + v.outOf.clip() + v.numberEnd(attempted) +
+            v.mistakesHead.clip() + v.numberEnd(mistakes)
+    )
 
-    override fun summaryResult(solved: Int, attempted: Int, mistakes: Int) =
-        "Solved $solved out of $attempted. Mistakes $mistakes"
+    override fun summaryXp(xp: Int) = SpokenLine(listOf(v.youEarned.clip()) + v.numberMid(xp) + v.pointsTail.clip())
 
-    override fun summaryXp(xp: Int) = "You earned $xp points."
+    override val summaryRankUp = v.summaryRankUp.asLine()
+    override val summaryAchievement = v.summaryAchievement.asLine()
 
-    override val summaryRankUp = "New rank."
-    override val summaryAchievement = "New achievement."
+    private fun SpeechVocabulary.Token.clip(): SpokenToken = SpokenToken.Clip(id, text)
 }
 
 /**
  * Rečenice za jezik.
  *
- * Jezik koji ih još nema dobija **engleske**. To je poslednja mreža — takav
- * jezik se u Podešavanjima i ne nudi, pa se ovde stiže samo sa izborom koji je
- * zapamćen ranije ili sa jezikom za koji uređaj nema glas.
+ * `when` je iscrpan namerno: jezik koji se jednom doda u [Language] ne sme da
+ * prođe kompajler bez svojih rečenica — pola-jezik je gore od nijednog.
  */
 fun phrasesFor(language: Language): SpeechPhrases = when (language) {
-    else -> EnglishPhrases
+    Language.ENGLISH -> EnglishPhrases
 }

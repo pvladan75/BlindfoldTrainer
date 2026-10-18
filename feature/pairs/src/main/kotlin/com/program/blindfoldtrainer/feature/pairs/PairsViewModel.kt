@@ -79,7 +79,7 @@ internal data class Setup(val pieceCount: Int, val stepsPerPuzzle: Int, val puzz
 
 /** Šta težina znači: koliko se figura drži u glavi i koliko poteza traje niz. */
 internal fun difficultyDetailOf(difficulty: Difficulty): String = setupFor(difficulty).let {
-    "${quantity(it.pieceCount, "figura", "figure", "figura")} · ${it.stepsPerPuzzle} poteza"
+    "${quantity(it.pieceCount, "piece", "pieces")} · ${quantity(it.stepsPerPuzzle, "move", "moves")}"
 }
 
 internal fun setupFor(difficulty: Difficulty) = when (difficulty) {
@@ -183,7 +183,7 @@ class PairsViewModel @Inject constructor(
             // runCatching hvata i otkazivanje, a ono nije greška u učitavanju.
             if (failure is CancellationException) throw failure
             if (failure != null) {
-                Log.e(TAG, "Zagonetke za $difficulty nisu učitane", failure)
+                Log.e(TAG, "Puzzles for $difficulty were not loaded", failure)
             }
 
             val available = loaded.getOrDefault(emptyList())
@@ -194,7 +194,7 @@ class PairsViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        infoMessage = "Nema zagonetki za ovu težinu.$reason"
+                        infoMessage = "No puzzles for this difficulty.$reason"
                     )
                 }
                 return@launch

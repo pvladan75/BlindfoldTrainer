@@ -65,7 +65,7 @@ fun VoiceInputButton(
             // pokreće ovde — inače bi prvi dodir uvek propao.
             onStartListening()
         } else {
-            context.toast("Bez dozvole za mikrofon glasovni unos ne radi.")
+            context.toast("Without microphone permission, voice input does not work.")
         }
     }
 
@@ -81,12 +81,12 @@ fun VoiceInputButton(
                 isListening -> onStopListening()
 
                 unavailable != null ->
-                    context.toast("$unavailable — jezik i paket biraš u Podešavanjima.")
+                    context.toast("$unavailable — the listening package is in Settings.")
 
-                isPreparing -> context.toast("Paket se još priprema.")
+                isPreparing -> context.toast("The package is still being prepared.")
 
                 wasDenied && !hasPermission ->
-                    context.toast("Dozvoli mikrofon u podešavanjima telefona.")
+                    context.toast("Allow the microphone in the phone settings.")
 
                 hasPermission -> onStartListening()
 
@@ -112,9 +112,9 @@ fun VoiceInputButton(
                 Icon(
                     imageVector = if (isListening) Icons.Default.Mic else Icons.Default.MicOff,
                     contentDescription = when {
-                        isListening -> "Slušam"
-                        unavailable != null -> "Glasovni unos nije spreman"
-                        else -> "Izgovori polje"
+                        isListening -> "Listening"
+                        unavailable != null -> "Voice input is not ready"
+                        else -> "Say a square"
                     },
                     tint = when {
                         isListening -> MaterialTheme.colorScheme.onErrorContainer

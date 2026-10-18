@@ -106,7 +106,7 @@ class VoskVoiceInput @Inject constructor(
                 releaseModel()
                 val failure = (modelState as? ModelState.Failed)?.takeIf { it.language == language }
                 _state.value = VoiceState.Unavailable(
-                    failure?.reason ?: "Paket za izabrani jezik nije preuzet"
+                    failure?.reason ?: "The listening package is not downloaded"
                 )
             }
         }
@@ -119,10 +119,10 @@ class VoskVoiceInput @Inject constructor(
         try {
             model = Model(modelStore.directoryFor(language).absolutePath)
             _state.value = VoiceState.Idle
-            Log.d(TAG, "Vosk paket za ${language.code} spreman")
+            Log.d(TAG, "Vosk package for ${language.code} ready")
         } catch (error: Throwable) {
-            Log.e(TAG, "Učitavanje paketa za ${language.code} nije uspelo", error)
-            _state.value = VoiceState.Unavailable("Paket nije učitan: ${error.message}")
+            Log.e(TAG, "Loading the package for ${language.code} failed", error)
+            _state.value = VoiceState.Unavailable("Package not loaded: ${error.message}")
         }
     }
 
@@ -135,7 +135,7 @@ class VoskVoiceInput @Inject constructor(
     override fun listen(onSpoken: (SpokenInput) -> Boolean) {
         val readyModel = model
         if (readyModel == null) {
-            Log.w(TAG, "Traženo slušanje pre nego što je model spreman")
+            Log.w(TAG, "Listening requested before the model was ready")
             return
         }
         if (_state.value == VoiceState.Listening) return
@@ -154,11 +154,11 @@ class VoskVoiceInput @Inject constructor(
             if (speechService?.startListening(listener, LISTEN_TIMEOUT_MILLIS) == true) {
                 _state.value = VoiceState.Listening
             } else {
-                Log.e(TAG, "startListening je vratio false")
+                Log.e(TAG, "startListening returned false")
                 _state.value = VoiceState.Idle
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Pokretanje slušanja nije uspelo", e)
+            Log.e(TAG, "Starting to listen failed", e)
             _state.value = VoiceState.Idle
         }
     }
@@ -184,7 +184,7 @@ class VoskVoiceInput @Inject constructor(
         runCatching {
             service.stop()
             service.shutdown()
-        }.onFailure { Log.w(TAG, "Zatvaranje prepoznavanja nije prošlo čisto", it) }
+        }.onFailure { Log.w(TAG, "Closing the recogniser did not go cleanly", it) }
     }
 
     private val listener = object : RecognitionListener {
@@ -200,7 +200,7 @@ class VoskVoiceInput @Inject constructor(
          * ništa.
          */
         override fun onFinalResult(hypothesis: String?) {
-            Log.d(TAG, "Završni rezultat se preskače: već je predat kroz onResult")
+            Log.d(TAG, "Final result skipped: already delivered through onResult")
         }
 
         override fun onPartialResult(hypothesis: String?) {
@@ -208,7 +208,7 @@ class VoskVoiceInput @Inject constructor(
         }
 
         override fun onError(exception: Exception?) {
-            Log.e(TAG, "Greška u prepoznavanju", exception)
+            Log.e(TAG, "Recognition error", exception)
             stop()
         }
 
@@ -237,7 +237,7 @@ class VoskVoiceInput @Inject constructor(
                 }
             }
 
-            SpokenInput.Unknown -> Log.d(TAG, "Prepoznato \"$text\", ali to nije polje")
+            SpokenInput.Unknown -> Log.d(TAG, "Recognised \"$text\", but it is not a square")
 
             else -> deliver(spoken)
         }
@@ -258,7 +258,7 @@ class VoskVoiceInput @Inject constructor(
             if (now - lastDeliveryMillis < MIN_GAP_BETWEEN_UTTERANCES_MILLIS) {
                 // Isti izgovor prijavljen dvaput. Granica je ljudska, ne
                 // biblioteka: dva izgovora se ne smene za pola sekunde.
-                Log.d(TAG, "Izgovor $spoken stigao prebrzo posle prethodnog — preskačem")
+                Log.d(TAG, "Utterance $spoken arrived too soon after the previous one — skipping")
                 return
             }
             lastDeliveryMillis = now

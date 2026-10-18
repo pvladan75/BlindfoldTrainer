@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.program.blindfoldtrainer.core.audio.Speaker
 import com.program.blindfoldtrainer.core.audio.SpeechVoice
+import com.program.blindfoldtrainer.core.audio.SpokenLine
 import com.program.blindfoldtrainer.core.audio.SpokenInput
 import com.program.blindfoldtrainer.core.audio.VoiceInput
 import com.program.blindfoldtrainer.core.audio.VoiceState
@@ -109,9 +110,9 @@ internal data class Setup(val puzzleCount: Int, val engineDepth: Int)
  * znači ništa nikome ko ne zna kako motor radi.
  */
 internal fun difficultyDetailOf(difficulty: Difficulty): String = when (difficulty) {
-    Difficulty.EASY -> "slabija odbrana"
-    Difficulty.MEDIUM -> "jača odbrana"
-    Difficulty.HARD -> "najjača odbrana"
+    Difficulty.EASY -> "weaker defence"
+    Difficulty.MEDIUM -> "stronger defence"
+    Difficulty.HARD -> "strongest defence"
 }
 
 /** Stanje partije pre jednog tvog poteza. */
@@ -128,13 +129,13 @@ private data class UndoPoint(
  * Odvojeno od `messageFor`, koje ostaje za ekran: ekran prati jezik aplikacije,
  * govor prati izabrani glas, i to su dve različite ose.
  */
-private fun SpeechVoice.spokenOutcome(outcome: EndgameOutcome): String = when (outcome) {
+private fun SpeechVoice.spokenOutcome(outcome: EndgameOutcome): SpokenLine = when (outcome) {
     EndgameOutcome.MATED -> outcomeMated
     EndgameOutcome.LOST -> outcomeLost
     EndgameOutcome.STALEMATE -> outcomeStalemate
     EndgameOutcome.FIFTY_MOVES -> outcomeFiftyMoves
     EndgameOutcome.GAVE_UP -> outcomeGaveUp
-    EndgameOutcome.IN_PROGRESS -> ""
+    EndgameOutcome.IN_PROGRESS -> SpokenLine.EMPTY
 }
 
 private fun setupFor(difficulty: Difficulty) = when (difficulty) {
@@ -309,7 +310,7 @@ class EndgameViewModel @Inject constructor(
                 if (actual == null) {
                     noPieceThere
                 } else {
-                    pieceMismatch(nameOf(named), nameOf(actual.type))
+                    pieceMismatch(named, actual.type)
                 }
             }
             onIllegalMove(from)
@@ -339,13 +340,13 @@ class EndgameViewModel @Inject constructor(
 
         when {
             origins.isEmpty() -> {
-                speaker.say { noneCanReach(nameOf(type)) }
+                speaker.say { noneCanReach(type) }
                 speaker.say(to, interrupt = false)
                 onIllegalMove(to)
             }
 
             origins.size > 1 -> {
-                speaker.say { twoCanReach(nameOf(type)) }
+                speaker.say { twoCanReach(type) }
                 speaker.say(to, interrupt = false)
                 speaker.say(interrupt = false) { sayOriginToo }
             }
@@ -405,7 +406,7 @@ class EndgameViewModel @Inject constructor(
             // runCatching hvata i otkazivanje, a ono nije greška u učitavanju.
             if (failure is CancellationException) throw failure
             if (failure != null) {
-                Log.e(TAG, "Zagonetke za $difficulty nisu učitane", failure)
+                Log.e(TAG, "Puzzles for $difficulty were not loaded", failure)
             }
 
             val available = loaded.getOrDefault(emptyList())
@@ -414,7 +415,7 @@ class EndgameViewModel @Inject constructor(
                 // poruka jedini trag zašto modul nema nijednu poziciju.
                 val reason = failure?.let { "\n\n${it.userReason()}" }.orEmpty()
                 _uiState.update {
-                    it.copy(isLoading = false, infoMessage = "Nema pozicija za ovu težinu.$reason")
+                    it.copy(isLoading = false, infoMessage = "No positions for this difficulty.$reason")
                 }
                 return@launch
             }
@@ -458,7 +459,7 @@ class EndgameViewModel @Inject constructor(
                 puzzleNumber = index + 1,
                 puzzleCount = puzzles.size,
                 outcome = EndgameOutcome.IN_PROGRESS,
-                statusMessage = if (settings.eyesFree) "Ti si na potezu" else "Zapamti poziciju, pa igraj",
+                statusMessage = if (settings.eyesFree) "Your move" else "Memorise the position, then play",
                 movesToMate = puzzle.movesToMate,
                 isLoading = false,
                 infoMessage = null
@@ -472,7 +473,7 @@ class EndgameViewModel @Inject constructor(
             it.copy(
                 visibility = PieceVisibility.None,
                 isMemorizing = false,
-                statusMessage = "Ti si na potezu"
+                statusMessage = "Your move"
             )
         }
     }
@@ -527,12 +528,12 @@ class EndgameViewModel @Inject constructor(
                     errorSquare = square,
                     selectedSquare = null,
                     mistakes = it.mistakes + 1,
-                    statusMessage = "Taj potez nije moguć"
+                    statusMessage = "That move is not possible"
                 )
             }
             delay(600)
             _uiState.update {
-                it.copy(errorSquare = null, statusMessage = "Ti si na potezu")
+                it.copy(errorSquare = null, statusMessage = "Your move")
             }
         }
     }
@@ -577,7 +578,7 @@ class EndgameViewModel @Inject constructor(
         engineJob?.cancel()
         engineJob = viewModelScope.launch {
             _uiState.update {
-                it.copy(isEngineThinking = true, statusMessage = "Protivnik razmišlja…")
+                it.copy(isEngineThinking = true, statusMessage = "Opponent is thinking…")
             }
 
             val reply = engine.bestMove(position, setup.engineDepth)
@@ -614,7 +615,7 @@ class EndgameViewModel @Inject constructor(
             _uiState.update { it.copy(visibility = PieceVisibility.None) }
 
             if (!checkOutcome(after)) {
-                _uiState.update { it.copy(statusMessage = "Ti si na potezu") }
+                _uiState.update { it.copy(statusMessage = "Your move") }
             }
         }
     }
@@ -656,11 +657,11 @@ class EndgameViewModel @Inject constructor(
     }
 
     private fun messageFor(outcome: EndgameOutcome) = when (outcome) {
-        EndgameOutcome.MATED -> "Mat! Pozicija je privedena kraju."
-        EndgameOutcome.LOST -> "Matiran si — u dobijenoj poziciji."
-        EndgameOutcome.STALEMATE -> "Pat — dobijena pozicija je prokockana u remi."
-        EndgameOutcome.FIFTY_MOVES -> "Pedeset poteza bez napretka."
-        EndgameOutcome.GAVE_UP -> "Figure su otkrivene."
+        EndgameOutcome.MATED -> "Mate! The win is converted."
+        EndgameOutcome.LOST -> "You were mated — in a won position."
+        EndgameOutcome.STALEMATE -> "Stalemate — a won position thrown away for a draw."
+        EndgameOutcome.FIFTY_MOVES -> "Fifty moves without progress."
+        EndgameOutcome.GAVE_UP -> "The pieces are revealed."
         EndgameOutcome.IN_PROGRESS -> ""
     }
 

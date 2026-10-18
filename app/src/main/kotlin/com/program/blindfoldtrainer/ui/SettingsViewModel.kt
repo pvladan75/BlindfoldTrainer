@@ -3,7 +3,6 @@ package com.program.blindfoldtrainer.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.program.blindfoldtrainer.core.audio.ModelState
-import com.program.blindfoldtrainer.core.audio.AndroidSpeaker
 import com.program.blindfoldtrainer.core.audio.VoskModelStore
 import com.program.blindfoldtrainer.core.model.Settings
 import com.program.blindfoldtrainer.core.model.SettingsRepository
@@ -19,12 +18,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val repository: SettingsRepository,
-    private val modelStore: VoskModelStore,
-    speaker: AndroidSpeaker
+    private val modelStore: VoskModelStore
 ) : ViewModel() {
-
-    /** Jezici za koje uređaj ima TTS glas. Prazno dok se TTS ne podigne. */
-    val speakableLanguages: StateFlow<Set<Language>> = speaker.availableLanguages
 
     val settings: StateFlow<Settings> = repository.settings
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Settings.DEFAULT)
@@ -32,17 +27,10 @@ class SettingsViewModel @Inject constructor(
     /** Šta se upravo preuzima ili raspakuje. */
     val modelState: StateFlow<ModelState> = modelStore.state
 
-    /** Jezici čiji je paket na uređaju. */
+    /** Jezici čiji je paket na uređaju. Jezik je jedan, ali paket se i dalje pamti po njemu. */
     val installedLanguages: StateFlow<Set<Language>> = modelStore.installed
 
     fun onTheme(theme: ThemeChoice) = update { it.copy(theme = theme) }
-
-    /**
-     * Jedan jezik za oba smera. Paket za slušanje se ovim ne dira — on se
-     * preuzima, a jezik se bira; ko izabere jezik bez paketa i dalje sve čuje,
-     * samo mu mikrofon ne radi dok ga ne preuzme.
-     */
-    fun onLanguage(language: Language) = update { it.copy(language = language) }
 
     fun onSpeechRate(rate: Float) = update {
         // Klizač ume da vrati vrednost tik izvan opsega; Settings to inače odbija.

@@ -75,7 +75,7 @@ internal data class Setup(val taskCount: Int, val distance: Int)
 
 /** Šta težina znači: koliko je skokova do cilja. To je ceo zadatak. */
 internal fun difficultyDetailOf(difficulty: Difficulty): String =
-    quantity(setupFor(difficulty).distance, "skok", "skoka")
+    quantity(setupFor(difficulty).distance, "jump", "jumps")
 
 internal fun setupFor(difficulty: Difficulty) = when (difficulty) {
     Difficulty.EASY -> Setup(taskCount = 8, distance = 2)

@@ -79,9 +79,10 @@ class DataStoreSettingsRepository @Inject constructor(
         speechRate = (this[speechRate(profileId)] ?: legacy(profileId, SPEECH_RATE))
             ?.coerceIn(Settings.MIN_SPEECH_RATE, Settings.MAX_SPEECH_RATE)
             ?: Settings.DEFAULT.speechRate,
-        // Ranije su ovde stajala dva jezika. Nasledje se cita iz starog kljuca
-        // za izgovor, jer je on jedini imao i srpski — ko je slusao srpski,
-        // nastavlja da ga slusa.
+        // Ranije su ovde stajala dva jezika, pa devet, pa jedan. Nasledje se
+        // cita iz starog kljuca za izgovor; upisano ime koje vise ne postoji
+        // (GERMAN, RUSSIAN...) ne nalazi clan enuma i tiho pada na engleski,
+        // umesto da obori citanje podesavanja.
         language = (this[language(profileId)] ?: legacy(profileId, LANGUAGE))
             ?.let { name -> Language.entries.find { it.name == name } }
             ?: legacy(profileId, SPEECH_LANGUAGE)

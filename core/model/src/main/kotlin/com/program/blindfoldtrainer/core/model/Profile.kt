@@ -22,7 +22,7 @@ data class Profile(
     val createdAtMillis: Long
 ) {
     init {
-        require(name.isNotBlank()) { "profil mora imati ime" }
+        require(name.isNotBlank()) { "a profile must have a name" }
     }
 }
 

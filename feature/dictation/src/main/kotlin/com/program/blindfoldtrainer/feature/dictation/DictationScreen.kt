@@ -114,8 +114,8 @@ private fun ProgressHeader(uiState: DictationUiState) {
             // Broj čitanja stoji uz ostalo namerno: to je merilo napretka u ovom
             // modulu, a merilo koje se ne vidi ne meri ništa.
             Text(
-                text = "Rešeno: ${uiState.solved}   Greške: ${uiState.mistakes}   " +
-                    "Čitanja: ${uiState.replays}",
+                text = "Solved: ${uiState.solved}   Mistakes: ${uiState.mistakes}   " +
+                    "Readings: ${uiState.replays}",
                 style = MaterialTheme.typography.labelMedium
             )
         }
@@ -134,12 +134,12 @@ private fun PhasePrompt(uiState: DictationUiState) {
     val grade = uiState.grade
 
     val text = when (uiState.phase) {
-        DictationPhase.LISTENING -> "Slušaj poziciju"
-        DictationPhase.PLACING -> "Postavi ono što si čuo"
+        DictationPhase.LISTENING -> "Listen to the position"
+        DictationPhase.PLACING -> "Place what you heard"
         DictationPhase.REVIEW -> when {
             grade == null -> ""
-            grade.isPerfect -> "Sve tačno!"
-            else -> "Tačno ${grade.correct.size} od ${grade.correct.size + grade.missed.size}"
+            grade.isPerfect -> "All correct!"
+            else -> "Correct: ${grade.correct.size} of ${grade.correct.size + grade.missed.size}"
         }
     }
 
@@ -220,13 +220,13 @@ private fun Controls(
             val buttonModifier = Modifier.weight(1f).height(52.dp)
 
             OutlinedButton(onClick = onReplay, modifier = buttonModifier) {
-                Text("ČITAJ PONOVO")
+                Text("READ AGAIN")
             }
 
             // Prekida čitanje i otvara tablu — namerno je ovo glavno dugme,
             // jer je odluka „znam gde je šta" ceo prelaz u drugu polovinu vežbe.
             Button(onClick = onReady, modifier = buttonModifier) {
-                Text("ZNAM GDE JE ŠTA", fontWeight = FontWeight.Bold)
+                Text("I KNOW WHERE EVERYTHING IS", fontWeight = FontWeight.Bold)
             }
         }
 
@@ -240,18 +240,18 @@ private fun Controls(
                 val buttonModifier = Modifier.weight(1f).height(52.dp)
 
                 OutlinedButton(onClick = onReplay, modifier = buttonModifier) {
-                    Text("ČITAJ PONOVO")
+                    Text("READ AGAIN")
                 }
 
                 Button(onClick = onCheck, modifier = buttonModifier) {
-                    Text("PROVERI", fontWeight = FontWeight.Bold)
+                    Text("CHECK", fontWeight = FontWeight.Bold)
                 }
             }
 
             Spacer(Modifier.height(6.dp))
 
             Text(
-                text = "Ponovno čitanje sada se broji kao propust.",
+                text = "Reading it again now counts as a miss.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,

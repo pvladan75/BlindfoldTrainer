@@ -216,7 +216,7 @@ abstract class TrainerDatabase : RoomDatabase() {
                 )
                 connection.execSQL(
                     "INSERT INTO profiles (id, name, createdAtMillis) " +
-                        "VALUES ($DEFAULT_PROFILE_ID, 'Profil 1', 0)"
+                        "VALUES ($DEFAULT_PROFILE_ID, 'Profile 1', 0)"
                 )
                 connection.execSQL(
                     "ALTER TABLE sessions ADD COLUMN profileId INTEGER NOT NULL " +

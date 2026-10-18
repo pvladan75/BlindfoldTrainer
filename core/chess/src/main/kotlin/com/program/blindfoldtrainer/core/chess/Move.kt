@@ -15,7 +15,7 @@ data class Move(
 ) {
     init {
         require(promotion == null || promotion in PROMOTION_CHOICES) {
-            "Promocija u ${promotion?.name} nije dozvoljena"
+            "Promotion to ${promotion?.name} is not allowed"
         }
     }
 

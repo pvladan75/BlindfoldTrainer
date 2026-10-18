@@ -102,12 +102,12 @@ fun PairsScreen(
                     weight = HELPER_ZONE_WEIGHT,
                     zones = listOf(
                         EyesFreeZone(
-                            label = "PONOVI",
+                            label = "REPEAT",
                             tone = ZoneTone.SECONDARY,
                             onClick = viewModel::onRepeatMove
                         ),
                         EyesFreeZone(
-                            label = "POZICIJA",
+                            label = "POSITION",
                             tone = ZoneTone.TERTIARY,
                             buzz = Buzz.MEDIUM,
                             onClick = viewModel::onReadPosition
@@ -117,7 +117,7 @@ fun PairsScreen(
                 EyesFreeRow(
                     weight = HELPER_ZONE_WEIGHT,
                     zone = EyesFreeZone(
-                        label = "ODUSTANI  (dva dodira)",
+                        label = "GIVE UP  (touch twice)",
                         fontSize = 16.sp,
                         onClick = viewModel::onRevealPieces,
                         onArmed = viewModel::onGiveUpArmed
@@ -170,7 +170,7 @@ fun PairsScreen(
                 )
             ) {
                 Text(
-                    text = "Zagonetka ${uiState.puzzleNumber} rešena!",
+                    text = "Puzzle ${uiState.puzzleNumber} solved!",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(28.dp)
@@ -203,10 +203,10 @@ private fun StatsPanel(uiState: PairsUiState) {
             modifier = Modifier.fillMaxWidth().padding(12.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Stat("Zadatak", "${uiState.puzzleNumber}/${uiState.puzzleCount}")
-            Stat("Potez", "${uiState.stepNumber}/${uiState.stepCount}")
-            Stat("Greške", "${uiState.mistakes}")
-            Stat("Vreme", formatDuration(uiState.elapsedMillis))
+            Stat("Task", "${uiState.puzzleNumber}/${uiState.puzzleCount}")
+            Stat("Move", "${uiState.stepNumber}/${uiState.stepCount}")
+            Stat("Mistakes", "${uiState.mistakes}")
+            Stat("Time", formatDuration(uiState.elapsedMillis))
         }
     }
 }
@@ -223,9 +223,9 @@ private fun Stat(label: String, value: String) {
 @Composable
 private fun MoveBanner(uiState: PairsUiState) {
     val text = when (uiState.phase) {
-        PairsPhase.MEMORIZE -> "Zapamti poziciju"
+        PairsPhase.MEMORIZE -> "Memorise the position"
         PairsPhase.AWAITING_INPUT -> uiState.lastSpokenMove
-        PairsPhase.REVEALED -> "Figure su otkrivene"
+        PairsPhase.REVEALED -> "The pieces are revealed"
         PairsPhase.SOLVED -> ""
     }
     Text(
@@ -258,17 +258,17 @@ private fun Controls(
         when (uiState.phase) {
             PairsPhase.MEMORIZE ->
                 Button(onClick = onBegin, modifier = mainModifier) {
-                    Text("KREĆEMO", fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                    Text("GO", fontSize = 17.sp, fontWeight = FontWeight.Bold)
                 }
 
             PairsPhase.AWAITING_INPUT ->
                 OutlinedButton(onClick = onReveal, modifier = mainModifier) {
-                    Text("ODUSTANI / POKAŽI")
+                    Text("GIVE UP / SHOW")
                 }
 
             PairsPhase.REVEALED ->
                 FilledTonalButton(onClick = onNext, modifier = mainModifier) {
-                    Text("SLEDEĆA POZICIJA", fontWeight = FontWeight.Bold)
+                    Text("NEXT POSITION", fontWeight = FontWeight.Bold)
                 }
 
             PairsPhase.SOLVED -> Box(mainModifier)
@@ -279,7 +279,7 @@ private fun Controls(
             enabled = uiState.phase == PairsPhase.AWAITING_INPUT,
             modifier = Modifier.size(56.dp)
         ) {
-            Icon(Icons.Default.Refresh, contentDescription = "Ponovi potez")
+            Icon(Icons.Default.Refresh, contentDescription = "Repeat the move")
         }
 
         // Polje sme i da se izgovori — u modulu u kom potezi stižu glasom, to je

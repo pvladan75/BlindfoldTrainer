@@ -99,7 +99,7 @@ fun FollowGameScreen(
                         EyesFreeRow(
                             weight = MAIN_ZONE_WEIGHT,
                             zone = EyesFreeZone(
-                                label = "SLEDEĆI POTEZ",
+                                label = "NEXT MOVE",
                                 tone = ZoneTone.PRIMARY,
                                 fontSize = 26.sp,
                                 onClick = viewModel::onNextMove
@@ -111,7 +111,7 @@ fun FollowGameScreen(
                     EyesFreeRow(
                         weight = HELPER_ZONE_WEIGHT,
                         zone = EyesFreeZone(
-                            label = "PONOVI",
+                            label = "REPEAT",
                             tone = ZoneTone.SECONDARY,
                             onClick = viewModel::onRepeat
                         )
@@ -121,7 +121,7 @@ fun FollowGameScreen(
                     EyesFreeRow(
                         weight = HELPER_ZONE_WEIGHT,
                         zone = EyesFreeZone(
-                            label = "PREKINI  (dva dodira)",
+                            label = "STOP  (touch twice)",
                             fontSize = 16.sp,
                             onClick = viewModel::onQuit,
                             onArmed = viewModel::onQuitArmed
@@ -167,7 +167,7 @@ fun FollowGameScreen(
                 enabled = uiState.phase == FollowPhase.FOLLOWING && !uiState.isFinished,
                 modifier = Modifier.weight(1f).height(56.dp)
             ) {
-                Text("SLEDEĆI POTEZ", fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                Text("NEXT MOVE", fontWeight = FontWeight.Bold, fontSize = 17.sp)
             }
 
             // Odgovor sme i da se izgovori — mikrofon ima smisla samo dok pitanje stoji.
@@ -197,11 +197,11 @@ private fun ProgressHeader(uiState: FollowGameUiState) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "Pitanje ${uiState.questionNumber}/${uiState.questionCount}",
+                text = "Question ${uiState.questionNumber}/${uiState.questionCount}",
                 style = MaterialTheme.typography.labelMedium
             )
             Text(
-                text = "Tačno: ${uiState.solved}   Greške: ${uiState.mistakes}",
+                text = "Correct: ${uiState.solved}   Mistakes: ${uiState.mistakes}",
                 style = MaterialTheme.typography.labelMedium
             )
         }
@@ -235,23 +235,23 @@ private fun MovePanel(uiState: FollowGameUiState) {
     val question = uiState.question
 
     val text = when (uiState.phase) {
-        FollowPhase.FOLLOWING -> uiState.lastMoveLabel.ifBlank { "Pritisni za prvi potez" }
+        FollowPhase.FOLLOWING -> uiState.lastMoveLabel.ifBlank { "Press for the first move" }
         FollowPhase.QUESTION -> {
             // Kod pitanja sa više odgovora se vidi i dokle se stiglo: bez toga
             // se ne zna da li je dodir uopšte primljen.
             val found = uiState.found.size
             val wanted = question?.expected?.size ?: 0
             if (wanted > 1 && found > 0) {
-                "${question?.prompt.orEmpty()}  ($found/$wanted)"
+                "${question?.prompt?.text.orEmpty()}  ($found/$wanted)"
             } else {
-                question?.prompt.orEmpty()
+                question?.prompt?.text.orEmpty()
             }
         }
 
         FollowPhase.FEEDBACK -> if (uiState.wasCorrect) {
-            "Tačno"
+            "Correct"
         } else {
-            question?.correction.orEmpty()
+            question?.correction?.text.orEmpty()
         }
     }
 

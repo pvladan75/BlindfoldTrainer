@@ -93,12 +93,12 @@ fun EndgameScreen(
                     weight = HELPER_ZONE_WEIGHT,
                     zones = listOf(
                         EyesFreeZone(
-                            label = "PONOVI",
+                            label = "REPEAT",
                             tone = ZoneTone.SECONDARY,
                             onClick = viewModel::onRepeatLast
                         ),
                         EyesFreeZone(
-                            label = "POZICIJA",
+                            label = "POSITION",
                             tone = ZoneTone.TERTIARY,
                             buzz = Buzz.MEDIUM,
                             onClick = viewModel::onReadPosition
@@ -108,7 +108,7 @@ fun EndgameScreen(
                 EyesFreeRow(
                     weight = HELPER_ZONE_WEIGHT,
                     zone = EyesFreeZone(
-                        label = "ODUSTANI  ·  DUGO: PONIŠTI",
+                        label = "GIVE UP  ·  HOLD: UNDO",
                         fontSize = 16.sp,
                         onClick = viewModel::onGiveUp,
                         onArmed = viewModel::onGiveUpArmed,
@@ -179,10 +179,10 @@ private fun StatsPanel(uiState: EndgameUiState) {
             modifier = Modifier.fillMaxWidth().padding(12.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Stat("Pozicija", "${uiState.puzzleNumber}/${uiState.puzzleCount}")
-            Stat("Cilj", uiState.movesToMate?.let { "Mat u $it" } ?: "Mat")
-            Stat("Promašaji", "${uiState.mistakes}")
-            Stat("Vreme", formatDuration(uiState.elapsedMillis))
+            Stat("Position", "${uiState.puzzleNumber}/${uiState.puzzleCount}")
+            Stat("Goal", uiState.movesToMate?.let { "Mate in $it" } ?: "Mate")
+            Stat("Misses", "${uiState.mistakes}")
+            Stat("Time", formatDuration(uiState.elapsedMillis))
         }
     }
 }
@@ -234,21 +234,21 @@ private fun ListenControls(
             onClick = onRepeatLast,
             modifier = Modifier.weight(1f).height(48.dp)
         ) {
-            Text("PONOVI")
+            Text("REPEAT")
         }
 
         OutlinedButton(
             onClick = onReadPosition,
             modifier = Modifier.weight(1f).height(48.dp)
         ) {
-            Text("POZICIJA")
+            Text("POSITION")
         }
 
         OutlinedButton(
             onClick = onUndo,
             modifier = Modifier.weight(1f).height(48.dp)
         ) {
-            Text("PONIŠTI")
+            Text("UNDO")
         }
     }
 }
@@ -274,7 +274,7 @@ private fun Controls(
         when {
             uiState.outcome == EndgameOutcome.GAVE_UP ->
                 FilledTonalButton(onClick = onNext, modifier = buttonModifier) {
-                    Text("SLEDEĆA POZICIJA", fontWeight = FontWeight.Bold)
+                    Text("NEXT POSITION", fontWeight = FontWeight.Bold)
                 }
 
             uiState.outcome != EndgameOutcome.IN_PROGRESS ->
@@ -283,7 +283,7 @@ private fun Controls(
 
             uiState.isMemorizing ->
                 Button(onClick = onHidePieces, modifier = buttonModifier) {
-                    Text("ZAPAMTIO SAM — SAKRIJ", fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                    Text("MEMORISED — HIDE", fontSize = 17.sp, fontWeight = FontWeight.Bold)
                 }
 
             else ->
@@ -292,7 +292,7 @@ private fun Controls(
                     modifier = buttonModifier,
                     enabled = !uiState.isEngineThinking
                 ) {
-                    Text("ODUSTANI / POKAŽI")
+                    Text("GIVE UP / SHOW")
                 }
         }
 

@@ -86,7 +86,7 @@ internal data class Setup(val taskCount: Int, val pieceCount: Int, val memorizeM
 
 /** Šta težina znači: koliko figura, i koliko dugo se gledaju. */
 internal fun difficultyDetailOf(difficulty: Difficulty): String = setupFor(difficulty).let {
-    "${quantity(it.pieceCount, "figura", "figure", "figura")} · ${secondsLabel(it.memorizeMillis)} s"
+    "${quantity(it.pieceCount, "piece", "pieces")} · ${secondsLabel(it.memorizeMillis)} s"
 }
 
 internal fun setupFor(difficulty: Difficulty) = when (difficulty) {

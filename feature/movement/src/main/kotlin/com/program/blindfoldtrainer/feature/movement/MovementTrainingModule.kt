@@ -48,9 +48,9 @@ class MovementTrainingModule @Inject constructor() : TrainingModule {
         if (taskId != RETELL_PATH.id) return null
 
         return when (support) {
-            Support.FULL -> "ceo trag ostaje — putanja se pročita sa table"
-            Support.PARTIAL -> "iza figure ostaju dva polja"
-            else -> "vidi se samo polje na kom figura stoji"
+            Support.FULL -> "the whole trail stays — the path is read off the board"
+            Support.PARTIAL -> "two squares stay behind the piece"
+            else -> "only the square the piece stands on is shown"
         }
     }
 

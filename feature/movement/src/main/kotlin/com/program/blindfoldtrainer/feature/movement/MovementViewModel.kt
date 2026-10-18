@@ -282,25 +282,25 @@ internal fun difficultyDetailOf(difficulty: Difficulty, taskId: String?): String
     return when (task) {
         MovementTask.REACH -> when {
             // Plus, a ne „i": dugme stoji samo za sebe, pa veznik nema uz šta.
-            PieceType.KNIGHT in pieces -> "+ skakač"
-            PieceType.QUEEN in pieces -> "+ dama"
-            else -> "top i lovac"
+            PieceType.KNIGHT in pieces -> "+ knight"
+            PieceType.QUEEN in pieces -> "+ queen"
+            else -> "rook and bishop"
         }
 
         MovementTask.RETELL -> if (PieceType.KNIGHT in pieces) {
-            "skakač, ${setup.moves} poteza"
+            "knight, ${quantity(setup.moves, "move", "moves")}"
         } else {
-            quantity(setup.moves, "potez", "poteza")
+            quantity(setup.moves, "move", "moves")
         }
 
         // Na najtežoj se ne dodaju potezi nego dama, pa se to i kaže.
         MovementTask.WALK -> if (PieceType.QUEEN in pieces) {
-            "damom, ${setup.moves} poteza"
+            "queen, ${quantity(setup.moves, "move", "moves")}"
         } else {
-            quantity(setup.moves, "potez", "poteza")
+            quantity(setup.moves, "move", "moves")
         }
 
-        MovementTask.KNIGHT_WALK -> quantity(setup.moves, "potez", "poteza")
+        MovementTask.KNIGHT_WALK -> quantity(setup.moves, "move", "moves")
     }
 }
 
@@ -406,7 +406,7 @@ class MovementViewModel @Inject constructor(
         }
 
         val walk = state.walk ?: return@aside
-        speaker.say(interrupt = true) { walkStandsOn(nameOf(walk.piece)) }
+        speaker.say(interrupt = true) { walkStandsOn(walk.piece) }
         speaker.say(walk.current, interrupt = false)
         speaker.say(interrupt = false) { walkHeld(walk.movesMade) }
         speaker.say(interrupt = false) { movesLeft(walk.movesLeft) }
@@ -564,7 +564,7 @@ class MovementViewModel @Inject constructor(
         }
 
         when (step) {
-            Step.ILLEGAL -> speaker.say(interrupt = false) { walkIllegal(nameOf(next.mover)) }
+            Step.ILLEGAL -> speaker.say(interrupt = false) { walkIllegal(next.mover) }
             Step.VISITED -> speaker.say(interrupt = false) { walkVisited }
             // Primljen potez se izgovara. Prvobitno je ovde stajalo ćutanje,
             // da se ne kvari ritam niza — ali ćutanje ne razlikuje „primljeno"
@@ -703,7 +703,7 @@ class MovementViewModel @Inject constructor(
 
         roundJob?.cancel()
         roundJob = viewModelScope.launch {
-            speaker.say(interrupt = false) { retellWatch(nameOf(piece)) }
+            speaker.say(interrupt = false) { retellWatch(piece) }
             awaitSilence()
 
             path.indices.forEach { step ->
@@ -828,7 +828,7 @@ class MovementViewModel @Inject constructor(
         }
 
         val walk = Walk(piece = piece, start = from, targetMoves = setup.moves)
-        speaker.say(interrupt = false) { walkWith(nameOf(walk.piece)) }
+        speaker.say(interrupt = false) { walkWith(walk.piece) }
         speaker.say(from, interrupt = false)
         if (walk.piece == PieceType.QUEEN) sayQueenTurn(walk)
         _uiState.update {
@@ -867,10 +867,10 @@ class MovementViewModel @Inject constructor(
      * sopstvenog govora je bilo ono što je razbijalo tok.
      */
     private fun sayQuestion(piece: PieceType, from: Square, line: Line, interrupt: Boolean) {
-        speaker.say(interrupt) { reachPieceOn(nameOf(piece)) }
+        speaker.say(interrupt) { reachPieceOn(piece) }
         speaker.say(from, interrupt = false)
         speaker.say(interrupt = false) {
-            if (line.isFile) reachWhichOnFile(line.fileLabel) else reachWhichOnRank(line.rankLabel)
+            if (line.isFile) reachWhichOnFile(line.fileLabel.single()) else reachWhichOnRank(line.rankLabel)
         }
     }
 

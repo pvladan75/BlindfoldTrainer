@@ -307,7 +307,7 @@ internal data class Setup(val taskCount: Int, val pieceCount: Int, val minMoves:
 
 /** Šta težina znači: koliko crnih figura drži tablu. */
 internal fun difficultyDetailOf(difficulty: Difficulty): String =
-    quantity(setupFor(difficulty).pieceCount, "figura", "figure", "figura")
+    quantity(setupFor(difficulty).pieceCount, "piece", "pieces")
 
 internal fun setupFor(difficulty: Difficulty) = when (difficulty) {
     Difficulty.EASY -> Setup(taskCount = 5, pieceCount = 3, minMoves = 2)

@@ -1,40 +1,32 @@
 package com.program.blindfoldtrainer.core.moduleapi
 
 /**
- * Brojevi u rečenici, na srpskom.
+ * Brojevi u rečenici, na engleskom.
  *
  * Stoji uz ugovor modula jer ga koriste **svi** moduli za isti posao: da kažu
- * šta njihova težina konkretno znači. Bez toga bi svaki pisao svoje „3 figure /
- * 5 figura" i pre ili kasnije bi negde stajalo „5 figure".
+ * šta njihova težina konkretno znači. Bez toga bi svaki pisao svoje „3 pieces /
+ * 1 piece" i pre ili kasnije bi negde stajalo „1 pieces".
+ *
+ * Do 18. oktobra 2026. ovde je stajalo srpsko pravilo sa tri oblika i izuzetkom
+ * za 11–14; aplikacija je od tada samo na engleskom, pa su oblika dva.
  */
-fun quantity(count: Int, one: String, few: String, many: String = few): String =
-    "$count ${wordFor(count, one, few, many)}"
+fun quantity(count: Int, one: String, many: String = one + "s"): String =
+    "$count ${wordFor(count, one, many)}"
 
 /**
- * Oblik imenice uz [count].
- *
- * Pravilo je srpsko i ima izuzetak koji se lako previdi: **11 do 14 idu uz
- * množinu**, iako se završavaju na 1 do 4. „11 figura", ne „11 figura" po
- * pravilu za jedinicu.
+ * Oblik imenice uz [count]: jednina samo uz **tačno jedan**, sve ostalo —
+ * uključujući nulu — ide uz množinu („0 moves", „1 move", „2 moves").
  */
-fun wordFor(count: Int, one: String, few: String, many: String = few): String {
-    val lastTwo = count % 100
-    if (lastTwo in 11..14) return many
-
-    return when (count % 10) {
-        1 -> one
-        2, 3, 4 -> few
-        else -> many
-    }
-}
+fun wordFor(count: Int, one: String, many: String = one + "s"): String =
+    if (count == 1) one else many
 
 /**
- * Sekunde iz milisekundi, bez suvišne nule: `6_000` → „6", `3_500` → „3,5".
+ * Sekunde iz milisekundi, bez suvišne nule: `6_000` → „6", `3_500` → „3.5".
  *
- * Decimalni zarez je namerno zarez, ne tačka — tekst se čita na srpskom.
+ * Decimalna tačka, ne zarez — tekst se čita na engleskom.
  */
 fun secondsLabel(millis: Long): String {
     val whole = millis / 1000
     val tenth = (millis % 1000) / 100
-    return if (tenth == 0L) "$whole" else "$whole,$tenth"
+    return if (tenth == 0L) "$whole" else "$whole.$tenth"
 }

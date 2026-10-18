@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="check_title">Daj šah</string>
-    <string name="check_description">Crne figure drže tablu, a beli skakač treba da dâ šah crnom kralju. Ne sme da uzme nijednu figuru — a na težem zadatku ni da stane na polje koje neka od njih drži.</string>
-    <string name="check_static">Crne figure se ne pomeraju. Ne zato što spavaju, nego zato što bi svaki tvoj skok menjao poziciju i zadatak bi postao partija.</string>
-    <string name="check_goal">Daj šah crnom kralju</string>
-    <string name="check_rule_no_capture">Pravilo: ne uzimaj figure. Napadnuta polja su dozvoljena.</string>
-    <string name="check_rule_safe_path">Pravilo: ne uzimaj figure i ne staj na polje koje crni drži.</string>
-    <string name="check_memorize">Zapamti gde stoje figure</string>
-    <string name="check_memorized">ZAPAMTIO SAM</string>
-    <string name="check_moves">Poteza: %1$d (najkraće %2$d)</string>
-    <string name="check_done">Šah!</string>
-    <string name="check_captured">Tu stoji figura.</string>
-    <string name="check_attacked">To polje je napadnuto.</string>
-    <string name="check_not_knight">Nije potez skakača.</string>
-    <string name="check_already_there">Skakač je već tu.</string>
-    <string name="check_give_up">ODUSTANI  (dva dodira)</string>
+    <string name="check_title">Give Check</string>
+    <string name="check_description">Black pieces hold the board, and a white knight has to give check to the black king. It may not capture a single piece — and on the harder task it may not even step on a square one of them guards.</string>
+    <string name="check_static">The black pieces do not move. Not because they are asleep, but because every jump of yours would change the position and the task would turn into a game.</string>
+    <string name="check_goal">Give check to the black king</string>
+    <string name="check_rule_no_capture">Rule: do not capture pieces. Attacked squares are allowed.</string>
+    <string name="check_rule_safe_path">Rule: do not capture pieces and do not step on a square Black guards.</string>
+    <string name="check_memorize">Memorise where the pieces stand</string>
+    <string name="check_memorized">I HAVE MEMORISED IT</string>
+    <string name="check_moves">Moves: %1$d (shortest %2$d)</string>
+    <string name="check_done">Check!</string>
+    <string name="check_captured">There is a piece there.</string>
+    <string name="check_attacked">That square is attacked.</string>
+    <string name="check_not_knight">Not a knight move.</string>
+    <string name="check_already_there">The knight is already there.</string>
+    <string name="check_give_up">GIVE UP  (touch twice)</string>
 </resources>

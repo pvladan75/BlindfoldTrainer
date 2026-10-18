@@ -46,7 +46,7 @@ data class Walk(
     val heldUntil: Int? = null
 ) {
     init {
-        require(targetMoves > 0) { "šetnja bez poteza ne bi bila šetnja" }
+        require(targetMoves > 0) { "a walk without moves would not be a walk" }
     }
 
     val current: Square get() = visited.last()
@@ -130,7 +130,7 @@ internal fun randomWalkPath(
     random: Random = Random,
     attempts: Int = 20
 ): List<Square> {
-    require(moves > 0) { "putanja bez poteza ne bi bila putanja" }
+    require(moves > 0) { "a path without moves would not be a path" }
 
     var longest = emptyList<Square>()
 

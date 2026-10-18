@@ -26,10 +26,10 @@ data class VoiceWords(
     val pieces: Map<String, PieceType> = emptyMap()
 ) {
     init {
-        require(files.values.toSet() == ('a'..'h').toSet()) { "Kolone moraju pokriti a–h" }
-        require(ranks.values.toSet() == ('1'..'8').toSet()) { "Redovi moraju pokriti 1–8" }
+        require(files.values.toSet() == ('a'..'h').toSet()) { "Files must cover a–h" }
+        require(ranks.values.toSet() == ('1'..'8').toSet()) { "Ranks must cover 1–8" }
         require(pieces.isEmpty() || pieces.values.toSet() == PieceType.entries.toSet()) {
-            "Ako imena figura postoje, moraju pokriti svih šest vrsta"
+            "If piece names exist, they must cover all six types"
         }
     }
 
@@ -107,86 +107,6 @@ object VoiceLanguages {
                 pieces = listOf("king", "queen", "rook", "bishop", "knight", "pawn")
             ),
             isVerified = true
-        ),
-
-        Language.GERMAN to VoiceModelSpec(
-            archiveName = "vosk-model-small-de-0.15.zip",
-            locale = Locale.GERMAN,
-            downloadMegabytes = 44,
-            words = wordsOf(
-                files = listOf("a", "be", "ce", "de", "e", "ef", "ge", "ha"),
-                ranks = listOf("eins", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht")
-            )
-        ),
-
-        Language.RUSSIAN to VoiceModelSpec(
-            archiveName = "vosk-model-small-ru-0.22.zip",
-            locale = Locale.forLanguageTag("ru"),
-            downloadMegabytes = 44,
-            words = wordsOf(
-                files = listOf("а", "бэ", "цэ", "дэ", "е", "эф", "жэ", "аш"),
-                ranks = listOf("один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь")
-            )
-        ),
-
-        Language.FRENCH to VoiceModelSpec(
-            archiveName = "vosk-model-small-fr-0.22.zip",
-            locale = Locale.FRENCH,
-            downloadMegabytes = 40,
-            words = wordsOf(
-                files = listOf("a", "bé", "cé", "dé", "e", "effe", "gé", "ache"),
-                ranks = listOf("un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit")
-            )
-        ),
-
-        Language.SPANISH to VoiceModelSpec(
-            archiveName = "vosk-model-small-es-0.42.zip",
-            locale = Locale.forLanguageTag("es"),
-            downloadMegabytes = 38,
-            words = wordsOf(
-                files = listOf("a", "be", "ce", "de", "e", "efe", "ge", "hache"),
-                ranks = listOf("uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho")
-            )
-        ),
-
-        Language.ITALIAN to VoiceModelSpec(
-            archiveName = "vosk-model-small-it-0.22.zip",
-            locale = Locale.ITALIAN,
-            downloadMegabytes = 47,
-            words = wordsOf(
-                files = listOf("a", "bi", "ci", "di", "e", "effe", "gi", "acca"),
-                ranks = listOf("uno", "due", "tre", "quattro", "cinque", "sei", "sette", "otto")
-            )
-        ),
-
-        Language.POLISH to VoiceModelSpec(
-            archiveName = "vosk-model-small-pl-0.22.zip",
-            locale = Locale.forLanguageTag("pl"),
-            downloadMegabytes = 51,
-            words = wordsOf(
-                files = listOf("a", "be", "ce", "de", "e", "ef", "gie", "ha"),
-                ranks = listOf("jeden", "dwa", "trzy", "cztery", "pięć", "sześć", "siedem", "osiem")
-            )
-        ),
-
-        Language.CZECH to VoiceModelSpec(
-            archiveName = "vosk-model-small-cs-0.4-rhasspy.zip",
-            locale = Locale.forLanguageTag("cs"),
-            downloadMegabytes = 44,
-            words = wordsOf(
-                files = listOf("á", "bé", "cé", "dé", "é", "ef", "gé", "há"),
-                ranks = listOf("jedna", "dva", "tři", "čtyři", "pět", "šest", "sedm", "osm")
-            )
-        ),
-
-        Language.TURKISH to VoiceModelSpec(
-            archiveName = "vosk-model-small-tr-0.3.zip",
-            locale = Locale.forLanguageTag("tr"),
-            downloadMegabytes = 35,
-            words = wordsOf(
-                files = listOf("a", "be", "ce", "de", "e", "fe", "ge", "he"),
-                ranks = listOf("bir", "iki", "üç", "dört", "beş", "altı", "yedi", "sekiz")
-            )
         )
     )
 }

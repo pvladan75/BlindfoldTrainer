@@ -95,7 +95,7 @@ data class MicrophoneZone(
     val voiceState: VoiceState,
     val onToggle: () -> Unit,
     val weight: Float = MAIN_ZONE_WEIGHT,
-    val idleLabel: String = "MIKROFON"
+    val idleLabel: String = "MICROPHONE"
 )
 
 /**
@@ -164,7 +164,7 @@ fun EyesFreeControls(
         if (granted) microphone?.onToggle?.invoke()
         else Toast.makeText(
             context,
-            "Bez dozvole za mikrofon glasovni unos ne radi.",
+            "Without microphone permission, voice input does not work.",
             Toast.LENGTH_LONG
         ).show()
     }
@@ -184,7 +184,7 @@ fun EyesFreeControls(
             Zone(
                 zone = EyesFreeZone(
                     label = if (microphone.isListening) {
-                        "SLUŠAM — DODIRNI DA STANE"
+                        "LISTENING — TOUCH TO STOP"
                     } else {
                         microphone.idleLabel
                     },
@@ -195,7 +195,7 @@ fun EyesFreeControls(
                             microphone.isListening -> microphone.onToggle()
                             unavailable != null -> Toast.makeText(
                                 context,
-                                "${unavailable.reason} — jezik i paket biraš u Podešavanjima.",
+                                "${unavailable.reason} — the listening package is in Settings.",
                                 Toast.LENGTH_LONG
                             ).show()
 

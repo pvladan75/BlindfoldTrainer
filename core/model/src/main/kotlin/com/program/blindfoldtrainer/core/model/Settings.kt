@@ -9,26 +9,20 @@ enum class ThemeChoice { SYSTEM, LIGHT, DARK }
  * Jezik na kom aplikacija radi.
  *
  * **Jedan spisak za sve tri stvari** koje jezik dodiruje: reči kojima se čitaju
- * polja, rečenice koje se izgovaraju, i model kojim se sluša. Ranije su
- * postojala dva enuma — jedan za izgovor, jedan za prepoznavanje — jer je
- * izgovor imao i srpski, a Vosk nema nijedan južnoslovenski model.
+ * polja, rečenice koje se izgovaraju, i model kojim se sluša.
  *
- * Kad je srpski izašao iz ponude, ta dva spiska su postala isti spisak, a dva
- * imena za istu stvar se pre ili kasnije raziđu.
+ * Od 18. oktobra 2026. aplikacija je **samo na engleskom** — ekran, govor i
+ * slušanje. Osam jezika koji su ovde stajali imali su reči za polja upisane po
+ * pravopisu a ne po sluhu, nijedan nije imao rečenice, i nijedan nije proveren
+ * na uređaju; obrisani su umesto da se nude kao pola-jezik. Enum ostaje zato što
+ * ga podešavanja i paket za slušanje nose kao ključ.
  *
- * Dodavanje jezika je jedan unos ovde, jedan u `VoiceLanguages`, jedan u
- * `SpeechLanguages` i jedan `SpeechPhrases`. Dok rečenica nema, jezik se ne nudi.
+ * Dodavanje jezika je jedan unos ovde, jedan u `VoiceLanguages`, rečenice u
+ * `SpeechPhrases` i snimljeni isečci u `SpeechVocabulary`. Dok isečaka nema,
+ * jezik se ne nudi.
  */
 enum class Language(val code: String) {
-    ENGLISH("en-us"),
-    GERMAN("de"),
-    RUSSIAN("ru"),
-    FRENCH("fr"),
-    SPANISH("es"),
-    ITALIAN("it"),
-    POLISH("pl"),
-    CZECH("cs"),
-    TURKISH("tr")
+    ENGLISH("en-us")
 }
 
 /**
@@ -54,6 +48,9 @@ data class Settings(
      * korisnika tražilo previše: ko vežba zatvorenih očiju i sklapa tablu u
      * glavi ne sme uz to da pamti da sluša jedan jezik a govori drugi. Sam
      * autor je nekoliko puta ostao u nedoumici šta je gde podesio.
+     *
+     * Danas je jezik jedan i korisnik ga ne bira; polje ostaje da se podešavanja
+     * i paket za slušanje ne bi prepravljali kad se drugi jezik jednom vrati.
      */
     val language: Language = Language.ENGLISH,
 
@@ -86,7 +83,7 @@ data class Settings(
 ) {
     init {
         require(speechRate in MIN_SPEECH_RATE..MAX_SPEECH_RATE) {
-            "Brzina govora mora biti u $MIN_SPEECH_RATE..$MAX_SPEECH_RATE, dobijeno $speechRate"
+            "Speech rate must be in $MIN_SPEECH_RATE..$MAX_SPEECH_RATE, got $speechRate"
         }
     }
 

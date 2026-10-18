@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.program.blindfoldtrainer.core.audio.Speaker
 import com.program.blindfoldtrainer.core.audio.SpeechVoice
+import com.program.blindfoldtrainer.core.audio.SpokenLine
 import com.program.blindfoldtrainer.core.chess.Square
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.moduleapi.quantity
@@ -95,7 +96,7 @@ internal data class Setup(val questionCount: Int, val perQuestionMillis: Long?)
 
 /** Šta težina znači: koliko polja, i koliko vremena po polju. */
 internal fun difficultyDetailOf(difficulty: Difficulty): String = setupFor(difficulty).let {
-    val squares = quantity(it.questionCount, "polje", "polja")
+    val squares = quantity(it.questionCount, "square", "squares")
     if (it.perQuestionMillis == null) squares else "$squares · ${secondsLabel(it.perQuestionMillis)} s"
 }
 
@@ -282,12 +283,12 @@ class GeometryViewModel @Inject constructor(
         }
     }
 
-    private fun SpeechVoice.spokenFeedback(feedback: Feedback, square: Square?): String {
-        val color = if (square?.isLight == true) lightSquare else darkSquare
+    private fun SpeechVoice.spokenFeedback(feedback: Feedback, square: Square?): SpokenLine {
+        val isLight = square?.isLight == true
         return when (feedback) {
             Feedback.CORRECT -> correct
-            Feedback.WRONG -> wrongSquareIs(color)
-            Feedback.TIMEOUT -> timeoutSquareIs(color)
+            Feedback.WRONG -> wrongSquareIs(isLight)
+            Feedback.TIMEOUT -> timeoutSquareIs(isLight)
         }
     }
 

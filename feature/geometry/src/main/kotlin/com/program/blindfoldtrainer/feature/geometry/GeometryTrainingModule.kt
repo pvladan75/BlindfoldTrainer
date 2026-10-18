@@ -36,8 +36,8 @@ class GeometryTrainingModule @Inject constructor() : TrainingModule {
      * gde je polje bilo; to je razlika između testa i vežbe.
      */
     override fun supportDetail(support: Support, taskId: String?): String = when (support) {
-        Support.NONE -> "polje se izgovara, istina takođe"
-        else -> "tabla se pokaže tek posle promašaja"
+        Support.NONE -> "the square is spoken, and so is the answer"
+        else -> "the board appears only after a miss"
     }
 
     @Composable

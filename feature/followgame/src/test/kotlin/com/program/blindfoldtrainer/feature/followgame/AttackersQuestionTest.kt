@@ -67,7 +67,7 @@ class AttackersQuestionTest {
 
         val question = requireNotNull(attackersQuestionFor(position, Random(1)))
 
-        assertTrue(question.prompt, question.prompt.contains("(${question.expected.size})"))
+        assertTrue(question.prompt.text, question.prompt.text.contains("Find ${question.expected.size}"))
         assertNotNull(question.correction)
     }
 }

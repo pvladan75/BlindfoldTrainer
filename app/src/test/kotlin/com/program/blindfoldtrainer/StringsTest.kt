@@ -7,30 +7,43 @@ import org.junit.Test
 /**
  * Čuvar za **tekst koji korisnik vidi**.
  *
- * Kod ovde ima preko četiri stotine testova; rečenice nisu imale nijedan. A one
- * umeju da otkažu tiho: Android **briše neescape-ovan ASCII navodnik** iz
- * resursa, pa je „g1 f3" na ekranu ostajalo otvoreno — `Čuješ „g1 f3 i vidiš`.
- * Bilo je pogođeno dvadeset mesta i nijedno se nije videlo dok se ne pročita
- * naglas.
+ * Kod ovde ima preko tri stotine testova; rečenice nisu imale nijedan. A one
+ * umeju da otkažu tiho: Android **briše neescape-ovan ASCII navodnik i
+ * apostrof** iz resursa, pa „g1 f3" na ekranu ostaje otvoreno, a „don't" postane
+ * „dont". Bilo je pogođeno dvadeset mesta i nijedno se nije videlo dok se ne
+ * pročita naglas.
  *
- * Isto važi za apostrof. Oba znaka su i inače pogrešna u srpskom tekstu: navodnici
- * su „ i “, pa test istovremeno čuva i tipografiju i to da tekst uopšte stigne do
- * ekrana.
+ * Tekst je od 18. oktobra 2026. na engleskom, pa je pravilo englesko: navodnici
+ * su “ i ”, apostrof je ’. Sirovi ASCII znak se ne dozvoljava ni escape-ovan —
+ * `\'` prolazi build, ali tipografski je pogrešan i lako se zaboravi, a ovako je
+ * jedno pravilo bez izuzetka.
+ *
+ * Proverava se i tekst modula u `feature`, iz istog razloga i istim pravilom.
  */
 class StringsTest {
 
-    private val strings = File("src/main/res/values/strings.xml").readText()
+    private val files: List<File> = buildList {
+        add(File("src/main/res/values/strings.xml"))
+        File("../feature").listFiles()
+            .orEmpty()
+            .map { File(it, "src/main/res/values/strings.xml") }
+            .filter { it.isFile }
+            .sortedBy { it.path }
+            .forEach { add(it) }
+    }
 
     /** Ime resursa i njegov tekst; `<string-array>` se ovde ne dira. */
-    private val entries: List<Pair<String, String>> =
+    private val entries: List<Pair<String, String>> = files.flatMap { file ->
         Regex("""<string name="([^"]+)">(.*?)</string>""", RegexOption.DOT_MATCHES_ALL)
-            .findAll(strings)
+            .findAll(file.readText())
             .map { it.groupValues[1] to it.groupValues[2] }
             .toList()
+    }
 
     @Test
     fun `spisak se uopste procitao`() {
         assertTrue("nijedan string nije nađen — regularni izraz ne valja", entries.size > 50)
+        assertTrue("očekivano je devet modula uz app — nađeno ${files.size} fajlova", files.size == 10)
     }
 
     /**
@@ -42,20 +55,22 @@ class StringsTest {
         val bad = entries.filter { (_, body) -> '"' in body }
 
         assertTrue(
-            "ASCII navodnik nestaje sa ekrana; koristi „ i “ — ${bad.map { it.first }}",
+            "ASCII navodnik nestaje sa ekrana; koristi “ i ” — ${bad.map { it.first }}",
             bad.isEmpty()
         )
     }
 
-    /** Isto pravilo, isti ishod: neescape-ovan apostrof se ne prikazuje. */
+    /**
+     * Isto pravilo za apostrof, i **bez izuzetka za escape**: engleski tekst je
+     * pun kontrakcija, a „don't" koje tiho postane „dont" niko ne primeti dok ga
+     * ne pročita. Kovrdžavi ’ Android ne dira.
+     */
     @Test
-    fun `nijedan tekst ne sadrzi neescape-ovan apostrof`() {
-        val bad = entries.filter { (_, body) ->
-            body.withIndex().any { (i, ch) -> ch == '\'' && (i == 0 || body[i - 1] != '\\') }
-        }
+    fun `nijedan tekst ne sadrzi ASCII apostrof`() {
+        val bad = entries.filter { (_, body) -> '\'' in body }
 
         assertTrue(
-            "apostrof mora da se escape-uje sa \\' — ${bad.map { it.first }}",
+            "ASCII apostrof nestaje sa ekrana; koristi ’ — ${bad.map { it.first }}",
             bad.isEmpty()
         )
     }
@@ -66,11 +81,19 @@ class StringsTest {
      */
     @Test
     fun `navodnici dolaze u parovima`() {
-        val bad = entries.filter { (_, body) -> body.count { it == '„' } != body.count { it == '“' } }
+        val bad = entries.filter { (_, body) -> body.count { it == '“' } != body.count { it == '”' } }
 
         assertTrue(
             "otvoreni i zatvoreni navodnik se ne poklapaju — ${bad.map { it.first }}",
             bad.isEmpty()
         )
+    }
+
+    /** Srpski navodnici („) su ostatak prevoda; u engleskom tekstu nemaju šta da traže. */
+    @Test
+    fun `nema srpskih navodnika`() {
+        val bad = entries.filter { (_, body) -> '„' in body }
+
+        assertTrue("srpski otvoreni navodnik u engleskom tekstu — ${bad.map { it.first }}", bad.isEmpty())
     }
 }

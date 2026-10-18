@@ -75,13 +75,13 @@ fun GeometryScreen(
                     weight = MAIN_ZONE_WEIGHT,
                     zones = listOf(
                         EyesFreeZone(
-                            label = "SVETLO",
+                            label = "LIGHT",
                             tone = ZoneTone.PRIMARY,
                             fontSize = 26.sp,
                             onClick = { viewModel.onAnswer(Answer.LIGHT) }
                         ),
                         EyesFreeZone(
-                            label = "TAMNO",
+                            label = "DARK",
                             tone = ZoneTone.TERTIARY,
                             buzz = Buzz.MEDIUM,
                             fontSize = 26.sp,
@@ -92,7 +92,7 @@ fun GeometryScreen(
                 EyesFreeRow(
                     weight = HELPER_ZONE_WEIGHT,
                     zone = EyesFreeZone(
-                        label = "PONOVI",
+                        label = "REPEAT",
                         tone = ZoneTone.SECONDARY,
                         onClick = viewModel::onRepeat
                     )
@@ -100,7 +100,7 @@ fun GeometryScreen(
                 EyesFreeRow(
                     weight = HELPER_ZONE_WEIGHT,
                     zone = EyesFreeZone(
-                        label = "PREKINI  (dva dodira)",
+                        label = "STOP  (touch twice)",
                         fontSize = 16.sp,
                         onClick = viewModel::onQuit,
                         onArmed = viewModel::onQuitArmed
@@ -149,7 +149,7 @@ private fun ProgressHeader(uiState: GeometryUiState) {
                 style = MaterialTheme.typography.labelMedium
             )
             Text(
-                text = "Tačno: ${uiState.solved}   Greške: ${uiState.mistakes}",
+                text = "Correct: ${uiState.solved}   Mistakes: ${uiState.mistakes}",
                 style = MaterialTheme.typography.labelMedium
             )
         }
@@ -188,7 +188,7 @@ private fun QuestionPrompt(uiState: GeometryUiState) {
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = "Koje je boje polje?",
+            text = "What colour is the square?",
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
         )
@@ -210,7 +210,7 @@ private fun QuestionPrompt(uiState: GeometryUiState) {
         // obrazac samo ponavlja.
         val correction = when (uiState.feedback) {
             Feedback.WRONG, Feedback.TIMEOUT ->
-                if (square.isLight) "svetlo" else "tamno"
+                if (square.isLight) "light" else "dark"
             else -> null
         }
         Text(
@@ -261,7 +261,7 @@ private fun AnswerButtons(enabled: Boolean, onAnswer: (Answer) -> Unit) {
                 contentColor = Color.Black
             )
         ) {
-            Text("SVETLO", fontWeight = FontWeight.Bold, fontSize = 17.sp)
+            Text("LIGHT", fontWeight = FontWeight.Bold, fontSize = 17.sp)
         }
 
         Button(
@@ -273,7 +273,7 @@ private fun AnswerButtons(enabled: Boolean, onAnswer: (Answer) -> Unit) {
                 contentColor = Color.White
             )
         ) {
-            Text("TAMNO", fontWeight = FontWeight.Bold, fontSize = 17.sp)
+            Text("DARK", fontWeight = FontWeight.Bold, fontSize = 17.sp)
         }
     }
 }

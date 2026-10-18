@@ -97,7 +97,7 @@ internal data class Setup(val questionCount: Int, val plyGap: Int)
  * broje potezi, ne polupotezi.
  */
 internal fun difficultyDetailOf(difficulty: Difficulty): String =
-    "na ${quantity(setupFor(difficulty).plyGap / 2, "potez", "poteza")}"
+    "every ${quantity(setupFor(difficulty).plyGap / 2, "move", "moves")}"
 
 internal fun setupFor(difficulty: Difficulty) = when (difficulty) {
     Difficulty.EASY -> Setup(questionCount = 5, plyGap = 4)
@@ -206,13 +206,13 @@ class FollowGameViewModel @Inject constructor(
             val loaded = runCatching { catalog.games() }
             val failure = loaded.exceptionOrNull()
             if (failure is CancellationException) throw failure
-            if (failure != null) Log.e(TAG, "Partije nisu učitane", failure)
+            if (failure != null) Log.e(TAG, "Games were not loaded", failure)
 
             val games = loaded.getOrDefault(emptyList())
             if (games.isEmpty()) {
                 val reason = failure?.let { "\n\n${it.userReason()}" }.orEmpty()
                 _uiState.update {
-                    it.copy(isLoading = false, infoMessage = "Nema partija u sadržaju.$reason")
+                    it.copy(isLoading = false, infoMessage = "No games in the content.$reason")
                 }
                 return@launch
             }

@@ -107,7 +107,7 @@ fun MovementScreen(
                 weight = HELPER_ZONE_WEIGHT,
                 zones = listOf(
                     EyesFreeZone(
-                        label = "PONOVI",
+                        label = "REPEAT",
                         tone = ZoneTone.SECONDARY,
                         // Kod dometa „ponovi" znači i **šta si dosad rekao**, ne
                         // samo pitanje: srednji red ovde nema mesta za treću
@@ -117,7 +117,7 @@ fun MovementScreen(
                     ),
                     if (isReach) {
                         EyesFreeZone(
-                            label = "GOTOVO",
+                            label = "DONE",
                             tone = ZoneTone.PRIMARY,
                             buzz = Buzz.MEDIUM,
                             onClick = viewModel::onAnswerDone,
@@ -127,7 +127,7 @@ fun MovementScreen(
                         )
                     } else {
                         EyesFreeZone(
-                            label = "STANJE",
+                            label = "STATUS",
                             tone = ZoneTone.TERTIARY,
                             buzz = Buzz.MEDIUM,
                             onClick = viewModel::onReadState
@@ -138,7 +138,7 @@ fun MovementScreen(
             EyesFreeRow(
                 weight = HELPER_ZONE_WEIGHT,
                 zone = EyesFreeZone(
-                    label = "ODUSTANI  (dva dodira)",
+                    label = "GIVE UP  (touch twice)",
                     fontSize = 16.sp,
                     onClick = viewModel::onGiveUp,
                     onArmed = viewModel::onGiveUpArmed
@@ -173,7 +173,7 @@ private fun WalkReplay(replay: Replay, onContinue: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
         Text(
-            text = if (replay.isPrompt) "Zapamti putanju" else "Tvoja šetnja",
+            text = if (replay.isPrompt) "Remember the path" else "Your walk",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
         )
@@ -190,7 +190,7 @@ private fun WalkReplay(replay: Replay, onContinue: () -> Unit) {
         // Pitanje se ne preskače: dugme bi preskočilo baš ono što treba videti.
         if (!replay.isPrompt) {
             Button(onClick = onContinue, modifier = Modifier.fillMaxWidth()) {
-                Text(if (replay.isDone) "DALJE" else "PRESKOČI")
+                Text(if (replay.isDone) "NEXT" else "SKIP")
             }
         }
     }

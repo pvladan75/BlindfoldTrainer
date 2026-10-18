@@ -16,7 +16,7 @@ tablu, glas, zvuk, podešavanja i napredak; modul nosi samo svoju vežbu.
 :core:chess         čist Kotlin — Board, Position, MoveGenerator, Attacks, Fen, Search, KnightPath, San, Pgn, Reconstruction
 :core:moduleapi     ugovor TrainingModule
 :core:engine        ChessEngine interfejs + LocalEngine (ugrađena pretraga)
-:core:audio         Speaker (TTS), VoiceInput (Vosk) i zone za režim bez ekrana
+:core:audio         Speaker (govor iz snimljenih isečaka), VoiceInput (Vosk) i zone za režim bez ekrana
 :core:designsystem  tema i ChessBoard komponenta
 :core:progress      čist Kotlin — bodovanje, rangovi, sabiranje napretka
 :core:data          Room istorija sesija i DataStore podešavanja, iza interfejsa

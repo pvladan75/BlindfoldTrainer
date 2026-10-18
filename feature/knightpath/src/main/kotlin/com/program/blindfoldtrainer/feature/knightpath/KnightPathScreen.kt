@@ -44,6 +44,7 @@ import com.program.blindfoldtrainer.core.designsystem.theme.SquareSuccess
 import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.moduleapi.quantity
 
 @Composable
 fun KnightPathScreen(
@@ -82,12 +83,12 @@ fun KnightPathScreen(
                     weight = HELPER_ZONE_WEIGHT,
                     zones = listOf(
                         EyesFreeZone(
-                            label = "PONOVI",
+                            label = "REPEAT",
                             tone = ZoneTone.SECONDARY,
                             onClick = viewModel::onRepeat
                         ),
                         EyesFreeZone(
-                            label = "STANJE",
+                            label = "STATUS",
                             tone = ZoneTone.TERTIARY,
                             buzz = Buzz.MEDIUM,
                             onClick = viewModel::onReadState
@@ -97,7 +98,7 @@ fun KnightPathScreen(
                 EyesFreeRow(
                     weight = HELPER_ZONE_WEIGHT,
                     zone = EyesFreeZone(
-                        label = "ODUSTANI  (dva dodira)",
+                        label = "GIVE UP  (touch twice)",
                         fontSize = 16.sp,
                         onClick = viewModel::onGiveUp,
                         onArmed = viewModel::onGiveUpArmed
@@ -142,7 +143,7 @@ fun KnightPathScreen(
                 enabled = uiState.isAcceptingInput,
                 modifier = Modifier.weight(1f).height(52.dp)
             ) {
-                Text("ODUSTANI / POKAŽI PUTANJU")
+                Text("GIVE UP / SHOW PATH")
             }
 
             // Polje sme i da se izgovori; ide kroz isti put kao i dodir.
@@ -182,7 +183,7 @@ private fun ProgressHeader(uiState: KnightPathUiState) {
                 style = MaterialTheme.typography.labelMedium
             )
             Text(
-                text = "Rešeno: ${uiState.solved}   Greške: ${uiState.mistakes}",
+                text = "Solved: ${uiState.solved}   Mistakes: ${uiState.mistakes}",
                 style = MaterialTheme.typography.labelMedium
             )
         }
@@ -212,7 +213,7 @@ private fun TaskPrompt(uiState: KnightPathUiState) {
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = "Skakač: $start → $target",
+            text = "Knight: $start → $target",
             fontSize = 34.sp,
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.Bold,
@@ -224,9 +225,9 @@ private fun TaskPrompt(uiState: KnightPathUiState) {
 
         Text(
             text = when (uiState.feedback) {
-                Feedback.SOLVED -> "Tačno, u ${uiState.optimalMoves} poteza."
-                Feedback.FAILED -> "Nije uspelo. Najkraće ide ovako:"
-                null -> "Preostalo poteza: ${uiState.movesLeft} od ${uiState.optimalMoves}"
+                Feedback.SOLVED -> "Correct, in ${quantity(uiState.optimalMoves, "move", "moves")}."
+                Feedback.FAILED -> "Not solved. The shortest way is:"
+                null -> "Moves left: ${uiState.movesLeft} of ${uiState.optimalMoves}"
             },
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)

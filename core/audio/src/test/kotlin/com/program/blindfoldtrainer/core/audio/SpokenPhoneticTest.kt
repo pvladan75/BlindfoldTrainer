@@ -1,7 +1,6 @@
 package com.program.blindfoldtrainer.core.audio
 
 import com.program.blindfoldtrainer.core.chess.Square
-import com.program.blindfoldtrainer.core.model.Language
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
@@ -14,10 +13,8 @@ import org.junit.Test
  */
 class SpokenPhoneticTest {
 
-    private val words = SpeechLanguages.wordsFor(Language.ENGLISH)
-
     private fun phonetic(name: String) =
-        requireNotNull(Square.fromAlgebraic(name)).spokenPhonetic(words)
+        SpokenLine(SpeechVocabulary.squarePhonetic(requireNotNull(Square.fromAlgebraic(name)))).text
 
     @Test
     fun `kolona se izgovara imenom, ne slovom`() {
@@ -33,16 +30,6 @@ class SpokenPhoneticTest {
         assertEquals("delta", phonetic("d5").substringBefore(' '))
     }
 
-    /** Red ostaje kakav je bio — brojevi se ne mešaju međusobno. */
-    @Test
-    fun `red se izgovara kao i inace`() {
-        val square = requireNotNull(Square.fromAlgebraic("a1"))
-        assertEquals(
-            square.spoken(words).substringAfter(' '),
-            square.spokenPhonetic(words).substringAfter(' ')
-        )
-    }
-
     /**
      * **Ista azbuka na oba kraja.** Ono što aplikacija izgovori pri ponavljanju
      * mora biti i ono što ume da primi natrag — inače bi se korisniku nudio
@@ -54,7 +41,7 @@ class SpokenPhoneticTest {
             assertEquals(
                 "fonetski oblik polja $square se ne prepoznaje natrag",
                 square,
-                parseSpokenSquare(square.spokenPhonetic(words))
+                parseSpokenSquare(SpokenLine(SpeechVocabulary.squarePhonetic(square)).text)
             )
         }
     }
@@ -62,7 +49,7 @@ class SpokenPhoneticTest {
     /** Nijedno polje ne deli fonetski oblik sa drugim. */
     @Test
     fun `fonetski oblik je jedinstven za svako polje`() {
-        val spoken = Square.ALL.map { it.spokenPhonetic(words) }
+        val spoken = Square.ALL.map { SpokenLine(SpeechVocabulary.squarePhonetic(it)).text }
 
         assertEquals(Square.ALL.size, spoken.toSet().size)
     }
