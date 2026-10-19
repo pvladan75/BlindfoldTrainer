@@ -2,10 +2,20 @@ package com.program.blindfoldtrainer.navigation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.ui.Modifier
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ShowChart
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -13,22 +23,28 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.program.blindfoldtrainer.ModuleRegistry
-import com.program.blindfoldtrainer.core.model.Checkups
+import com.program.blindfoldtrainer.R
+import com.program.blindfoldtrainer.core.model.Checkup
 import com.program.blindfoldtrainer.core.model.Difficulty
-import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.model.SessionResult
-import com.program.blindfoldtrainer.core.model.Skill
+import com.program.blindfoldtrainer.core.model.Support
 import com.program.blindfoldtrainer.core.moduleapi.ModuleArgs
-import com.program.blindfoldtrainer.ui.GuideScreen
-import com.program.blindfoldtrainer.ui.MainMenuScreen
 import com.program.blindfoldtrainer.core.progress.recommend
+import com.program.blindfoldtrainer.ui.GuideScreen
+import com.program.blindfoldtrainer.ui.ModuleSetupScreen
 import com.program.blindfoldtrainer.ui.PersistenceScreen
 import com.program.blindfoldtrainer.ui.ProfilesScreen
 import com.program.blindfoldtrainer.ui.ProfilesViewModel
@@ -36,14 +52,26 @@ import com.program.blindfoldtrainer.ui.ProgressScreen
 import com.program.blindfoldtrainer.ui.ProgressViewModel
 import com.program.blindfoldtrainer.ui.SessionSummaryDialog
 import com.program.blindfoldtrainer.ui.SessionSummaryEyesFree
-import com.program.blindfoldtrainer.ui.SnapshotScreen
 import com.program.blindfoldtrainer.ui.SettingsScreen
 import com.program.blindfoldtrainer.ui.SettingsViewModel
+import com.program.blindfoldtrainer.ui.SnapshotScreen
 import com.program.blindfoldtrainer.ui.SummaryViewModel
+import com.program.blindfoldtrainer.ui.TrainScreen
+import com.program.blindfoldtrainer.ui.YouScreen
 
-private const val ROUTE_MENU = "menu"
-private const val ROUTE_SETTINGS = "settings"
+/**
+ * **Tri kartice u dnu**: Vežbaj, Napredak, Ja.
+ *
+ * Dotle je sve polazilo sa jednog ekrana — predlog, provera, rang, devet
+ * modula i četiri ikone u traci. To je bio spisak, ne mesto: nije se videlo ni
+ * gde si ni dokle si stigao. Tri kartice odgovaraju na tri pitanja koja se
+ * postavljaju odvojeno: *šta sad*, *gde stojim* i *ko sam i kako je podešeno*.
+ */
+private const val ROUTE_TRAIN = "train"
 private const val ROUTE_PROGRESS = "progress"
+private const val ROUTE_YOU = "you"
+
+private const val ROUTE_SETTINGS = "settings"
 private const val ROUTE_PROFILES = "profiles"
 private const val ROUTE_GUIDE = "guide"
 private const val ROUTE_SNAPSHOT = "snapshot"
@@ -56,7 +84,16 @@ private const val ARG_ROUNDS = "rounds"
 private const val ARG_CHECKUP = "checkup"
 
 /**
- * Da li se posle sesije vraća u **presek** umesto u meni.
+ * Stranica modula — bira se zadatak, oslonac i težina, pa se kreće.
+ *
+ * Ne sme da počinje sa `module/`: ruta modula ima `{difficulty}` na istom
+ * mestu, pa bi `module/geometry/setup` pročitala „setup" kao težinu i otvorila
+ * vežbu umesto stranice.
+ */
+private const val ROUTE_SETUP = "setup/{$ARG_MODULE}"
+
+/**
+ * Da li se posle sesije vraća u **presek** umesto na Vežbaj.
  *
  * Presek se skuplja iz više merenja; ko ga je otvorio da izmeri četiri
  * veštine ne želi da posle svake bude vraćen na početak.
@@ -66,8 +103,8 @@ private const val ARG_FROM_SNAPSHOT = "fromSnapshot"
 /**
  * Jedna ruta za sve module, sa **porudžbinom** kao neobaveznim delom.
  *
- * Bez porudžbine je slobodno vežbanje iz menija i modul bira sam. Sa njom put
- * ili provera traže određen zadatak na određenoj prečki.
+ * Bez porudžbine je slobodno vežbanje sa stranice modula i modul bira sam. Sa
+ * njom put ili provera traže određen zadatak na određenoj prečki.
  */
 private const val ROUTE_MODULE =
     "module/{$ARG_MODULE}/{$ARG_DIFFICULTY}?$ARG_TASK={$ARG_TASK}" +
@@ -92,8 +129,33 @@ private fun moduleRoute(
     append("&$ARG_FROM_SNAPSHOT=$fromSnapshot")
 }
 
+/** Kartica u dnu: ruta, ime i ikona. */
+private data class Tab(val route: String, val labelRes: Int, val icon: ImageVector)
+
+private val TABS = listOf(
+    Tab(ROUTE_TRAIN, R.string.tab_train, Icons.Default.PlayArrow),
+    Tab(ROUTE_PROGRESS, R.string.progress_title, Icons.AutoMirrored.Filled.ShowChart),
+    Tab(ROUTE_YOU, R.string.tab_you, Icons.Default.Person)
+)
+
 /**
- * Ceo graf navigacije se sastoji od menija i **jedne** rute za module.
+ * Prelazak na karticu: **jedna kopija svake**, sa sačuvanim stanjem.
+ *
+ * Bez `popUpTo` bi svaki dodir kartice gurao novu kopiju na stek, pa bi se
+ * „nazad" vrtelo kroz sve dodirnute kartice; bez `saveState` bi se pri
+ * svakom prelasku gubilo dokle je spisak doskrolovan.
+ */
+private fun NavHostController.switchTab(route: String) {
+    navigate(route) {
+        popUpTo(graph.findStartDestination().id) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
+    }
+}
+
+/**
+ * Ceo graf navigacije: tri kartice, nekoliko ekrana iznad njih i **jedna**
+ * ruta za module.
  *
  * Modul se ne pominje poimence nigde — koji će se ekran prikazati određuje
  * registar na osnovu ključa iz rute. Dodavanje modula zato ne dira ovaj fajl.
@@ -103,15 +165,17 @@ fun AppNavigation(registry: ModuleRegistry) {
     val navController = rememberNavController()
 
     // Traži se izvan NavHost-a, pa je vezan za aktivnost a ne za rutu —
-    // napredak preživljava prelaz iz modula nazad u meni.
+    // napredak preživljava prelaz iz modula nazad na karticu.
     val progressViewModel: ProgressViewModel = hiltViewModel()
     val progress by progressViewModel.snapshot.collectAsState()
 
     // I ovaj stoji izvan NavHost-a, ali iz drugog razloga: podešavanje mora biti
     // pročitano **pre** nego što sažetak zatreba. Da se traži tek uz sažetak,
     // prvi kadar bi dobio zatečenu vrednost i bez ekrana bi bljesnuo dijalog.
+    val settings by hiltViewModel<SettingsViewModel>().settings.collectAsState()
+
     // Koju proveru ponuditi: prvo neproverenu veštinu, pa onu najstariju.
-    // Provera je predlog, ne obaveza — meni ostaje netaknut ispod nje.
+    // Provera je predlog, ne obaveza — spisak ostaje netaknut ispod nje.
     val nextCheckup = remember(progress, registry) {
         registry.offerableCheckups.minByOrNull { progress.lastCheckup(it.skill)?.atMillis ?: 0L }
     }
@@ -143,34 +207,79 @@ fun AppNavigation(registry: ModuleRegistry) {
     val summaryViewModel: SummaryViewModel = hiltViewModel()
     val eyesFree by summaryViewModel.eyesFree.collectAsState()
 
-    NavHost(navController = navController, startDestination = ROUTE_MENU) {
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry?.destination?.route
+    val onTab = TABS.any { it.route == currentRoute }
 
-        composable(ROUTE_MENU) {
-            val settings by hiltViewModel<SettingsViewModel>().settings.collectAsState()
+    val startCheckup = { checkup: Checkup, fromSnapshot: Boolean ->
+        navController.navigate(
+            moduleRoute(
+                moduleKey = checkup.moduleId.key,
+                difficulty = checkup.difficulty,
+                taskId = checkup.taskId,
+                support = checkup.support,
+                isCheckup = true,
+                rounds = checkup.rounds,
+                fromSnapshot = fromSnapshot
+            )
+        )
+    }
 
-            MainMenuScreen(
+    // Iz Napretka se ulazi **pravo u vežbu**, sa već izabranim zadatkom i
+    // osloncem — isto kao sa kartice „Sledeće".
+    val practiseTask = { taskId: String, support: Support?, difficulty: Difficulty? ->
+        registry.all.find { module -> module.tasks.any { it.id == taskId } }
+            ?.let { module ->
+                navController.navigate(
+                    moduleRoute(
+                        moduleKey = module.id.key,
+                        difficulty = difficulty ?: Difficulty.EASY,
+                        taskId = taskId,
+                        support = support
+                    )
+                )
+            }
+        Unit
+    }
+
+    Scaffold(
+        // Traka u dnu stoji samo na tri kartice. Modul je ekran za sebe:
+        // zone bez ekrana računaju na celu visinu, a traka bi im uzela deo.
+        bottomBar = {
+            if (onTab) {
+                NavigationBar {
+                    TABS.forEach { tab ->
+                        NavigationBarItem(
+                            selected = tab.route == currentRoute,
+                            onClick = { navController.switchTab(tab.route) },
+                            icon = { Icon(tab.icon, contentDescription = null) },
+                            label = { Text(stringResource(tab.labelRes)) }
+                        )
+                    }
+                }
+            }
+        },
+        // Sistemske trake ostaju ekranima unutra: svaki ima svoju gornju
+        // traku koja zna za sat, a modul se sklanja sam (vidi niže).
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+    ) { padding ->
+    NavHost(
+        navController = navController,
+        startDestination = ROUTE_TRAIN,
+        // Visina trake u dnu se **potroši** kao inset: ekran kartice inače
+        // ne zna da je traka tu i ostavlja još jedan razmak za navigacionu
+        // traku sistema, koju traka već pokriva.
+        modifier = Modifier.padding(padding).consumeWindowInsets(padding)
+    ) {
+
+        composable(ROUTE_TRAIN) {
+            TrainScreen(
                 modules = registry.all,
                 progress = progress,
                 eyesFree = settings.eyesFree,
-                onStart = { module, args ->
-                    // Izbor iz menija je **izbor korisnika**, ne porudžbina puta:
-                    // `null` znači „nisam dirao", pa modul odlučuje kao i pre.
-                    navController.navigate(
-                        moduleRoute(
-                            moduleKey = module.id.key,
-                            difficulty = args.difficulty,
-                            taskId = args.taskId,
-                            support = args.support
-                        )
-                    )
-                },
-                onOpenSettings = { navController.navigate(ROUTE_SETTINGS) },
-                onOpenProgress = { navController.navigate(ROUTE_PROGRESS) },
-                // Rang vodi na **istrajnost**, ne na Napredak: dotle je vodio
-                // tamo i time tvrdio da su poeni i nivo ista stvar.
-                onOpenPersistence = { navController.navigate(ROUTE_PERSISTENCE) },
-                onOpenGuide = { navController.navigate(ROUTE_GUIDE) },
+                profileName = activeProfile?.name,
                 recommendation = recommendation,
+                checkup = nextCheckup,
                 onStartRecommended = { suggestion ->
                     val module = registry.all.first { module ->
                         module.tasks.any { it.id == suggestion.taskId }
@@ -186,21 +295,8 @@ fun AppNavigation(registry: ModuleRegistry) {
                         )
                     )
                 },
-                profileName = activeProfile?.name,
-                onOpenProfiles = { navController.navigate(ROUTE_PROFILES) },
-                checkup = nextCheckup,
-                onStartCheckup = { checkup ->
-                    navController.navigate(
-                        moduleRoute(
-                            moduleKey = checkup.moduleId.key,
-                            difficulty = checkup.difficulty,
-                            taskId = checkup.taskId,
-                            support = checkup.support,
-                            isCheckup = true,
-                            rounds = checkup.rounds
-                        )
-                    )
-                }
+                onStartCheckup = { checkup -> startCheckup(checkup, false) },
+                onOpenModule = { module -> navController.navigate("setup/${module.id.key}") }
             )
         }
 
@@ -209,31 +305,59 @@ fun AppNavigation(registry: ModuleRegistry) {
             // njih zna orijentire. Nigde se ne prepisuju.
             ProgressScreen(
                 progress = progress,
-                tasks = registry.all.flatMap { it.tasks }.associateBy { it.id },
-                // Zadatak se u meniju ne vidi sam za sebe — kartice nose imena
+                tasks = allTasks.associateBy { it.id },
+                // Zadatak se na spisku ne vidi sam za sebe — redovi nose imena
                 // modula. Bez ovoga bi Napredak upućivao na nešto što se ne
                 // može naći.
                 moduleTitleFor = { taskId ->
                     registry.all.find { module -> module.tasks.any { it.id == taskId } }?.titleRes
                 },
-                // Iz Napretka se ulazi **pravo u vežbu**, sa već izabranim
-                // zadatkom i osloncem — isto kao sa kartice Predloga.
                 difficultiesFor = { taskId -> difficultiesByTask[taskId] ?: Difficulty.entries },
-                onPractice = { taskId, support, difficulty ->
-                    registry.all.find { module -> module.tasks.any { it.id == taskId } }
-                        ?.let { module ->
-                            navController.navigate(
-                                moduleRoute(
-                                    moduleKey = module.id.key,
-                                    difficulty = difficulty ?: Difficulty.EASY,
-                                    taskId = taskId,
-                                    support = support
-                                )
-                            )
-                        }
-                },
+                onPractice = practiseTask,
                 checkupCount = registry.offerableCheckups.size,
                 onOpenSnapshot = { navController.navigate(ROUTE_SNAPSHOT) },
+                onBack = null
+            )
+        }
+
+        composable(ROUTE_YOU) {
+            YouScreen(
+                progress = progress,
+                profileName = activeProfile?.name,
+                onOpenProfiles = { navController.navigate(ROUTE_PROFILES) },
+                // Rang vodi na **istrajnost**, ne na Napredak: poeni mere
+                // uloženo, a nivo po veštini je druga stvar i stoji drugde.
+                onOpenPersistence = { navController.navigate(ROUTE_PERSISTENCE) },
+                onOpenSettings = { navController.navigate(ROUTE_SETTINGS) },
+                onOpenGuide = { navController.navigate(ROUTE_GUIDE) }
+            )
+        }
+
+        composable(
+            route = ROUTE_SETUP,
+            arguments = listOf(navArgument(ARG_MODULE) { type = NavType.StringType })
+        ) { entry ->
+            val module = entry.arguments?.getString(ARG_MODULE)?.let { registry.byKey(it) }
+            if (module == null) {
+                navController.popBackStack(ROUTE_TRAIN, inclusive = false)
+                return@composable
+            }
+            ModuleSetupScreen(
+                module = module,
+                progress = progress,
+                eyesFree = settings.eyesFree,
+                onStart = { args ->
+                    // Izbor sa stranice je **izbor korisnika**, ne porudžbina
+                    // puta: `null` znači „nisam dirao", pa modul odlučuje sam.
+                    navController.navigate(
+                        moduleRoute(
+                            moduleKey = module.id.key,
+                            difficulty = args.difficulty,
+                            taskId = args.taskId,
+                            support = args.support
+                        )
+                    )
+                },
                 onBack = { navController.popBackStack() }
             )
         }
@@ -251,21 +375,9 @@ fun AppNavigation(registry: ModuleRegistry) {
         composable(ROUTE_SNAPSHOT) {
             SnapshotScreen(
                 progress = progress,
-                tasks = registry.all.flatMap { it.tasks }.associateBy { it.id },
+                tasks = allTasks.associateBy { it.id },
                 checkups = registry.offerableCheckups,
-                onStartCheckup = { checkup ->
-                    navController.navigate(
-                        moduleRoute(
-                            moduleKey = checkup.moduleId.key,
-                            difficulty = checkup.difficulty,
-                            taskId = checkup.taskId,
-                            support = checkup.support,
-                            isCheckup = true,
-                            rounds = checkup.rounds,
-                            fromSnapshot = true
-                        )
-                    )
-                },
+                onStartCheckup = { checkup -> startCheckup(checkup, true) },
                 onBack = { navController.popBackStack() }
             )
         }
@@ -293,29 +405,29 @@ fun AppNavigation(registry: ModuleRegistry) {
                 navArgument(ARG_ROUNDS) { type = NavType.IntType; defaultValue = 0 },
                 navArgument(ARG_FROM_SNAPSHOT) { type = NavType.BoolType; defaultValue = false }
             )
-        ) { backStackEntry ->
-            val moduleKey = backStackEntry.arguments?.getString(ARG_MODULE)
+        ) { entry ->
+            val moduleKey = entry.arguments?.getString(ARG_MODULE)
             val module = moduleKey?.let { registry.byKey(it) }
 
-            val difficulty = backStackEntry.arguments
+            val difficulty = entry.arguments
                 ?.getString(ARG_DIFFICULTY)
                 ?.let { name -> Difficulty.entries.find { it.name == name } }
                 ?: Difficulty.EASY
 
             if (module == null) {
                 // Ruta pokazuje na modul koji nije ugrađen u ovu verziju.
-                // Umesto praznog ekrana, vraćamo korisnika u meni.
-                navController.popBackStack(ROUTE_MENU, inclusive = false)
+                // Umesto praznog ekrana, vraćamo korisnika na Vežbaj.
+                navController.popBackStack(ROUTE_TRAIN, inclusive = false)
                 return@composable
             }
 
-            val taskId = backStackEntry.arguments?.getString(ARG_TASK)?.ifBlank { null }
-            val support = backStackEntry.arguments
+            val taskId = entry.arguments?.getString(ARG_TASK)?.ifBlank { null }
+            val support = entry.arguments
                 ?.getString(ARG_SUPPORT)
                 ?.let { key -> Support.entries.find { it.key == key } }
-            val isCheckup = backStackEntry.arguments?.getBoolean(ARG_CHECKUP) == true
-            val rounds = backStackEntry.arguments?.getInt(ARG_ROUNDS)?.takeIf { it > 0 }
-            val fromSnapshot = backStackEntry.arguments?.getBoolean(ARG_FROM_SNAPSHOT) == true
+            val isCheckup = entry.arguments?.getBoolean(ARG_CHECKUP) == true
+            val rounds = entry.arguments?.getInt(ARG_ROUNDS)?.takeIf { it > 0 }
+            val fromSnapshot = entry.arguments?.getBoolean(ARG_FROM_SNAPSHOT) == true
 
             var result by remember { mutableStateOf<SessionResult?>(null) }
 
@@ -374,20 +486,33 @@ fun AppNavigation(registry: ModuleRegistry) {
             result?.let { finished ->
                 val reward by progressViewModel.lastReward.collectAsState()
 
+                // **„Još jednom" ponavlja istu sesiju** — isti zadatak, isti
+                // oslonac, ista provera. Dotle je nosio samo težinu, pa je drugi
+                // zadatak modula posle „još jednom" ćutke postajao prvi.
                 val repeatSession = {
                     result = null
                     progressViewModel.onSummaryClosed()
-                    navController.navigate(moduleRoute(module.id.key, difficulty)) {
-                        popUpTo(ROUTE_MENU) { inclusive = false }
+                    navController.navigate(
+                        moduleRoute(
+                            moduleKey = module.id.key,
+                            difficulty = difficulty,
+                            taskId = taskId,
+                            support = support,
+                            isCheckup = isCheckup,
+                            rounds = rounds,
+                            fromSnapshot = fromSnapshot
+                        )
+                    ) {
+                        popUpTo(ROUTE_TRAIN) { inclusive = false }
                     }
                 }
                 val backToMenu = {
                     result = null
                     progressViewModel.onSummaryClosed()
                     // Ko meri presek se vraća u presek: merenja se skupljaju, pa
-                    // bi povratak u meni posle svakog značio da se do sledećeg
+                    // bi povratak na Vežbaj posle svakog značio da se do sledećeg
                     // opet dolazi kroz tri ekrana.
-                    val home = if (fromSnapshot) ROUTE_SNAPSHOT else ROUTE_MENU
+                    val home = if (fromSnapshot) ROUTE_SNAPSHOT else ROUTE_TRAIN
                     navController.popBackStack(home, inclusive = false)
                     Unit
                 }
@@ -414,5 +539,6 @@ fun AppNavigation(registry: ModuleRegistry) {
             }
             }
         }
+    }
     }
 }

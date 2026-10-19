@@ -49,7 +49,7 @@
 
     <string name="settings_eyes_free">How you usually practice</string>
     <string name="settings_eyes_free_switch">This is how I usually practice — without the board</string>
-    <string name="settings_eyes_free_hint">Locks nothing: it only says where each module starts. A task that works without the board starts without it, and the session summary is spoken instead of shown — otherwise a screen you are not looking at would be waiting for you at the end. You still choose the support on the module card, and the plan moves it for you as you go.</string>
+    <string name="settings_eyes_free_hint">Locks nothing: it only says where each module starts. A task that works without the board starts without it, and the session summary is spoken instead of shown — otherwise a screen you are not looking at would be waiting for you at the end. You still choose the support on the module page, and the plan moves it for you as you go.</string>
 
     <string name="settings_speech_title">Speech</string>
     <string name="settings_speech_rate">Speech rate: %1$.2f</string>
@@ -176,20 +176,14 @@
     <string name="profiles_delete">Delete</string>
     <string name="profiles_delete_confirm">Delete all progress too?</string>
 
-    <string name="path_title">Suggestion</string>
     <string name="path_offer">%1$s · %2$s</string>
     <string name="path_offer_graded">%1$s · %2$s · %3$s</string>
-    <string name="path_start">Go</string>
     <string name="reason_never_tried">You have not tried this yet — nothing is known about it.</string>
     <string name="reason_weakest">This is what you find hardest right now.</string>
     <string name="reason_foundation">A foundation for the other skills; until it becomes automatic, everything above it goes slowly.</string>
     <string name="reason_upkeep">You mastered this but have not done it in a while — let us see whether it still holds.</string>
     <string name="reason_strength">This is going well for you — let it be that way now and then.</string>
 
-    <string name="checkup_title">Check-up</string>
-    <string name="checkup_offer">Measure where you stand: %1$s</string>
-    <string name="checkup_hint">Short, always the same and with no points — so it can be compared with the last measurement. The board is shown, so that it is clear what exactly failed.</string>
-    <string name="checkup_start">Measure</string>
     <string name="checkup_never">not checked</string>
     <string name="checkup_level">level: %1$d/%2$d · %3$s</string>
     <string name="checkup_confirmed">confirmed by check-up: %1$d/%2$d · %3$s</string>
@@ -215,9 +209,26 @@
     <string name="task_walk_knight">Knight walk</string>
     <string name="task_unknown">Unknown task</string>
 
-    <string name="menu_choice_toggle">Choose the task and the support</string>
     <string name="menu_task_label">Task</string>
     <string name="menu_support_label">How much support</string>
+    <string name="setup_difficulty_label">How much, how fast</string>
+    <string name="setup_start">Start</string>
+
+    <!-- Tri kartice u dnu. -->
+    <string name="tab_train">Train</string>
+    <string name="tab_you">You</string>
+    <string name="you_profile_hint">Who is practising. Tap to switch or add a profile.</string>
+    <string name="you_settings_hint">Theme, how you usually practise, speech and voice input.</string>
+    <string name="you_guide_hint">Why blindfold, what the skills are and how they are measured.</string>
+
+    <!-- Kartica „Sledeće“: jedna ponuda, jedno dugme. -->
+    <string name="next_title">Next</string>
+    <string name="next_measure">Measure: %1$s</string>
+    <string name="next_measure_hint">About a minute, always the same, no points — so it can be compared with the last time.</string>
+    <string name="next_start">Start</string>
+    <string name="next_or_measure">Or measure: %1$s</string>
+    <string name="next_or_practise">Or practise: %1$s</string>
+    <string name="train_choose">Or choose yourself</string>
     <string name="support_full">most help</string>
     <string name="support_partial">look, then remember</string>
     <string name="support_trace">traces only</string>
@@ -262,9 +273,9 @@
     <string name="guide_plan_title">Why a plan, not just practice</string>
     <string name="guide_plan">Practise what the app suggests, not what first comes to mind. The reason is not discipline but that both first thoughts are wrong.\n\nThe first is to do what you are good at. That is pleasant and moves nothing — a skill that is already automatic does not become more automatic.\n\nThe second is to do what looks most like the real thing: a whole game blindfold. That is the fastest way to give up. A game demands every skill at once, so when it collapses you do not know which one gave way. You practise everything and fix nothing.\n\nThat is why you work from the bottom up, and why the order is not a matter of taste.\n\nAn exercise that merely carries a skill does not build it. “Follow the Game” uses coordinates on every move, but if your coordinates are not automatic, that is not where you will build them — it is where you will keep falling because of them. It is fixed below and used above.\n\nAnd one more thing that is easy to overlook: when a skill is measured on its own, that number is better than it will be in a game. A square’s colour in three seconds was measured while you were doing nothing else. The same job while you are holding five pieces in your head is not the same job.\n\nThat is why what is measured here is not only whether you know, but also what it costs you.</string>
     <string name="guide_posture_title">You can practise lying down</string>
-    <string name="guide_posture">This can be practised with your eyes closed, lying down, with the phone in your hand or beside you.\n\nThat is why there are two ways of working. While you look at the screen, there are the board and the buttons. While you do not, the screen splits into a few large zones: the finger is not aimed but simply put down, each zone vibrates differently, and the layout is the same in every module — so the hand learns it once and knows it everywhere. The question is heard, and you answer by voice or by touch.\n\nYou choose the way of working in Settings, once for all modules.\n\nThis is not a convenience but half the reason this app exists. Blindfold chess is played without a board in front of you — an exercise that requires you to look at the screen teaches you something you will not need in a game. And the time in which you can practise like this, on the bus or before sleep, would otherwise not be used for anything.\n\nNot every module works this way, and the card says so. “Remember the Position” and “Set Up by Dictation” need the board, because the pieces are put back on their squares.</string>
+    <string name="guide_posture">This can be practised with your eyes closed, lying down, with the phone in your hand or beside you.\n\nThat is why there are two ways of working. While you look at the screen, there are the board and the buttons. While you do not, the screen splits into a few large zones: the finger is not aimed but simply put down, each zone vibrates differently, and the layout is the same in every module — so the hand learns it once and knows it everywhere. The question is heard, and you answer by voice or by touch.\n\nYou choose the way of working in Settings, once for all modules.\n\nThis is not a convenience but half the reason this app exists. Blindfold chess is played without a board in front of you — an exercise that requires you to look at the screen teaches you something you will not need in a game. And the time in which you can practise like this, on the bus or before sleep, would otherwise not be used for anything.\n\nNot every module works this way, and the row says so. “Remember the Position” and “Set Up by Dictation” need the board, because the pieces are put back on their squares.</string>
     <string name="guide_levels_title">Module, task, support</string>
-    <string name="guide_levels">Three things that are easy to mix up and mean different things.\n\nA MODULE is a tool — a card in the menu. “Follow the Game”, “Give Check”.\n\nA TASK is what is actually measured. The same module can ask things that do not measure the same skill: “where is the knight now” measures updating the picture, while “who attacks the knight” measures square control. Same input, different skill. That is why a module with two tasks has a “Task” row on its card — until you touch it, it runs its usual one.\n\nSUPPORT is how much of the picture the app holds for you, and that is the real difficulty of blindfold practice. EASY / MEDIUM / HARD changes how much there is and how fast — that is effort. Support changes how much you have to hold yourself.\n\nLess support means harder. It is the only scale here that runs that way, so it is worth remembering.</string>
+    <string name="guide_levels">Three things that are easy to mix up and mean different things.\n\nA MODULE is a tool — a row on the Train tab. “Follow the Game”, “Give Check”.\n\nA TASK is what is actually measured. The same module can ask things that do not measure the same skill: “where is the knight now” measures updating the picture, while “who attacks the knight” measures square control. Same input, different skill. That is why a module with two tasks has a “Task” row on its page — it starts on the one you did last time.\n\nSUPPORT is how much of the picture the app holds for you, and that is the real difficulty of blindfold practice. EASY / MEDIUM / HARD changes how much there is and how fast — that is effort. Support changes how much you have to hold yourself.\n\nLess support means harder. It is the only scale here that runs that way, so it is worth remembering.</string>
     <string name="guide_rungs_intro">What support means exactly depends on the task, and the task says so on its screen. Only the order is shared — from the most support to the least.</string>
     <string name="guide_rung_full">The board is visible the whole time. Reading and speed are practised, not holding.</string>
     <string name="guide_rung_partial">The board is visible until you say you have memorised it, then part of the picture disappears. The boundary is your confirmation, not a clock: with the pieces in front of your eyes the exercise shrinks to reading, and the picture in your head never gets built.</string>
@@ -278,11 +289,11 @@
     <string name="guide_checkup_title">Check-up</string>
     <string name="guide_checkup">Practice tells you how you are progressing in that task. It does not tell you your level, because you chose the difficulty, the support and how many times to repeat.\n\nA check-up is therefore always the same: the same task, the same difficulty, the same number of questions. It is the only measurement that may be compared with last month.\n\nIt earns no points, and that is said before you start it, not after. A measure that rewards stops measuring — the moment a check-up gave points, it would be done for the points.\n\nA check-up does not exist for every skill. For the others, how much you have practised is known, but not where you stand, and that is written next to each skill instead of being left unsaid.</string>
 
-    <string name="guide_path_title">The “Suggestion” card</string>
+    <string name="guide_path_title">The “Next” card</string>
     <string name="guide_path">What to do now: which skill, with which task, with how much support — and why that one.\n\nThe reason is not decoration. A recommendation without a reason is a prophecy, and a prophecy is not trusted once it misses; with a reason it is an argument, and you are allowed to disagree.\n\nHow it chooses, in order:\n\n1. Never the same thing twice in a row — a plateau is not broken by repetition, and the other skills wither in the meantime.\n2. Now and then, what you are good at. A recommendation that always sends you to the worst place is a recommendation that stops being opened.\n3. Foundation before what is built on it.\n4. Untried before weak — nothing is known about the untried, and that is worth more than one more confirmation that something is weak.\n5. Otherwise, the weakest.\n\nIt chooses the support from the last time: twice in a row successful at the same support and next time you get less of it; a miss brings it back, with no penalty and no comment.\n\nNothing is locked. The list of modules stays untouched below the card, declining has no consequences, and rank opens nothing. If you do not feel like doing what is suggested, do not.</string>
 
     <string name="guide_modules_title">Modules</string>
-    <string name="guide_modules_intro">The list is the same one as in the menu. Next to each module: which tasks it carries and how much support it can do.</string>
+    <string name="guide_modules_intro">The list is the same one as on the Train tab. Next to each module: which tasks it carries and how much support it can do.</string>
     <string name="guide_module_tasks">Tasks: %1$s</string>
     <string name="guide_module_rungs">Support: %1$s</string>
 

@@ -1,8 +1,11 @@
 package com.program.blindfoldtrainer.ui
 
 import com.program.blindfoldtrainer.R
+import com.program.blindfoldtrainer.core.model.Difficulty
 import com.program.blindfoldtrainer.core.model.Skill
 import com.program.blindfoldtrainer.core.model.Support
+import com.program.blindfoldtrainer.core.progress.Achievement
+import com.program.blindfoldtrainer.core.progress.Rank
 import com.program.blindfoldtrainer.core.progress.Reason
 
 /**
@@ -122,4 +125,36 @@ internal fun taskLabelRes(taskId: String): Int = when (taskId) {
     "walk_piece" -> R.string.task_walk_piece
     "walk_knight" -> R.string.task_walk_knight
     else -> R.string.task_unknown
+}
+
+internal fun Difficulty.labelRes(): Int = when (this) {
+    Difficulty.EASY -> R.string.difficulty_easy
+    Difficulty.MEDIUM -> R.string.difficulty_medium
+    Difficulty.HARD -> R.string.difficulty_hard
+}
+
+/**
+ * Nazivi rangova stoje ovde, a ne u `:core:progress` — taj modul je čist Kotlin
+ * i ne zna ni za jezik ni za resurse.
+ */
+internal fun Rank.labelRes(): Int = when (this) {
+    Rank.BEGINNER -> R.string.rank_beginner
+    Rank.STUDENT -> R.string.rank_student
+    Rank.AMATEUR -> R.string.rank_amateur
+    Rank.EXPERIENCED -> R.string.rank_experienced
+    Rank.MASTER -> R.string.rank_master
+    Rank.GRANDMASTER -> R.string.rank_grandmaster
+}
+
+internal fun Achievement.labelRes(): Int = when (this) {
+    Achievement.FIRST_SESSION -> R.string.achievement_first_session
+    Achievement.FIRST_PERFECT -> R.string.achievement_first_perfect
+    Achievement.TEN_PERFECT -> R.string.achievement_ten_perfect
+    Achievement.PERFECT_STREAK_FIVE -> R.string.achievement_perfect_streak_five
+    Achievement.PERFECT_ON_HARD -> R.string.achievement_perfect_on_hard
+    Achievement.SOLVED_HUNDRED -> R.string.achievement_solved_hundred
+    Achievement.SOLVED_FIVE_HUNDRED -> R.string.achievement_solved_five_hundred
+    Achievement.THREE_MODULES -> R.string.achievement_three_modules
+    Achievement.HOUR_OF_TRAINING -> R.string.achievement_hour_of_training
+    Achievement.RANK_MASTER -> R.string.achievement_rank_master
 }

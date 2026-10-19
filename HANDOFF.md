@@ -37,6 +37,94 @@ poslednjeg probanja.
 > nije probano.
 
 
+### Tri kartice u dnu: Vežbaj, Napredak, Ja
+
+Stanje na **19. oktobar 2026.** Vlasnik je posle dva meseca otvorio aplikaciju
+i rekao da se u njoj ne snalazi: na početnom ekranu su stajali i moduli i rang
+i predlog i provera, a svaki modul je nosio gomilu opcija. To je i bio podatak
+iz upotrebe koji je stavka „preuređenje ekrana i navigacije" čekala — pa je
+urađena **prva faza**, po podeli koju je ovaj fajl već predvideo („Početni
+ekran je sklopljen"): tri mesta.
+
+- **Vežbaj** (`TrainScreen`) odgovara na *šta sad*: gore jedna kartica
+  **„Sledeće"**, ispod spisak modula pod naslovom „Ili izaberi sam". Rang,
+  profil, uputstvo i podešavanja su otišli odavde.
+- **Napredak** je dosadašnji ekran, sad kao kartica (bez strelice nazad;
+  `onBack` je postao `(() -> Unit)?`). Presek se i dalje otvara iz njega.
+- **Ja** (`YouScreen`): profil, kartica ranga (ista, preseljena iz menija, vodi
+  na Istrajnost), Podešavanja, uputstvo i obaveštenje o paketu za slušanje.
+
+**„Sledeće" je jedna ponuda umesto dve.** Predlog i Provera su bile dve kartice
+sa dva dugmeta; sad `chooseNext` (`NextStep.kt`, čist Kotlin) bira jednu, a
+druga stoji ispod kao red teksta („Or measure: …" / „Or practise: …"). Pravilo
+je **smena**: provera ide prva dok veština koju meri nije nijednom izmerena,
+ali ne dva puta zaredom — između dve provere stane vežba. Time prva stvar u
+aplikaciji ostaje kratka provera, a čovek nije šest puta zaredom pozvan da
+„meri". Kad su sve merljive veštine jednom izmerene, vežba je uvek prva.
+Pravilo je **prvi predlog**, kao i orijentiri.
+
+**Stranica modula umesto rasklopljene kartice** (`ModuleSetupScreen`, ruta
+`setup/{module}` — namerno ne `module/…/setup`, jer bi ruta modula „setup"
+pročitala kao težinu). Isti birači kao pre — zadatak, oslonac, težina — ali kao
+tri jednaka reda čipova i **jedno dugme „Start"** zalepljeno za dno. Dotle su
+tri dugmeta za težinu bila ujedno i „kreni", pa je težina izgledala kao
+najvažniji izbor, a oslonac je prava lestvica.
+
+**Nastavlja se gde se stalo.** `startingChoice` (isti fajl) uzima zadatak,
+oslonac i težinu **poslednje vežbe u tom modulu** iz `skillHistory`; provere
+se preskaču, tuđi moduli ne gledaju. Ko ulazi prvi put dobija zatečeno:
+podrazumevani zadatak, najviše pomoći (najmanje, ako obično vežba bez ekrana)
+i najlakšu težinu. Red modula na spisku pokazuje baš to što bi krenulo
+(zadatak · oslonac · šta težina znači). Dotle je svaki ulaz kretao od
+„najviše pomoći" i najlakše težine, svaki put.
+
+**Usput ispravljeno:** „Još jednom" u sažetku je ponavljalo samo težinu, pa je
+drugi zadatak modula posle ponavljanja ćutke postajao prvi, a provera postajala
+vežba. Sad ponavlja istu sesiju (zadatak, oslonac, provera, krugovi).
+
+**Navigacija.** `AppNavigation` ima spoljni `Scaffold` sa `NavigationBar`-om
+koji se crta samo na tri kartice; modul je i dalje ekran za sebe (zone bez
+ekrana računaju na celu visinu). `contentWindowInsets = WindowInsets(0)` i
+`consumeWindowInsets(padding)` na `NavHost`-u — bez toga bi ekran kartice
+ispod trake ostavljao još jedan razmak za sistemsku navigacionu traku. Prelaz
+među karticama ide sa `popUpTo(start) { saveState }` + `restoreState`, pa se
+skrol ne gubi i „nazad" ne vrti kroz kartice. Povratak posle sesije je ostao
+isti: na Vežbaj, odnosno u Presek ako se odatle merilo.
+
+**Obrisano:** `MainMenuScreen.kt` (pomoćnici `Rank.labelRes`,
+`Achievement.labelRes`, `Difficulty.labelRes` su prešli u `SkillLabels.kt`);
+stringovi `path_title`, `path_start`, `checkup_title/offer/hint/start`,
+`menu_choice_toggle`. Uputstvo i podešavanja više ne pominju „karticu u
+meniju": naslov poglavlja je „The “Next” card", a rečenica o redu „Task" kaže
+da modul kreće sa zadatkom od prošlog puta.
+
+**Brojevi.** Testova **315** (bilo 302): 13 novih u `NextStepTest` — smena
+provere i vežbe (7) i sa čime modul kreće (6). Mutacijom provereno: bez
+`!justMeasured` pada „odmah posle provere ide vežba"; bez čitanja istorije
+padaju dva testa o nastavljanju; kad se provera računa kao vežba, pada onaj
+koji baš to tvrdi. Nijedno upozorenje kompajlera u izmenjenim fajlovima.
+
+**Nije viđeno na uređaju:** ništa od ovoga — uređaj nije bio priključen. Na
+telefonu treba pogledati: traku u dnu na sve tri kartice (da ispod spiska nema
+dvostrukog razmaka), stranicu modula sa dugmetom na dnu kad su sva tri reda
+čipova prisutna („Daj šah", „Kretanje figura" sa četiri zadatka), karticu
+„Sledeće" na praznom profilu (treba da nudi proveru) i posle jedne provere
+(treba da nudi vežbu), i da modul posle „Start" dobija baš ono što na stranici
+piše. Režim bez ekrana ovo ne dira — modul nema traku u dnu.
+
+**Šta je ostalo od istog posla** (druga i treća faza, po dogovoru sa vlasnikom):
+
+- **Napredak kao mapa.** Slika veština gore, obojena stanjem, dodir na veštinu
+  otvara njenu karticu; Presek se utapa u to (dugme „Measure" uz veštinu) i
+  prestaje da bude zaseban ekran i zasebna reč.
+- **Sažetak sesije kaže šta se pomerilo** — jedan red: koja veština, gde je
+  sad naspram orijentira, šta je sledeće. To je „dokle sam stigao" posle svake
+  vežbe.
+- Prvi ulazak bez uvodnog teksta: kartica „Sledeće" već nudi proveru; ostaje
+  da se vidi na uređaju da li je to dovoljno.
+- Reč „Persistence" za ekran istrajnosti zvuči čudno na engleskom; kandidat
+  je „Activity". Nije dirano, jer je imenovanje odluka vlasnika.
+
 **Poslednji komit: `f006756`.** Sve je komitovano i gurnuto; radno stablo je čisto.
 
 Stanje na **18. avgust 2026.** Sesija ima dva dela. Prvi je „Daj šah" viđen na
@@ -1539,9 +1627,11 @@ strukturi**: ništa se ne premešta, ne preimenuje, ne grupiše.
    Tekst je namenjen i roditelju i detetu koje vežba, pa mora da stoji bez
    žargona ovog fajla.
 
-1. **Preuređenje ekrana i navigacije** — grupisanje srodnog, sistematizacija gde
-   se šta nalazi. **Čeka podatke iz upotrebe**, po dogovoru: prvo videti gde se
-   deca zaista izgube, pa onda crtati.
+1. **Preuređenje ekrana i navigacije** — **prva faza urađena 19. oktobra 2026**
+   (tri kartice u dnu, kartica „Sledeće", stranica modula; vidi odeljak „Tri
+   kartice u dnu" na vrhu). Podatak iz upotrebe koji se čekao stigao je od
+   vlasnika: posle dva meseca pauze ni on se nije snašao. Ostale su druga i
+   treća faza, pobrojane u istom odeljku.
 
    1a. **Aplikacija je samo na engleskom — zatvoreno 18. oktobra 2026.** Odluka
    vlasnika od istog dana: govor, slušanje i ekran su engleski. Govor i slušanje
@@ -1579,7 +1669,7 @@ strukturi**: ništa se ne premešta, ne preimenuje, ne grupiše.
    | orijentir | benchmark |
    | provera | check-up |
    | presek | snapshot |
-   | kartica „Predlog“ | Suggestion |
+   | kartica „Predlog“ (od 19. oktobra 2026. spojena sa Proverom u „Sledeće“) | Next |
    | istrajnost | persistence |
    | savladano / drži / u izgradnji / još nije probano | mastered / holds / building / not tried yet |
    | prečke: najviše pomoći, pogledaj pa zapamti, samo tragovi, bez table | most help, look then remember, traces only, no board |

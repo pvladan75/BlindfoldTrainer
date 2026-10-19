@@ -95,7 +95,8 @@ fun ProgressScreen(
     /** Koliko provera ova verzija uopšte nudi — presek se meri prema tome. */
     checkupCount: Int,
     onOpenSnapshot: () -> Unit,
-    onBack: () -> Unit
+    /** Strelica nazad; `null` kad je ekran kartica u dnu i nema kuda nazad. */
+    onBack: (() -> Unit)?
 ) {
     // Dok je merena samo jedna veština, „najslabija" nema sa čim da se poredi
     // — a na jedinoj merenoj zvuči kao prekor umesto kao putokaz.
@@ -110,11 +111,13 @@ fun ProgressScreen(
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.progress_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.settings_back)
-                        )
+                    if (onBack != null) {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.settings_back)
+                            )
+                        }
                     }
                 }
             )
