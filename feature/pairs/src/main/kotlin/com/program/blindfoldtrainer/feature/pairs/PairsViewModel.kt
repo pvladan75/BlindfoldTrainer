@@ -122,9 +122,10 @@ class PairsViewModel @Inject constructor(
 
     /**
      * Čita **trenutnu** poziciju — onu koja je nastala odigranim potezima, ne
-     * početnu. Za kad se slika u glavi raspala; namerno neograničeno.
+     * početnu. Za kad se slika u glavi raspala; namerno neograničeno. Fonetski,
+     * kao „ponovi": ko traži poziciju ponovo, najčešće nije razlikovao „b" od „d".
      */
-    fun onReadPosition() = speaker.aside { speaker.say(_uiState.value.board) }
+    fun onReadPosition() = speaker.aside { speaker.say(_uiState.value.board, phonetic = true) }
 
     /** Prvi dodir na zonu za odustajanje — traži potvrdu, jer je nepovratno. */
     fun onGiveUpArmed() = speaker.say { confirmGiveUp }

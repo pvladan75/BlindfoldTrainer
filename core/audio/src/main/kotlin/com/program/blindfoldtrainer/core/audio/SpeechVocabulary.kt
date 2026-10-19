@@ -38,9 +38,17 @@ object SpeechVocabulary {
     /** Tišina ispred polja (D6). */
     const val PAUSE_BEFORE_SQUARE_MILLIS = 50
 
-    /** Tišina između figura pri čitanju pozicije, i duža između strana. */
-    const val PAUSE_BETWEEN_PIECES_MILLIS = 180
-    const val PAUSE_BETWEEN_SIDES_MILLIS = 400
+    /**
+     * Tišina između figura pri čitanju pozicije, i duža između strana.
+     *
+     * Bilo je 180 i 400 ms — po uhu na računaru. Sa uređaja je 19. oktobra
+     * 2026. stiglo da se sledeća figura čita pre nego što se prethodna zapamti:
+     * pozicija se pamti u dva koraka (šta, pa gde), a za to treba sekunda i po
+     * po figuri — vlasnik je sekundu čuo i tražio više. Brzina govora iz
+     * Podešavanja rasteže i ove pauze. Menja se ovde, bez snimanja.
+     */
+    const val PAUSE_BETWEEN_PIECES_MILLIS = 1500
+    const val PAUSE_BETWEEN_SIDES_MILLIS = 2000
 
     /** Između polja u nabrajanju („a1, b2, c3"). */
     const val PAUSE_BETWEEN_SQUARES_MILLIS = 160
@@ -118,6 +126,29 @@ object SpeechVocabulary {
         Color.BLACK to cut("color_black", "black", "Where is the black queen?", 4)
     )
 
+    /**
+     * „white king on" — boja, figura i „on" u **jednom** isečku, za čitanje
+     * pozicije.
+     *
+     * Dotle je „on" bio isečak za sebe, reč od sto milisekundi isečena iz
+     * „White king on e1" na sredini između suseda — a glas tu ne staje, pa je
+     * rez padao usred zvuka na obe strane i čuo se kao šum između figure i
+     * polja (uređaj, 19. oktobra 2026.). Isečeno u komadu, „white king on" ima
+     * jedan rez, ispred polja — isti koji svako polje ima otkad postoji.
+     */
+    private val piecesOn: Map<Piece, Token> = Color.entries.flatMap { color ->
+        PieceType.entries.map { type -> Piece(type, color) }
+    }.associateWith { piece ->
+        val color = piece.color.word
+        val type = piece.type.word
+        cut(
+            "${color}_${type}_on",
+            "$color $type on",
+            "${color.replaceFirstChar { it.uppercase() }} $type on e1, $color $type on d1.",
+            1, 3
+        )
+    }
+
     /** Broj usred rečenice: „Found 3 of 5." */
     private val numbersMid: Map<Int, Token> = (0..100).associateWith { n ->
         cut("nmid_$n", "$n", "Found $n of 5.", 2)
@@ -172,6 +203,7 @@ object SpeechVocabulary {
     val noHead = cut("no_head", "No", "No rook can go to e5.", 1)
     val canGoTo = cut("can_go_to", "can go to", "No rook can go to e5.", 3, 5)
     val twoOfYour = cut("two_of_your", "Two of your", "Two of your rooks can go to e5.", 1, 3)
+    /** „on" samo, u pitanju „Who attacks the black knight on e5?"; poziciju čita [pieceOn]. */
     val onMid = cut("on_mid", "on", "White king on e1, white queen on d1.", 3)
     val knightIsOn = cut("knight_is_on", "The knight is on", "The knight is on b1.", 1, 4)
     val target = cut("target", "Target", "Target g7.", 1)
@@ -276,6 +308,9 @@ object SpeechVocabulary {
     fun pieceInQuestion(type: PieceType): Clip = piecesInQuestion.getValue(type).clip()
     fun piecesPlural(type: PieceType): Clip = piecesPlural.getValue(type).clip()
     fun color(color: Color): Clip = colors.getValue(color).clip()
+
+    /** „white king on" — ide ispred polja pri čitanju pozicije. */
+    fun pieceOn(piece: Piece): Clip = piecesOn.getValue(piece).clip()
     fun file(file: Char): Clip = files.getValue(file).clip()
     fun rankInQuestion(rank: Int): Clip = ranksInQuestion.getValue(rank).clip()
 
@@ -318,8 +353,12 @@ object SpeechVocabulary {
      * Beli pa crni, a unutar boje po vrednosti figure — kralj prvi, jer se oko
      * njega gradi slika. Redosled je uvek isti da bi se pozicija pamtila kao niz,
      * a ne kao skup. Tišina deli figure, duža deli strane.
+     *
+     * Uz [phonetic] polja idu kao „echo two": za ponovno čitanje na zahtev,
+     * jer ko traži da čuje poziciju još jednom najčešće nije razlikovao „b" od
+     * „d" ili „a" od „e" — isto pravilo kao kod „ponovi".
      */
-    fun board(board: Board): List<SpokenToken> {
+    fun board(board: Board, phonetic: Boolean = false): List<SpokenToken> {
         fun side(color: Color): List<Pair<Square, Piece>> = board.occupied()
             .filter { (_, piece) -> piece.color == color }
             .sortedWith(compareBy({ NARRATION_ORDER.indexOf(it.second.type) }, { it.first.index }))
@@ -330,10 +369,8 @@ object SpeechVocabulary {
             fun add(entries: List<Pair<Square, Piece>>) {
                 entries.forEachIndexed { index, (square, piece) ->
                     if (index > 0) add(Pause(PAUSE_BETWEEN_PIECES_MILLIS))
-                    add(color(piece.color))
-                    add(piece(piece.type))
-                    add(onMid.clip())
-                    add(square(square))
+                    add(pieceOn(piece))
+                    if (phonetic) addAll(squarePhonetic(square)) else add(square(square))
                 }
             }
             add(white)
@@ -378,6 +415,12 @@ object SpeechVocabulary {
         "\"" + text.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
     private fun Token.clip(pauseBefore: Int = 0): Clip = Clip(id, text, pauseBefore)
+
+    private val Color.word: String
+        get() = when (this) {
+            Color.WHITE -> "white"
+            Color.BLACK -> "black"
+        }
 
     private val PieceType.word: String
         get() = when (this) {

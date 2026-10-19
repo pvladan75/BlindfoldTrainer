@@ -142,7 +142,8 @@ class ClipSpeaker @Inject constructor(
         )
     }
 
-    override fun say(board: Board, interrupt: Boolean) = sayTokens(SpeechVocabulary.board(board), interrupt)
+    override fun say(board: Board, interrupt: Boolean, phonetic: Boolean) =
+        sayTokens(SpeechVocabulary.board(board, phonetic), interrupt)
 
     override fun say(interrupt: Boolean, phrase: SpeechVoice.() -> SpokenLine) =
         sayTokens(voiceFor(language).phrase().tokens, interrupt)
@@ -359,7 +360,8 @@ internal class ClipLibrary(private val assets: AssetManager) {
                     format.bitsPerSample == SpeechVocabulary.BITS_PER_SAMPLE &&
                     format.channels == SpeechVocabulary.CHANNELS
             ) { "$name: ${format.sampleRate} Hz / ${format.bitsPerSample} bit / ${format.channels} ch" }
-            clips[name.removeSuffix(".wav")] = clip.pcm
+            // Ivice ublažene jednom, ovde: isečak presečen usred zvuka inače puca na spoju.
+            clips[name.removeSuffix(".wav")] = ClipEdges.soften(clip.pcm, format.sampleRate)
         }
     }
 

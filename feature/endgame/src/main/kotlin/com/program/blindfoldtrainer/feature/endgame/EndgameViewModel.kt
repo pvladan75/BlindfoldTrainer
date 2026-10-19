@@ -216,8 +216,9 @@ class EndgameViewModel @Inject constructor(
         positionReads++
         // Pozicija ima svoje dugme, pa ne sme da pojede „ponovi": posle nje se
         // do rečenice koja je zaista promakla više ne bi moglo, a pozicija se
-        // ionako dobija ponovnim dodirom na nju samu.
-        speaker.aside { speaker.say(_uiState.value.position.board) }
+        // ionako dobija ponovnim dodirom na nju samu. Fonetski, kao „ponovi":
+        // ko traži poziciju ponovo, najčešće nije razlikovao „b" od „d".
+        speaker.aside { speaker.say(_uiState.value.position.board, phonetic = true) }
     }
 
     private var settings: Settings = Settings.DEFAULT

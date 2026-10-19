@@ -629,6 +629,90 @@
     "wordTo": 4,
     "voice": "en-US-AndrewNeural"
   },
+  "white_pawn_on": {
+    "kind": "cut",
+    "carrier": "White pawn on e1, white pawn on d1.",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "white_knight_on": {
+    "kind": "cut",
+    "carrier": "White knight on e1, white knight on d1.",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "white_bishop_on": {
+    "kind": "cut",
+    "carrier": "White bishop on e1, white bishop on d1.",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "white_rook_on": {
+    "kind": "cut",
+    "carrier": "White rook on e1, white rook on d1.",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "white_queen_on": {
+    "kind": "cut",
+    "carrier": "White queen on e1, white queen on d1.",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "white_king_on": {
+    "kind": "cut",
+    "carrier": "White king on e1, white king on d1.",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "black_pawn_on": {
+    "kind": "cut",
+    "carrier": "Black pawn on e1, black pawn on d1.",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "black_knight_on": {
+    "kind": "cut",
+    "carrier": "Black knight on e1, black knight on d1.",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "black_bishop_on": {
+    "kind": "cut",
+    "carrier": "Black bishop on e1, black bishop on d1.",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "black_rook_on": {
+    "kind": "cut",
+    "carrier": "Black rook on e1, black rook on d1.",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "black_queen_on": {
+    "kind": "cut",
+    "carrier": "Black queen on e1, black queen on d1.",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
+  "black_king_on": {
+    "kind": "cut",
+    "carrier": "Black king on e1, black king on d1.",
+    "wordFrom": 1,
+    "wordTo": 3,
+    "voice": "en-US-AndrewNeural"
+  },
   "nmid_0": {
     "kind": "cut",
     "carrier": "Found 0 of 5.",

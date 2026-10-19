@@ -60,8 +60,15 @@ interface Speaker {
      */
     fun say(piece: PieceType, move: Move, interrupt: Boolean = true)
 
-    /** Čita celu poziciju: „white king on e2, white queen on e5…". */
-    fun say(board: Board, interrupt: Boolean = true)
+    /**
+     * Čita celu poziciju: „white king on e2, white queen on e5…".
+     *
+     * Uz [phonetic] polja idu kao „echo two" — za čitanje **na zahtev**, kad
+     * je čovek pritisnuo „pozicija": najčešće zato što preko zvučnika nije
+     * razlikovao „b" od „d" ili „a" od „e", pa bi mu ista slova ponudila istu
+     * nedoumicu. Prvo, automatsko čitanje ostaje obično.
+     */
+    fun say(board: Board, interrupt: Boolean = true, phonetic: Boolean = false)
 
     /**
      * Izgovara **rečenicu iz rečnika**.

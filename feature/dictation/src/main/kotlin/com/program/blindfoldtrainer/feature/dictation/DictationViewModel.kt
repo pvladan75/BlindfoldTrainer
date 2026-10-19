@@ -173,7 +173,9 @@ class DictationViewModel @Inject constructor(
                 mistakes = it.mistakes + if (isLapse) 1 else 0
             )
         }
-        speaker.say(state.target)
+        // Fonetski, kao „ponovi": ko traži da čuje ponovo, najčešće nije
+        // razlikovao „b" od „d" — ista slova bi ponudila istu nedoumicu.
+        speaker.say(state.target, phonetic = true)
     }
 
     /**

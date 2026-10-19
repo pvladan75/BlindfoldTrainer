@@ -78,6 +78,20 @@ class SpokenLineTest {
         )
     }
 
+    /** Na zahtev se polja čitaju fonetski — ko pita ponovo, nije razlikovao „b" od „d". */
+    @Test
+    fun `pozicija na zahtev ide fonetski`() {
+        val position = Board.of(
+            mapOf(
+                square("b5") to Piece(PieceType.KING, Color.WHITE),
+                square("d8") to Piece(PieceType.QUEEN, Color.BLACK)
+            )
+        )
+        val line = SpokenLine(SpeechVocabulary.board(position, phonetic = true))
+        assertEquals("white king on bravo five black queen on delta eight", line.text)
+        assertEquals("white king on b5 black queen on d8", SpokenLine(SpeechVocabulary.board(position)).text)
+    }
+
     @Test
     fun `prazna tabla se ne izgovara`() {
         assertTrue(SpokenLine(SpeechVocabulary.board(Board.EMPTY)).isBlank)

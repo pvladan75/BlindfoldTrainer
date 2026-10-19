@@ -183,6 +183,52 @@ veže za zadatak), pa red na njega i ne reaguje.
 - Reč „Persistence" za ekran istrajnosti zvuči čudno na engleskom; kandidat
   je „Activity". Nije dirano, jer je imenovanje odluka vlasnika.
 
+### Čitanje pozicije: šum između figure i polja, i pauza po figuri
+
+Sa uređaja, **19. oktobra 2026.**, dve primedbe na čitanje pozicije: posle
+imena figure se čuje **šum** pa tek polje, i sledeća figura kreće pre nego što
+se prethodna zapamti.
+
+**Šum je bio isečak „on".** Reč od 100 ms isečena iz „White king on e1" na
+sredini između suseda — a glas između „king", „on" i „e1" ne staje, pa je rez
+padao usred zvuka na obe strane, na punoj amplitudi (prvi uzorak −8918,
+poslednji 3375). Takav skok je pucanj, a sto milisekundi između dva pucnja je
+šum, ne reč. Dve ispravke:
+
+- **„white king on" je jedan isečak** (`white_king_on` … `black_pawn_on`, 12
+  novih, iz nosive „White king on e1, white king on d1.", reči 1–3). Jedini rez
+  je ispred polja — isti koji svako polje ima otkad postoji. `SpeechVocabulary.pieceOn(piece)`;
+  `board()` više ne lepi boju, figuru i „on" posebno. `on_mid` ostaje, jer ga
+  traži „Who attacks the black knight on e5?".
+- **Ivice svakog isečka se ublaže pri učitavanju** (`ClipEdges.soften`, 5 ms
+  uspon, 15 ms pad, u `ClipLibrary.loadAll`). Isečku koji već počinje i
+  završava tišinom ne menja ništa; onom presečenom usred zvuka (`is_on`,
+  `stands_on`, sva polja isečena iza „bishop") skida skok. Čist Kotlin, 4
+  testa; mutacijom provereno — bez rampi padaju tri.
+
+**Pauza između figura je 1500 ms (bilo 180), između strana 2000 (bilo 400).**
+Pozicija se pamti u dva koraka, šta pa gde. Prvi predlog je bio sekunda i
+sekunda i po; vlasnik je to čuo na računaru i tražio pola sekunde više na oba
+mesta. Brzina govora iz Podešavanja rasteže i pauze. Menja se u
+`SpeechVocabulary` bez snimanja.
+
+**Pozicija na zahtev ide fonetski.** Treća primedba iz istog dana: ko traži
+da mu se pozicija pročita ponovo, najčešće nije razlikovao „b" od „d" ili „a"
+od „e" preko zvučnika — ista slova bi ponudila istu nedoumicu, kao i kod
+„ponovi". `Speaker.say(board, phonetic = true)` čita „white king on bravo
+five"; tako čitaju dugme „pozicija" u Završnici i Raskini vezu i „ponovo" u
+Diktatu. Prvo, automatsko čitanje (nova pozicija, posle poništavanja, Daj šah
+bez table) ostaje obično — tu se slova još nisu pomešala.
+
+**Brojevi.** Testova **329** (zatečeno 324, ne 315 kako je gore pisalo). 441
+isečak, 11,2 MB; 12 nosivih rečenica sa 440 znakova poslato Azure-u. Nijedno
+upozorenje kompajlera.
+
+**Nije viđeno na uređaju:** ništa od ovoga. Na računaru su sastavljena dva
+wav-a (pre/posle) istim lepljenjem kao u aplikaciji; vlasnik je „posle" čuo i
+rekao da je mnogo bolje. Na telefonu treba čuti čitanje pozicije u Završnici
+i Raskini vezu.
+
 **Poslednji komit: `f006756`.** Sve je komitovano i gurnuto; radno stablo je čisto.
 
 Stanje na **18. avgust 2026.** Sesija ima dva dela. Prvi je „Daj šah" viđen na
