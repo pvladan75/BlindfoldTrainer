@@ -164,6 +164,16 @@ istoriju i zaseban slučaj za brzu.
 malom ekranu; red orijentira je najduži), i da se nivo zaista prepravi kad
 upis stigne, a ne ostane na „bez promene".
 
+#### Prve primedbe sa uređaja (stranica modula)
+
+Vlasnik je stranicu modula video na telefonu i prijavio dvoje, oboje
+ispravljeno istog dana: **red „Builds:" je pisao uniju veština celog modula**
+(pet kod „Kretanja figura") iako izabrani zadatak gradi dve — sad prati
+izabrani zadatak, prva je ona koju meri; i **dugme Start je stajalo preko
+sistemske navigacione trake** — traka u dnu `Scaffold`-a se ne sklanja sama,
+pa je dobila `navigationBarsPadding()`. Oslonac veštine ne menja (model ih
+veže za zadatak), pa red na njega i ne reaguje.
+
 **Šta je ostalo od istog posla:**
 
 - Sažetak bez ekrana da izgovori isto (nove rečenice u `SpeechVocabulary`, pa

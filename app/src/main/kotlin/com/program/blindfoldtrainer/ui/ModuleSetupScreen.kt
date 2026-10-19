@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -113,7 +114,9 @@ fun ModuleSetupScreen(
         bottomBar = {
             // Dugme stoji **na dnu, uvek vidljivo**: stranica se čita odozgo, a
             // odluka se donosi na kraju — pa se ne traži prstom kroz spisak.
-            Surface(tonalElevation = 2.dp) {
+            // Traka u dnu se sama ne sklanja ispod sistemske navigacije — dugme
+            // je na uređaju stajalo preko nje, pa je dodir pogađao „nazad".
+            Surface(tonalElevation = 2.dp, modifier = Modifier.navigationBarsPadding()) {
                 Button(
                     onClick = {
                         // **Šalje se ono što na stranici piše.** Gde se oslonac ne
@@ -160,11 +163,14 @@ fun ModuleSetupScreen(
                 )
             }
 
-            // Šta se ovim modulom razvija — da se vidi da vežbe nisu same sebi
-            // svrha. Modul prijavljuje zadatke, stranica sabira njihove veštine.
-            if (module.skills.isNotEmpty()) {
+            // Šta se razvija **izabranim zadatkom**, ne modulom: veština pripada
+            // zadatku, pa „Retell the path" i „Knight walk" ne grade isto. Dok je
+            // ovde stajala unija svih zadataka, red je pisao pet veština a vežba
+            // je radila na dve. Prva je ona koju zadatak **meri**, ostale nosi.
+            val skills = task?.skills ?: module.skills.toList()
+            if (skills.isNotEmpty()) {
                 Spacer(Modifier.height(10.dp))
-                val names = module.skills.map { stringResource(it.labelRes()) }
+                val names = skills.map { stringResource(it.labelRes()) }
                 Text(
                     text = stringResource(R.string.menu_module_skills, names.joinToString(", ")),
                     style = MaterialTheme.typography.bodySmall,
