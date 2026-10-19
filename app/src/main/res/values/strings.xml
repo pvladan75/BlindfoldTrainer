@@ -128,15 +128,9 @@
     <string name="persistence_minutes">%1$d min</string>
     <string name="persistence_hours">%1$d h %2$d min</string>
     <string name="menu_rank_effort">%1$d sessions · %2$s</string>
-    <string name="snapshot_title">Snapshot</string>
     <string name="snapshot_summary">%1$d of %2$d skills measured</string>
-    <string name="snapshot_intro">Where you stand on each skill, measured the same way every time. Progress shows what practice has brought along the way; here is only what may be compared with the same measurement a month from now.</string>
-    <string name="snapshot_pending_title">Not measured yet: %1$d</string>
-    <string name="snapshot_pending_hint">Measurements add up; they are not done all at once — one takes about a minute. A snapshot with a gap is still a snapshot, but the gap is worth knowing before the rest is read.</string>
-    <string name="snapshot_measure">Measure: %1$s</string>
     <string name="snapshot_measure_short">Measure</string>
     <string name="snapshot_remeasure">Measure again</string>
-    <string name="snapshot_never">not checked</string>
     <string name="snapshot_no_task">No task measures this yet — what is missing is not a check-up but an exercise.</string>
     <string name="snapshot_note">A check-up earns no points. The moment it did, it would stop measuring and start being chased.</string>
     <string name="progress_graph_title">What rests on what</string>
@@ -185,7 +179,6 @@
     <string name="reason_strength">This is going well for you — let it be that way now and then.</string>
 
     <string name="checkup_never">not checked</string>
-    <string name="checkup_level">level: %1$d/%2$d · %3$s</string>
     <string name="checkup_confirmed">confirmed by check-up: %1$d/%2$d · %3$s</string>
     <string name="ago_today">today</string>
     <string name="ago_yesterday">yesterday</string>

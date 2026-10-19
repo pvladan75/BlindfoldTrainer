@@ -112,11 +112,32 @@ dvostrukog razmaka), stranicu modula sa dugmetom na dnu kad su sva tri reda
 (treba da nudi vežbu), i da modul posle „Start" dobija baš ono što na stranici
 piše. Režim bez ekrana ovo ne dira — modul nema traku u dnu.
 
-**Šta je ostalo od istog posla** (druga i treća faza, po dogovoru sa vlasnikom):
+#### Druga faza, istog dana: Napredak je mapa, Presek je nestao
 
-- **Napredak kao mapa.** Slika veština gore, obojena stanjem, dodir na veštinu
-  otvara njenu karticu; Presek se utapa u to (dugme „Measure" uz veštinu) i
-  prestaje da bude zaseban ekran i zasebna reč.
+Slika veština na vrhu Napretka je dobila **dodir**: `SkillGraph(onSkillTap)`
+doskroluje spisak do kartice te veštine. Raspored kutija se računa u jednoj
+funkciji (`placesFor(width)`) i za crtanje i za dodir — dve računice bi se
+razišle i dodir bi pogađao susednu veštinu. Uputstvo crta istu sliku bez
+dodira (`onSkillTap = null`).
+
+**Presek više ne postoji kao ekran.** Bio je drugi spisak istih osam veština
+iza prvog, sa razlikom koju je objašnjavalo uputstvo. Ono što je nosio stoji
+sad na Napretku: red „N of M skills measured" sa napomenom o poenima ispod
+slike, i na svakoj kartici veštine red provere („not checked" / „confirmed by
+check-up …") sa dugmetom **Measure** ili **Measure again** gde provera postoji;
+gde je ne meri nijedan zadatak, piše da fali vežba, ne provera. Obrisani:
+`SnapshotScreen.kt`, ruta `snapshot`, stringovi `snapshot_title/intro/
+pending_title/pending_hint/measure/never` i `checkup_level`. `fromSnapshot` u
+ruti modula je postao `fromProgress`: i provera i vežba pokrenute sa Napretka
+vraćaju **na Napredak** posle sesije, da se vidi šta se pomerilo.
+
+Testova i dalje **315** — ovo je samo raspored, logika se nije menjala. Nije
+viđeno na uređaju: dodir na kutiju (da pogađa pravu veštinu i da skrol stane
+na njenoj kartici), red sa dugmetom Measure na uskom ekranu (tekst i dugme u
+istom redu), povratak na Napredak posle provere.
+
+**Šta je ostalo od istog posla** (treća faza, po dogovoru sa vlasnikom):
+
 - **Sažetak sesije kaže šta se pomerilo** — jedan red: koja veština, gde je
   sad naspram orijentira, šta je sledeće. To je „dokle sam stigao" posle svake
   vežbe.
@@ -1629,9 +1650,10 @@ strukturi**: ništa se ne premešta, ne preimenuje, ne grupiše.
 
 1. **Preuređenje ekrana i navigacije** — **prva faza urađena 19. oktobra 2026**
    (tri kartice u dnu, kartica „Sledeće", stranica modula; vidi odeljak „Tri
-   kartice u dnu" na vrhu). Podatak iz upotrebe koji se čekao stigao je od
-   vlasnika: posle dva meseca pauze ni on se nije snašao. Ostale su druga i
-   treća faza, pobrojane u istom odeljku.
+   kartice u dnu" na vrhu), i **druga faza istog dana** (Napredak kao mapa,
+   Presek utopljen u njega). Podatak iz upotrebe koji se čekao stigao je od
+   vlasnika: posle dva meseca pauze ni on se nije snašao. Ostala je treća
+   faza, pobrojana u istom odeljku.
 
    1a. **Aplikacija je samo na engleskom — zatvoreno 18. oktobra 2026.** Odluka
    vlasnika od istog dana: govor, slušanje i ekran su engleski. Govor i slušanje
@@ -1668,7 +1690,7 @@ strukturi**: ništa se ne premešta, ne preimenuje, ne grupiše.
    | oslonac | support |
    | orijentir | benchmark |
    | provera | check-up |
-   | presek | snapshot |
+   | presek (ekran ukinut 19. oktobra 2026; ostao kao red na Napretku) | snapshot |
    | kartica „Predlog“ (od 19. oktobra 2026. spojena sa Proverom u „Sledeće“) | Next |
    | istrajnost | persistence |
    | savladano / drži / u izgradnji / još nije probano | mastered / holds / building / not tried yet |

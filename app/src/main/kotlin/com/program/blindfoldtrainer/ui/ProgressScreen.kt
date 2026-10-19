@@ -12,10 +12,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import androidx.compose.material3.OutlinedButton
+import com.program.blindfoldtrainer.core.model.Checkup
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Card
@@ -92,9 +96,16 @@ fun ProgressScreen(
     difficultiesFor: (String) -> List<Difficulty>,
     /** Otvara vežbu odmah, sa izabranim zadatkom, osloncem i težinom. */
     onPractice: (String, Support, Difficulty?) -> Unit,
-    /** Koliko provera ova verzija uopšte nudi — presek se meri prema tome. */
-    checkupCount: Int,
-    onOpenSnapshot: () -> Unit,
+    /**
+     * Provere koje se u ovoj verziji zaista mogu ponuditi.
+     *
+     * Presek je bio zaseban ekran sa istim spiskom veština i dugmetom „Measure"
+     * uz svaku. Dva ekrana sa istih osam imena, jedan iza drugog, bila su
+     * pitanje „u čemu je razlika" na koje je odgovor stajao u uputstvu. Sad
+     * merenje stoji **uz veštinu**, na jedinom mestu gde se o njoj i čita.
+     */
+    checkups: List<Checkup>,
+    onStartCheckup: (Checkup) -> Unit,
     /** Strelica nazad; `null` kad je ekran kartica u dnu i nema kuda nazad. */
     onBack: (() -> Unit)?
 ) {
@@ -105,6 +116,15 @@ fun ProgressScreen(
     // Automatizam se meri prema orijentiru zadatka, a orijentire zna registar —
     // isti spisak zadataka koji ovaj ekran ionako dobija.
     val benchmarks = remember(tasks) { Benchmarks.of(tasks.values) }
+    val checkupFor = remember(checkups) { checkups.associateBy { it.skill } }
+
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+
+    // Redni broj stavke veštine u spisku: ispred nje stoje slika i, dok
+    // profila nema, poruka o tome. Da se broj ne pogodi, dodir na mapu bi
+    // doskrolovao do susedne veštine — a to se ne primeti dok se ne proba.
+    val skillItemOffset = if (progress.bySkill.isEmpty()) 2 else 1
 
     Scaffold(
         topBar = {
@@ -124,6 +144,7 @@ fun ProgressScreen(
         }
     ) { padding ->
         LazyColumn(
+            state = listState,
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -134,43 +155,6 @@ fun ProgressScreen(
                         text = stringResource(R.string.progress_empty),
                         style = MaterialTheme.typography.bodyMedium
                     )
-                }
-            }
-
-            // Presek stoji **iznad svega**: pre nego što se gleda šta je vežba
-            // usput proizvela, vredi znati šta je izmereno na isti način za sve.
-            item(key = "snapshot") {
-                Card(
-                    onClick = onOpenSnapshot,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(R.string.snapshot_title),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = stringResource(
-                                    R.string.snapshot_summary,
-                                    progress.checkedSkills.size,
-                                    checkupCount
-                                ),
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = null
-                        )
-                    }
                 }
             }
 
@@ -191,10 +175,36 @@ fun ProgressScreen(
                         SkillGraph(
                             levels = Skill.entries.associateWith {
                                 progress.levelOf(it, tasks.values.toList()).stage
+                            },
+                            // Mapa na kojoj se dodirne mesto: dodir vodi na
+                            // karticu te veštine, niže u istom spisku.
+                            onSkillTap = { skill ->
+                                scope.launch {
+                                    listState.animateScrollToItem(
+                                        skillItemOffset + Skill.entries.indexOf(skill)
+                                    )
+                                }
                             }
                         )
                         Spacer(Modifier.height(12.dp))
                         SkillGraphLegend()
+                        Spacer(Modifier.height(12.dp))
+                        // Koliko je od ovoga **izmereno**, a koliko procenjeno iz
+                        // vežbe — jedino što sme da se poredi sa prošlim mesecom.
+                        Text(
+                            text = stringResource(
+                                R.string.snapshot_summary,
+                                progress.checkedSkills.size,
+                                checkups.size
+                            ),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = stringResource(R.string.snapshot_note),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             }
@@ -212,6 +222,8 @@ fun ProgressScreen(
                         difficultiesFor = difficultiesFor
                     ),
                     checkup = progress.lastCheckup(skill),
+                    offered = checkupFor[skill],
+                    onMeasure = onStartCheckup,
                     isAutomatic = progress.isAutomatic(skill, benchmarks),
                     foundationsMissing = progress.foundationsMissing(skill, benchmarks),
                     isWeakest = skill == weakest,
@@ -244,6 +256,9 @@ private fun SkillCard(
     /** Kojim zadatkom i na kojoj prečki se veština sad gradi. */
     practice: PracticeStep?,
     checkup: SkillEntry?,
+    /** Provera koja za ovu veštinu postoji, ako postoji. */
+    offered: Checkup?,
+    onMeasure: (Checkup) -> Unit,
     isAutomatic: Boolean,
     foundationsMissing: Set<Skill>,
     isWeakest: Boolean,
@@ -365,22 +380,51 @@ private fun SkillCard(
             // **Provera je potvrda, ne nivo.** Nivo je prečka iznad; provera kaže
             // koliko je ta tvrdnja sveža. Naslepo vene brže nego što se stiče, pa
             // stara mera nije mera — otud i datum uz rezultat, a ne rezultat sam.
-            if (profile != null || checkup != null) {
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = if (checkup == null) {
-                        stringResource(R.string.checkup_never)
-                    } else {
-                        stringResource(
-                            R.string.checkup_confirmed,
-                            checkup.tally.solved,
-                            checkup.tally.attempted,
-                            daysAgoLabel(checkup.atMillis)
-                        )
-                    },
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            //
+            // Uz nju i **dugme za merenje**, gde provera postoji. Ovo je nekad
+            // bio zaseban ekran (Presek); sad se meri odavde, uz veštinu.
+            if (offered != null || profile != null || checkup != null) {
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = when {
+                            checkup != null -> stringResource(
+                                R.string.checkup_confirmed,
+                                checkup.tally.solved,
+                                checkup.tally.attempted,
+                                daysAgoLabel(checkup.atMillis)
+                            )
+                            // Ovde ne fali provera nego **vežba** — to su dve
+                            // različite rupe i ne smeju istom rečenicom.
+                            offered == null -> stringResource(R.string.snapshot_no_task)
+                            else -> stringResource(R.string.checkup_never)
+                        },
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (offered != null) {
+                        Spacer(Modifier.size(8.dp))
+                        OutlinedButton(
+                            onClick = { onMeasure(offered) },
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                stringResource(
+                                    if (checkup == null) {
+                                        R.string.snapshot_measure_short
+                                    } else {
+                                        R.string.snapshot_remeasure
+                                    }
+                                ),
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+                    }
+                }
             }
 
             // Preduslovi ne zaključavaju ništa — samo objasne zašto ovo ide

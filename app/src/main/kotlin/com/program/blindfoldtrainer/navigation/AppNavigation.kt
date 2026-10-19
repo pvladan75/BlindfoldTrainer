@@ -54,7 +54,6 @@ import com.program.blindfoldtrainer.ui.SessionSummaryDialog
 import com.program.blindfoldtrainer.ui.SessionSummaryEyesFree
 import com.program.blindfoldtrainer.ui.SettingsScreen
 import com.program.blindfoldtrainer.ui.SettingsViewModel
-import com.program.blindfoldtrainer.ui.SnapshotScreen
 import com.program.blindfoldtrainer.ui.SummaryViewModel
 import com.program.blindfoldtrainer.ui.TrainScreen
 import com.program.blindfoldtrainer.ui.YouScreen
@@ -74,7 +73,6 @@ private const val ROUTE_YOU = "you"
 private const val ROUTE_SETTINGS = "settings"
 private const val ROUTE_PROFILES = "profiles"
 private const val ROUTE_GUIDE = "guide"
-private const val ROUTE_SNAPSHOT = "snapshot"
 private const val ROUTE_PERSISTENCE = "persistence"
 private const val ARG_MODULE = "module"
 private const val ARG_DIFFICULTY = "difficulty"
@@ -93,12 +91,12 @@ private const val ARG_CHECKUP = "checkup"
 private const val ROUTE_SETUP = "setup/{$ARG_MODULE}"
 
 /**
- * Da li se posle sesije vraća u **presek** umesto na Vežbaj.
+ * Da li se posle sesije vraća na **Napredak** umesto na Vežbaj.
  *
- * Presek se skuplja iz više merenja; ko ga je otvorio da izmeri četiri
- * veštine ne želi da posle svake bude vraćen na početak.
+ * Ko je sa Napretka krenuo da meri ili vežba jednu veštinu hoće posle sesije
+ * da vidi šta se pomerilo — a ne da do toga opet dolazi kroz karticu.
  */
-private const val ARG_FROM_SNAPSHOT = "fromSnapshot"
+private const val ARG_FROM_PROGRESS = "fromProgress"
 
 /**
  * Jedna ruta za sve module, sa **porudžbinom** kao neobaveznim delom.
@@ -109,7 +107,7 @@ private const val ARG_FROM_SNAPSHOT = "fromSnapshot"
 private const val ROUTE_MODULE =
     "module/{$ARG_MODULE}/{$ARG_DIFFICULTY}?$ARG_TASK={$ARG_TASK}" +
         "&$ARG_SUPPORT={$ARG_SUPPORT}&$ARG_CHECKUP={$ARG_CHECKUP}" +
-        "&$ARG_FROM_SNAPSHOT={$ARG_FROM_SNAPSHOT}"
+        "&$ARG_FROM_PROGRESS={$ARG_FROM_PROGRESS}"
 
 private fun moduleRoute(
     moduleKey: String,
@@ -118,7 +116,7 @@ private fun moduleRoute(
     support: Support? = null,
     isCheckup: Boolean = false,
     rounds: Int? = null,
-    fromSnapshot: Boolean = false
+    fromProgress: Boolean = false
 ): String = buildString {
     append("module/$moduleKey/${difficulty.name}")
     append("?$ARG_TASK=${taskId.orEmpty()}")
@@ -126,7 +124,7 @@ private fun moduleRoute(
     append("&$ARG_CHECKUP=$isCheckup")
     // Nula znači „nije poručeno" — `NavType.IntType` ne ume `null`.
     append("&$ARG_ROUNDS=${rounds ?: 0}")
-    append("&$ARG_FROM_SNAPSHOT=$fromSnapshot")
+    append("&$ARG_FROM_PROGRESS=$fromProgress")
 }
 
 /** Kartica u dnu: ruta, ime i ikona. */
@@ -211,7 +209,7 @@ fun AppNavigation(registry: ModuleRegistry) {
     val currentRoute = backStackEntry?.destination?.route
     val onTab = TABS.any { it.route == currentRoute }
 
-    val startCheckup = { checkup: Checkup, fromSnapshot: Boolean ->
+    val startCheckup = { checkup: Checkup, fromProgress: Boolean ->
         navController.navigate(
             moduleRoute(
                 moduleKey = checkup.moduleId.key,
@@ -220,13 +218,13 @@ fun AppNavigation(registry: ModuleRegistry) {
                 support = checkup.support,
                 isCheckup = true,
                 rounds = checkup.rounds,
-                fromSnapshot = fromSnapshot
+                fromProgress = fromProgress
             )
         )
     }
 
     // Iz Napretka se ulazi **pravo u vežbu**, sa već izabranim zadatkom i
-    // osloncem — isto kao sa kartice „Sledeće".
+    // osloncem — isto kao sa kartice „Sledeće" — i posle nje se vraća tamo.
     val practiseTask = { taskId: String, support: Support?, difficulty: Difficulty? ->
         registry.all.find { module -> module.tasks.any { it.id == taskId } }
             ?.let { module ->
@@ -235,7 +233,8 @@ fun AppNavigation(registry: ModuleRegistry) {
                         moduleKey = module.id.key,
                         difficulty = difficulty ?: Difficulty.EASY,
                         taskId = taskId,
-                        support = support
+                        support = support,
+                        fromProgress = true
                     )
                 )
             }
@@ -314,8 +313,8 @@ fun AppNavigation(registry: ModuleRegistry) {
                 },
                 difficultiesFor = { taskId -> difficultiesByTask[taskId] ?: Difficulty.entries },
                 onPractice = practiseTask,
-                checkupCount = registry.offerableCheckups.size,
-                onOpenSnapshot = { navController.navigate(ROUTE_SNAPSHOT) },
+                checkups = registry.offerableCheckups,
+                onStartCheckup = { checkup -> startCheckup(checkup, true) },
                 onBack = null
             )
         }
@@ -372,16 +371,6 @@ fun AppNavigation(registry: ModuleRegistry) {
             )
         }
 
-        composable(ROUTE_SNAPSHOT) {
-            SnapshotScreen(
-                progress = progress,
-                tasks = allTasks.associateBy { it.id },
-                checkups = registry.offerableCheckups,
-                onStartCheckup = { checkup -> startCheckup(checkup, true) },
-                onBack = { navController.popBackStack() }
-            )
-        }
-
         composable(ROUTE_PERSISTENCE) {
             PersistenceScreen(progress = progress, onBack = { navController.popBackStack() })
         }
@@ -403,7 +392,7 @@ fun AppNavigation(registry: ModuleRegistry) {
                 navArgument(ARG_SUPPORT) { type = NavType.StringType; defaultValue = "" },
                 navArgument(ARG_CHECKUP) { type = NavType.BoolType; defaultValue = false },
                 navArgument(ARG_ROUNDS) { type = NavType.IntType; defaultValue = 0 },
-                navArgument(ARG_FROM_SNAPSHOT) { type = NavType.BoolType; defaultValue = false }
+                navArgument(ARG_FROM_PROGRESS) { type = NavType.BoolType; defaultValue = false }
             )
         ) { entry ->
             val moduleKey = entry.arguments?.getString(ARG_MODULE)
@@ -427,7 +416,7 @@ fun AppNavigation(registry: ModuleRegistry) {
                 ?.let { key -> Support.entries.find { it.key == key } }
             val isCheckup = entry.arguments?.getBoolean(ARG_CHECKUP) == true
             val rounds = entry.arguments?.getInt(ARG_ROUNDS)?.takeIf { it > 0 }
-            val fromSnapshot = entry.arguments?.getBoolean(ARG_FROM_SNAPSHOT) == true
+            val fromProgress = entry.arguments?.getBoolean(ARG_FROM_PROGRESS) == true
 
             var result by remember { mutableStateOf<SessionResult?>(null) }
 
@@ -500,7 +489,7 @@ fun AppNavigation(registry: ModuleRegistry) {
                             support = support,
                             isCheckup = isCheckup,
                             rounds = rounds,
-                            fromSnapshot = fromSnapshot
+                            fromProgress = fromProgress
                         )
                     ) {
                         popUpTo(ROUTE_TRAIN) { inclusive = false }
@@ -509,10 +498,9 @@ fun AppNavigation(registry: ModuleRegistry) {
                 val backToMenu = {
                     result = null
                     progressViewModel.onSummaryClosed()
-                    // Ko meri presek se vraća u presek: merenja se skupljaju, pa
-                    // bi povratak na Vežbaj posle svakog značio da se do sledećeg
-                    // opet dolazi kroz tri ekrana.
-                    val home = if (fromSnapshot) ROUTE_SNAPSHOT else ROUTE_TRAIN
+                    // Ko je krenuo sa Napretka vraća se na Napredak: tamo se
+                    // vidi šta se sesijom pomerilo, a merenja se i skupljaju.
+                    val home = if (fromProgress) ROUTE_PROGRESS else ROUTE_TRAIN
                     navController.popBackStack(home, inclusive = false)
                     Unit
                 }

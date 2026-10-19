@@ -1,6 +1,8 @@
 package com.program.blindfoldtrainer.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
@@ -78,7 +80,13 @@ fun SkillGraph(
      * Prazna mapa daje sliku kakva je i bila, pa uputstvo radi i pre nego što
      * ijedna sesija postoji.
      */
-    levels: Map<Skill, SkillStage> = emptyMap()
+    levels: Map<Skill, SkillStage> = emptyMap(),
+    /**
+     * Dodir na kutiju. Slika je **mapa**, a mapa na kojoj se ne može dodirnuti
+     * mesto na kom stojiš je samo crtež; odavde se stiže do kartice veštine.
+     * `null` tamo gde slika samo objašnjava (uputstvo).
+     */
+    onSkillTap: ((Skill) -> Unit)? = null
 ) {
     val floors = remember { orderedFloors() }
     val measurer = rememberTextMeasurer()
@@ -125,22 +133,20 @@ fun SkillGraph(
         textAlign = TextAlign.Center
     )
 
-    Canvas(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(totalHeight)
-            .semantics { contentDescription = spoken }
-    ) {
-        // Sve kutije su **iste širine**, po najgušćem redu, a redovi se centriraju.
-        // Da se širina delila po redu, sprat sa jednom veštinom dobio bi kutiju
-        // preko celog ekrana i izgledao kao naslov umesto kao čvor.
+    // Gde koja kutija stoji, za datu širinu. **Jedna računica za crtanje i za
+    // dodir**: da su dve, razišle bi se i dodir bi pogađao susednu veštinu.
+    //
+    // Sve kutije su **iste širine**, po najgušćem redu, a redovi se centriraju.
+    // Da se širina delila po redu, sprat sa jednom veštinom dobio bi kutiju
+    // preko celog ekrana i izgledao kao naslov umesto kao čvor.
+    fun placesFor(width: Float): Map<Skill, Rect> {
         val widest = floors.maxOf { it.size }
-        val boxWidth = (size.width - gapPx * (widest + 1)) / widest
+        val boxWidth = (width - gapPx * (widest + 1)) / widest
 
         val places = HashMap<Skill, Rect>()
         floors.forEachIndexed { row, skills ->
             val rowWidth = skills.size * boxWidth + (skills.size - 1) * gapPx
-            val left = (size.width - rowWidth) / 2f
+            val left = (width - rowWidth) / 2f
             val top = row * (boxHeightPx + rowGapPx)
             skills.forEachIndexed { column, skill ->
                 places[skill] = Rect(
@@ -149,6 +155,30 @@ fun SkillGraph(
                 )
             }
         }
+        return places
+    }
+
+    val tapModifier = if (onSkillTap == null) {
+        Modifier
+    } else {
+        Modifier.pointerInput(floors) {
+            detectTapGestures { offset ->
+                placesFor(size.width.toFloat())
+                    .entries
+                    .firstOrNull { (_, rect) -> rect.contains(offset) }
+                    ?.let { (skill, _) -> onSkillTap(skill) }
+            }
+        }
+    }
+
+    Canvas(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(totalHeight)
+            .semantics { contentDescription = spoken }
+            .then(tapModifier)
+    ) {
+        val places = placesFor(size.width)
 
         // Grane prvo, kutije preko njih: tako vodoravni deo grane koja ide daleko
         // ustranu ne prolazi preko tuđeg imena.
