@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.program.blindfoldtrainer.R
 import com.program.blindfoldtrainer.core.model.SessionResult
+import com.program.blindfoldtrainer.core.progress.Recommendation
 import com.program.blindfoldtrainer.core.progress.SessionReward
 import java.util.concurrent.TimeUnit
 
@@ -28,6 +29,13 @@ import java.util.concurrent.TimeUnit
 fun SessionSummaryDialog(
     result: SessionResult,
     reward: SessionReward?,
+    /**
+     * Šta se ovom sesijom pomerilo — nivo veštine i orijentir. `null` dok se
+     * napredak ne upiše, ili kad sesija ne nosi zadatak koji se zna.
+     */
+    shift: SessionShift?,
+    /** Šta put predlaže posle ove sesije, ako išta. */
+    next: Recommendation?,
     onRepeat: () -> Unit,
     onBackToMenu: () -> Unit
 ) {
@@ -80,6 +88,26 @@ fun SessionSummaryDialog(
                     }
                 }
 
+                // **Dokle si stigao**, ne samo kako je prošlo: nivo veštine posle
+                // ove sesije (i od čega, ako se promenio), pa orijentir ove
+                // prečke naspram onoga što si upravo uradio. Ovo je mesto gde se
+                // profil vidi bez otvaranja ijednog ekrana.
+                shift?.let { ShiftLines(it) }
+
+                // I šta je sledeće — da se sa sažetka zna kuda, a ne tek sa
+                // kartice. Provera ne predlaže: ona meri, put bira posle.
+                if (next != null && !result.isCheckup) {
+                    Text(
+                        text = stringResource(
+                            R.string.summary_next,
+                            stringResource(taskLabelRes(next.taskId)),
+                            stringResource(next.support.labelRes())
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
                 // Poeni stižu tek pošto se sesija upiše, pa ih nema u prvom
                 // kadru — red se zato pojavljuje kad nagrada stigne.
                 reward?.let {
@@ -121,6 +149,57 @@ fun SessionSummaryDialog(
         }
     )
 }
+
+@Composable
+private fun ShiftLines(shift: SessionShift) {
+    val skill = stringResource(shift.skill.labelRes())
+    Text(
+        text = if (shift.levelChanged) {
+            stringResource(
+                R.string.summary_level_changed,
+                skill,
+                shift.after.headline(),
+                shift.before.headline()
+            )
+        } else {
+            stringResource(R.string.summary_level, skill, shift.after.headline())
+        },
+        style = MaterialTheme.typography.bodyMedium,
+        fontWeight = FontWeight.SemiBold,
+        color = if (shift.levelChanged) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.onSurface
+        }
+    )
+
+    val benchmark = shift.benchmark
+    val perAttempt = shift.millisPerAttempt
+    if (benchmark != null && perAttempt != null) {
+        Text(
+            text = stringResource(
+                if (shift.metBenchmark) {
+                    R.string.summary_benchmark_met
+                } else {
+                    R.string.summary_benchmark_missed
+                },
+                seconds(benchmark.millisPerAttempt),
+                (benchmark.minAccuracy * 100).toInt(),
+                seconds(perAttempt),
+                (shift.accuracy * 100).toInt()
+            ),
+            style = MaterialTheme.typography.bodySmall,
+            color = if (shift.metBenchmark) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            }
+        )
+    }
+}
+
+/** Sekunde sa jednom decimalom i tačkom: „2.5". */
+private fun seconds(millis: Long): String = "%.1f".format(java.util.Locale.ROOT, millis / 1000f)
 
 @Composable
 private fun SummaryRow(label: String, value: String, emphasised: Boolean = false) {

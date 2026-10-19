@@ -136,11 +136,38 @@ viđeno na uređaju: dodir na kutiju (da pogađa pravu veštinu i da skrol stane
 na njenoj kartici), red sa dugmetom Measure na uskom ekranu (tekst i dugme u
 istom redu), povratak na Napredak posle provere.
 
-**Šta je ostalo od istog posla** (treća faza, po dogovoru sa vlasnikom):
+#### Treća faza, istog dana: sažetak sesije kaže šta se pomerilo
 
-- **Sažetak sesije kaže šta se pomerilo** — jedan red: koja veština, gde je
-  sad naspram orijentira, šta je sledeće. To je „dokle sam stigao" posle svake
-  vežbe.
+`SessionShift` (`SessionShift.kt`, čist Kotlin) računa, za veštinu koju je
+zadatak sesije **merio**: nivo pre i posle upisa (`levelOf` nad napretkom
+zapamćenim u trenutku kraja i nad novim), orijentir prečke na kojoj se
+vežbalo, prosečno vreme po pokušaju i da li je **ova sesija sama** ispunila
+orijentir — i vreme i tačnost, ne jedno od toga. Dijalog sažetka dobija dva do
+tri nova reda ispod „Moved": nivo („Board coordinates: holds: most help (was:
+building)" — plavo kad se promenio), orijentir („Benchmark here met: 3.0 s at
+80% — you: 2.0 s, 90%" ili „Benchmark here: … — you: …") i **„Next: zadatak ·
+oslonac"** iz istog predloga koji stoji na kartici Vežbaj (ne posle provere —
+ona meri, put bira posle). Prvi kadar dijaloga pokazuje „bez promene", jer se
+napredak upisuje asinhrono; red se sam prepravi kad upis stigne.
+
+**Sažetak bez ekrana nije dirao** — izgovoreni tekst je iz snimljenih isečaka,
+a novi red bi tražio nove rečenice i nov render. Ostaje otvoreno.
+
+Testova **324** (bilo 315): 9 u `SessionShiftTest`. Mutacijom: bez uslova
+tačnosti pada „brzo ali netačno nije orijentir", bez uslova vremena „tačno ali
+sporo", a kad se „pre" izjednači sa „posle" pada test prve vežbe. Prvi oblik
+testa je sam pao na ispravnom kodu — istorija bez vremena (0 ms po pokušaju)
+drži orijentir i nivo je „drži", ne „u izgradnji"; test je dobio sporu
+istoriju i zaseban slučaj za brzu.
+
+**Nije viđeno na uređaju:** dijalog sa tri nova reda (da ne prelije visinu na
+malom ekranu; red orijentira je najduži), i da se nivo zaista prepravi kad
+upis stigne, a ne ostane na „bez promene".
+
+**Šta je ostalo od istog posla:**
+
+- Sažetak bez ekrana da izgovori isto (nove rečenice u `SpeechVocabulary`, pa
+  render).
 - Prvi ulazak bez uvodnog teksta: kartica „Sledeće" već nudi proveru; ostaje
   da se vidi na uređaju da li je to dovoljno.
 - Reč „Persistence" za ekran istrajnosti zvuči čudno na engleskom; kandidat
@@ -1651,9 +1678,10 @@ strukturi**: ništa se ne premešta, ne preimenuje, ne grupiše.
 1. **Preuređenje ekrana i navigacije** — **prva faza urađena 19. oktobra 2026**
    (tri kartice u dnu, kartica „Sledeće", stranica modula; vidi odeljak „Tri
    kartice u dnu" na vrhu), i **druga faza istog dana** (Napredak kao mapa,
-   Presek utopljen u njega). Podatak iz upotrebe koji se čekao stigao je od
-   vlasnika: posle dva meseca pauze ni on se nije snašao. Ostala je treća
-   faza, pobrojana u istom odeljku.
+   Presek utopljen u njega) i **treća** (sažetak sesije kaže šta se pomerilo).
+   Podatak iz upotrebe koji se čekao stigao je od vlasnika: posle dva meseca
+   pauze ni on se nije snašao. Sitnice koje su ostale su pobrojane na kraju
+   tog odeljka.
 
    1a. **Aplikacija je samo na engleskom — zatvoreno 18. oktobra 2026.** Odluka
    vlasnika od istog dana: govor, slušanje i ekran su engleski. Govor i slušanje

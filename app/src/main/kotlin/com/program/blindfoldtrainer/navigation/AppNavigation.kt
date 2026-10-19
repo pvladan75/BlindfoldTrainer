@@ -51,6 +51,8 @@ import com.program.blindfoldtrainer.ui.ProfilesViewModel
 import com.program.blindfoldtrainer.ui.ProgressScreen
 import com.program.blindfoldtrainer.ui.ProgressViewModel
 import com.program.blindfoldtrainer.ui.SessionSummaryDialog
+import com.program.blindfoldtrainer.ui.shiftOf
+import com.program.blindfoldtrainer.core.progress.ProgressSnapshot
 import com.program.blindfoldtrainer.ui.SessionSummaryEyesFree
 import com.program.blindfoldtrainer.ui.SettingsScreen
 import com.program.blindfoldtrainer.ui.SettingsViewModel
@@ -420,6 +422,11 @@ fun AppNavigation(registry: ModuleRegistry) {
 
             var result by remember { mutableStateOf<SessionResult?>(null) }
 
+            // Napredak **pre upisa**, da sažetak ume da kaže od čega do čega se
+            // nivo pomerio. Posle upisa `progress` već nosi novo stanje, pa se
+            // staro mora zapamtiti u trenutku kraja.
+            var before by remember { mutableStateOf<ProgressSnapshot?>(null) }
+
             /**
              * Da li je ishod ove sesije **već upisan**.
              *
@@ -467,6 +474,7 @@ fun AppNavigation(registry: ModuleRegistry) {
                     // zna ni za poene ni za napredak, pa ne treba da zna ni za
                     // merenje. Ona je poručila, ona i obeležava.
                     val finished = sessionResult.copy(isCheckup = isCheckup)
+                    before = progress
                     result = finished
                     progressViewModel.record(finished)
                 }
@@ -474,6 +482,12 @@ fun AppNavigation(registry: ModuleRegistry) {
 
             result?.let { finished ->
                 val reward by progressViewModel.lastReward.collectAsState()
+
+                // Računa se iznova kad `progress` stigne sa upisom: prvi kadar
+                // pokazuje „bez promene", sledeći ono što se pomerilo.
+                val shift = remember(finished, before, progress) {
+                    before?.let { shiftOf(finished, it, progress, allTasks) }
+                }
 
                 // **„Još jednom" ponavlja istu sesiju** — isti zadatak, isti
                 // oslonac, ista provera. Dotle je nosio samo težinu, pa je drugi
@@ -520,6 +534,8 @@ fun AppNavigation(registry: ModuleRegistry) {
                     SessionSummaryDialog(
                         result = finished,
                         reward = reward,
+                        shift = shift,
+                        next = recommendation,
                         onRepeat = repeatSession,
                         onBackToMenu = backToMenu
                     )
